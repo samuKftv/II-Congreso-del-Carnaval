@@ -1,0 +1,237 @@
+/* Estudio de imágenes — II Congreso del Carnaval */
+
+:root {
+  --noche: #150a29;
+  --noche-2: #21113d;
+  --capa: rgba(255, 255, 255, 0.06);
+  --capa-2: rgba(255, 255, 255, 0.1);
+  --borde: rgba(255, 255, 255, 0.14);
+  --texto: #fff8ec;
+  --suave: #cbb9ea;
+  --magenta: #ff2e88;
+  --amarillo: #ffd23f;
+  --cian: #22d3ee;
+  --naranja: #ff8a00;
+  --verde: #3ddc84;
+  --violeta: #8b5cf6;
+  --rojo: #ff5470;
+  --radio: 22px;
+  --sombra: 0 18px 50px -18px rgba(0, 0, 0, 0.7);
+  --fuente: ui-rounded, "SF Pro Rounded", "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--fuente);
+  color: var(--texto);
+  background: var(--noche);
+  line-height: 1.4;
+}
+
+/* Luces de fondo (capa fija: funciona también en iPhone) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 0% -10%, rgba(255, 46, 136, 0.28), transparent 60%),
+    radial-gradient(800px 480px at 110% 5%, rgba(34, 211, 238, 0.2), transparent 60%),
+    radial-gradient(900px 600px at 50% 115%, rgba(255, 210, 63, 0.14), transparent 60%);
+  z-index: 0;
+}
+
+/* Confeti de fondo */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  background-image:
+    radial-gradient(circle, var(--amarillo) 2px, transparent 2.6px),
+    radial-gradient(circle, var(--magenta) 2.2px, transparent 2.8px),
+    radial-gradient(circle, var(--cian) 1.6px, transparent 2.2px),
+    radial-gradient(circle, var(--verde) 1.6px, transparent 2.2px);
+  background-size: 150px 150px, 210px 210px, 120px 120px, 260px 260px;
+  background-position: 12px 24px, 90px 70px, 44px 110px, 160px 10px;
+  z-index: 0;
+}
+
+button, input, textarea { font: inherit; color: inherit; }
+img { display: block; max-width: 100%; }
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 3px solid var(--amarillo); outline-offset: 3px; }
+
+/* Serpentina de colores */
+.cinta {
+  height: 8px;
+  background: repeating-linear-gradient(90deg,
+    var(--magenta) 0 36px, var(--amarillo) 36px 72px, var(--cian) 72px 108px,
+    var(--naranja) 108px 144px, var(--verde) 144px 180px, var(--violeta) 180px 216px);
+  position: relative;
+  z-index: 1;
+}
+
+.titulo-evento {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  background: linear-gradient(95deg, var(--amarillo), var(--naranja) 30%, var(--magenta) 60%, var(--cian));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.titulo-con-icono { display: flex; align-items: center; gap: 10px; margin: 0; }
+.titulo-con-icono .icono { line-height: 1; }
+
+.subtitulo {
+  margin: 4px 0 0;
+  color: var(--suave);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+.tarjeta {
+  background: var(--capa);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 20px;
+  box-shadow: var(--sombra);
+  backdrop-filter: blur(6px);
+}
+
+/* Botones */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.boton:active { transform: scale(0.97); }
+.boton:disabled { cursor: not-allowed; filter: grayscale(0.8) brightness(0.7); }
+
+.boton-principal {
+  color: #1b0b2e;
+  background: linear-gradient(100deg, var(--amarillo), var(--naranja) 45%, var(--magenta));
+  background-size: 200% 100%;
+  box-shadow: 0 10px 30px -8px rgba(255, 46, 136, 0.7);
+  animation: brillo 5s ease-in-out infinite;
+}
+.boton-secundario { background: var(--capa-2); border: 1px solid var(--borde); color: var(--texto); }
+.boton-secundario:hover { background: rgba(255, 255, 255, 0.16); }
+.boton-fantasma { background: transparent; color: var(--suave); min-height: 44px; font-weight: 700; }
+.boton-fantasma:hover { color: var(--texto); }
+.boton-grande { min-height: 64px; font-size: 1.25rem; width: 100%; }
+.boton-peligro { background: rgba(255, 84, 112, 0.16); color: #ffc2cc; border: 1px solid rgba(255, 84, 112, 0.4); }
+
+@keyframes brillo {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Campos */
+.campo {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 2px solid var(--borde);
+  background: rgba(10, 4, 22, 0.55);
+  font-size: 1.1rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.campo:focus { border-color: var(--amarillo); box-shadow: 0 0 0 4px rgba(255, 210, 63, 0.18); }
+.campo::placeholder { color: rgba(203, 185, 234, 0.6); }
+textarea.campo { resize: none; min-height: 120px; line-height: 1.45; }
+
+.etiqueta { display: block; font-weight: 800; margin: 0 0 10px; font-size: 1.05rem; }
+.paso {
+  display: inline-grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--amarillo);
+  color: #1b0b2e;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+/* Avisos */
+.aviso {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 210, 63, 0.12);
+  border: 1px solid rgba(255, 210, 63, 0.35);
+  font-weight: 700;
+}
+.aviso-rojo { background: rgba(255, 84, 112, 0.12); border-color: rgba(255, 84, 112, 0.4); }
+.aviso-info { background: rgba(34, 211, 238, 0.1); border-color: rgba(34, 211, 238, 0.35); }
+.aviso .icono { font-size: 1.5rem; }
+
+/* Mensajes flotantes */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 30px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  max-width: min(92vw, 520px);
+  padding: 14px 20px;
+  border-radius: 16px;
+  background: #2b1650;
+  border: 1px solid var(--borde);
+  box-shadow: var(--sombra);
+  font-weight: 700;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(.2, .9, .3, 1.2), opacity 0.2s, visibility 0.3s;
+}
+.toast.visible { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
+.toast.error { background: #4a1530; border-color: rgba(255, 84, 112, 0.5); }
+
+/* Confeti de celebración */
+.confeti {
+  position: fixed;
+  top: -20px;
+  width: 10px;
+  height: 14px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 90;
+  animation: caer var(--dur, 2.6s) cubic-bezier(.25, .6, .4, 1) forwards;
+}
+@keyframes caer {
+  to { transform: translate(var(--dx, 0), 105vh) rotate(var(--giro, 720deg)); opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .confeti { display: none; }
+}

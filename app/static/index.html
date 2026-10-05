@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#150a29">
+  <title>Estudio de imágenes</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
+  <link rel="stylesheet" href="/static/estilo.css">
+  <style>
+    .app { position: relative; z-index: 1; width: min(100%, 640px); margin: 0 auto; padding: 18px 16px 40px; }
+    .cabecera { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .cabecera .titulo-evento { font-size: clamp(1.3rem, 5.2vw, 1.75rem); }
+    .chip-galeria { min-height: 44px; padding: 8px 14px; font-size: 0.95rem; white-space: nowrap; }
+    .boton-galeria { flex: none; flex-direction: column; gap: 2px; min-height: 64px; padding: 8px 12px; border-radius: 18px; font-size: 0.75rem; line-height: 1.1; }
+    .boton-galeria span { font-size: 1.6rem; }
+
+    /* Entrada */
+    #entrada { text-align: center; padding-top: 6vh; }
+    .mascara { font-size: 88px; line-height: 1; display: inline-block; animation: bailar 2.4s ease-in-out infinite; filter: drop-shadow(0 10px 25px rgba(255, 46, 136, 0.5)); }
+    #entrada .titulo-evento { font-size: clamp(2rem, 9vw, 2.8rem); margin-top: 16px; }
+    #entrada .tarjeta { margin-top: 28px; text-align: left; display: grid; gap: 14px; }
+    @keyframes bailar { 0%, 100% { transform: rotate(-8deg) translateY(0); } 50% { transform: rotate(8deg) translateY(-8px); } }
+
+    /* Crear */
+    .saludo { font-size: 1.05rem; font-weight: 800; margin: 0 0 14px; }
+    .bloque { margin-top: 22px; }
+    .fila-texto { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 8px; }
+    .contador { color: var(--suave); font-size: 0.85rem; font-weight: 700; }
+    .inspirame { min-height: 44px; padding: 8px 16px; font-size: 0.95rem; }
+
+    .estilos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    @media (min-width: 520px) { .estilos { grid-template-columns: repeat(4, 1fr); } }
+    .estilo {
+      position: relative; aspect-ratio: 1; border-radius: 18px; overflow: hidden; cursor: pointer;
+      border: 3px solid transparent; padding: 0; background: var(--capa-2);
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .estilo:active { transform: scale(0.96); }
+    .estilo .fondo { position: absolute; inset: 0 0 24px; display: grid; place-items: center; font-size: 2.4rem; }
+    .estilo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .estilo .nombre {
+      position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 6px 7px;
+      font-size: 0.82rem; font-weight: 800; text-align: center; line-height: 1.1;
+      background: linear-gradient(transparent, rgba(10, 4, 22, 0.85));
+    }
+    .estilo[aria-pressed="true"] { border-color: var(--amarillo); box-shadow: 0 0 0 4px rgba(255, 210, 63, 0.25), 0 10px 25px -10px rgba(255, 210, 63, 0.8); transform: translateY(-2px); }
+    .estilo[aria-pressed="true"]::after {
+      content: "✓"; position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%;
+      display: grid; place-items: center; background: var(--amarillo); color: #1b0b2e; font-weight: 900;
+    }
+
+    .formatos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .formato {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      min-height: 104px; border-radius: 18px; border: 3px solid transparent; background: var(--capa-2);
+      cursor: pointer; font-weight: 800; font-size: 0.92rem; padding: 10px 4px;
+    }
+    .formato .marco { height: 42px; display: grid; place-items: center; }
+    .formato .forma { display: block; border: 3px solid currentColor; border-radius: 6px; opacity: 0.9; }
+    .formato[aria-pressed="true"] { border-color: var(--amarillo); color: var(--amarillo); background: rgba(255, 210, 63, 0.1); }
+
+    .accion { position: sticky; bottom: 12px; margin-top: 26px; z-index: 5; }
+    #estado-estudio { margin-top: 4px; }
+
+    /* Espera */
+    #espera, #resultado { text-align: center; }
+    .idea { font-size: 1.05rem; font-weight: 700; color: var(--suave); margin: 12px auto 0; max-width: 46ch; overflow-wrap: anywhere; }
+    .idea::before { content: "“"; } .idea::after { content: "”"; }
+    .turno {
+      width: 150px; height: 150px; margin: 10px auto 0; border-radius: 50%;
+      display: grid; place-items: center; font-size: 4.5rem; font-weight: 900; color: #1b0b2e;
+      background: conic-gradient(var(--amarillo), var(--naranja), var(--magenta), var(--violeta), var(--cian), var(--amarillo));
+      box-shadow: 0 0 60px -10px rgba(255, 46, 136, 0.7);
+      animation: girar-sombra 3s linear infinite;
+    }
+    .turno span { width: 124px; height: 124px; border-radius: 50%; display: grid; place-items: center; background: var(--noche-2); color: var(--texto); }
+    @keyframes girar-sombra { 50% { box-shadow: 0 0 70px -5px rgba(34, 211, 238, 0.7); } }
+    .texto-grande { font-size: 1.5rem; font-weight: 900; margin: 18px 0 4px; }
+    .texto-suave { color: var(--suave); font-weight: 700; margin: 0; }
+    .bailarines { font-size: 2rem; margin-top: 18px; letter-spacing: 6px; }
+    .bailarines span { display: inline-block; animation: saltar 1.2s ease-in-out infinite; }
+    .bailarines span:nth-child(2) { animation-delay: 0.15s; } .bailarines span:nth-child(3) { animation-delay: 0.3s; }
+    .bailarines span:nth-child(4) { animation-delay: 0.45s; } .bailarines span:nth-child(5) { animation-delay: 0.6s; }
+    @keyframes saltar { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-14px) rotate(-8deg); } }
+
+    .lienzo {
+      position: relative; margin: 18px auto 0; width: 100%; max-width: 520px; border-radius: 22px; overflow: hidden;
+      background: linear-gradient(110deg, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.05) 70%) var(--noche-2);
+      background-size: 250% 100%; animation: brillar 1.6s linear infinite; box-shadow: var(--sombra);
+    }
+    .lienzo img { width: 100%; height: 100%; object-fit: cover; filter: blur(6px) saturate(1.2); transform: scale(1.04); transition: filter 0.4s; }
+    @keyframes brillar { to { background-position: -150% 0; } }
+    .barra { height: 16px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; margin: 18px auto 6px; max-width: 520px; }
+    .barra div {
+      height: 100%; width: 4%; border-radius: inherit; transition: width 0.4s ease;
+      background: repeating-linear-gradient(-45deg, var(--amarillo) 0 12px, var(--naranja) 12px 24px);
+      background-size: 34px 34px; animation: rayas 0.8s linear infinite;
+    }
+    @keyframes rayas { to { background-position: 34px 0; } }
+
+    /* Resultado */
+    .obra { margin: 6px auto 0; max-width: 560px; border-radius: 22px; overflow: hidden; box-shadow: 0 30px 70px -25px rgba(255, 46, 136, 0.65); animation: aparecer 0.6s cubic-bezier(.2, .9, .3, 1.2); }
+    .obra img { width: 100%; height: auto; }
+    @keyframes aparecer { from { transform: scale(0.85) rotate(-2deg); opacity: 0; } }
+    .botones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+    .botones .boton-principal { grid-column: 1 / -1; }
+    .botones .boton-secundario { font-size: 0.98rem; padding: 12px 10px; white-space: nowrap; }
+
+    /* Galería personal */
+    .velo { position: fixed; inset: 0; z-index: 50; background: rgba(8, 3, 18, 0.88); backdrop-filter: blur(8px); overflow-y: auto; }
+    .velo .app { padding-top: 22px; }
+    .rejilla { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
+    @media (min-width: 520px) { .rejilla { grid-template-columns: repeat(3, 1fr); } }
+    .rejilla button { padding: 0; border: 0; border-radius: 16px; overflow: hidden; cursor: pointer; aspect-ratio: 1; background: var(--capa-2); }
+    .rejilla img { width: 100%; height: 100%; object-fit: cover; }
+    .vacio { text-align: center; color: var(--suave); padding: 50px 10px; font-weight: 700; }
+    .vacio div { font-size: 3rem; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="cinta"></div>
+
+  <main class="app">
+    <!-- 1. Entrada -->
+    <section id="entrada" hidden>
+      <div class="mascara" aria-hidden="true">🎭</div>
+      <h1 class="titulo-evento" data-evento></h1>
+      <p class="subtitulo" data-subtitulo></p>
+      <form class="tarjeta" id="form-entrada">
+        <div>
+          <label class="etiqueta" for="alias">¿Cómo te llamamos?</label>
+          <input class="campo" id="alias" maxlength="24" autocomplete="nickname" placeholder="Tu alias" required>
+        </div>
+        <div id="bloque-codigo" hidden>
+          <label class="etiqueta" for="codigo">Código del aula</label>
+          <input class="campo" id="codigo" autocomplete="off" autocapitalize="off" placeholder="Lo verás en la pantalla">
+        </div>
+        <button class="boton boton-principal boton-grande" type="submit">¡Entrar al estudio! 🎉</button>
+      </form>
+    </section>
+
+    <!-- 2. Crear -->
+    <section id="crear" hidden>
+      <header class="cabecera">
+        <div>
+          <h1 class="titulo-evento" data-evento></h1>
+          <p class="subtitulo" data-subtitulo></p>
+        </div>
+        <button class="boton boton-secundario boton-galeria" id="abrir-galeria" type="button"><span aria-hidden="true">🖼️</span>Mis imágenes</button>
+      </header>
+      <p class="saludo">¡Hola, <span id="saludo-alias"></span>! 👋</p>
+
+      <div id="estado-estudio"></div>
+
+      <div class="bloque">
+        <label class="etiqueta" for="prompt"><span class="paso">1</span>¿Qué quieres crear?</label>
+        <textarea class="campo" id="prompt" placeholder="Describe tu imagen…"></textarea>
+        <div class="fila-texto">
+          <button class="boton boton-secundario inspirame" id="inspirame" type="button">🎲 Inspírame</button>
+          <span class="contador" id="contador"></span>
+        </div>
+      </div>
+
+      <div class="bloque">
+        <span class="etiqueta"><span class="paso">2</span>Elige un estilo</span>
+        <div class="estilos" id="estilos" role="group" aria-label="Estilos"></div>
+      </div>
+
+      <div class="bloque">
+        <span class="etiqueta"><span class="paso">3</span>Formato</span>
+        <div class="formatos" id="formatos" role="group" aria-label="Formato"></div>
+      </div>
+
+      <div class="accion">
+        <button class="boton boton-principal boton-grande" id="boton-crear" type="button">✨ ¡Crear imagen!</button>
+      </div>
+    </section>
+
+    <!-- 3. Espera -->
+    <section id="espera" hidden>
+      <div id="espera-cola">
+        <p class="texto-suave">Personas delante de ti</p>
+        <div class="turno"><span id="delante">0</span></div>
+        <p class="texto-grande" id="espera-titulo">¡Ya casi es tu turno!</p>
+        <p class="texto-suave" id="espera-tiempo"></p>
+        <div class="bailarines" aria-hidden="true"><span>🎭</span><span>🎉</span><span>🪅</span><span>🎊</span><span>🎺</span></div>
+      </div>
+      <div id="espera-generando" hidden>
+        <p class="texto-grande">🎨 ¡Pintando tu imagen!</p>
+        <div class="barra"><div id="barra"></div></div>
+        <p class="texto-suave" id="espera-paso"></p>
+        <div class="lienzo" id="lienzo"><img id="preview" alt="" hidden></div>
+      </div>
+      <p class="idea" id="espera-idea"></p>
+      <button class="boton boton-fantasma" id="cancelar" type="button">Cancelar</button>
+    </section>
+
+    <!-- 4. Resultado -->
+    <section id="resultado" hidden>
+      <p class="texto-grande" style="margin-top:0">🎉 ¡Aquí la tienes!</p>
+      <div class="obra"><img id="obra" alt=""></div>
+      <p class="idea" id="resultado-idea"></p>
+      <div class="botones">
+        <a class="boton boton-principal boton-grande" id="descargar" download>⬇️ Descargar</a>
+        <button class="boton boton-secundario" id="otra" type="button">🔁 Otra versión</button>
+        <button class="boton boton-secundario" id="editar" type="button">✏️ Cambiar idea</button>
+      </div>
+    </section>
+
+    <!-- Error -->
+    <section id="fallo" hidden style="text-align:center">
+      <div style="font-size:4rem">😵‍💫</div>
+      <p class="texto-grande">Uy, esta no ha salido</p>
+      <p class="texto-suave" id="fallo-texto"></p>
+      <div class="botones">
+        <button class="boton boton-principal boton-grande" id="reintentar" type="button">🔁 Intentarlo otra vez</button>
+        <button class="boton boton-secundario" id="volver" type="button" style="grid-column: 1 / -1">✏️ Cambiar idea</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mis imágenes -->
+  <div class="velo" id="galeria" hidden>
+    <div class="app">
+      <header class="cabecera">
+        <h2 class="titulo-con-icono" style="font-size:1.6rem"><span class="icono" aria-hidden="true">🖼️</span><span class="titulo-evento">Mis imágenes</span></h2>
+        <button class="boton boton-secundario chip-galeria" id="cerrar-galeria" type="button">✕ Cerrar</button>
+      </header>
+      <div class="rejilla" id="rejilla"></div>
+    </div>
+  </div>
+
+  <!-- Ver una imagen de la galería -->
+  <div class="velo" id="visor" hidden>
+    <div class="app" style="text-align:center">
+      <header class="cabecera">
+        <span></span>
+        <button class="boton boton-secundario chip-galeria" id="cerrar-visor" type="button">✕ Cerrar</button>
+      </header>
+      <div class="obra"><img id="visor-img" alt=""></div>
+      <p class="idea" id="visor-idea"></p>
+      <div class="botones">
+        <a class="boton boton-principal boton-grande" id="visor-descargar" download>⬇️ Descargar</a>
+        <button class="boton boton-secundario" id="visor-usar" type="button" style="grid-column: 1 / -1">✏️ Usar esta idea</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/static/comun.js"></script>
+  <script src="/static/alumno.js"></script>
+</body>
+</html>

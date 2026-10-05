@@ -1,0 +1,107 @@
+{
+  "_ayuda": "receta: lo que se envía al modelo; {prompt} es lo que escribe el alumno. ejemplo: prompt para generar la miniatura del estilo desde el panel.",
+  "estilos": [
+    {
+      "id": "libre",
+      "nombre": "Tal cual",
+      "emoji": "✨",
+      "colores": ["#6d28d9", "#db2777"],
+      "receta": "{prompt}",
+      "ejemplo": "Una máscara de carnaval dorada con plumas de colores sobre una mesa de madera"
+    },
+    {
+      "id": "foto",
+      "nombre": "Fotografía",
+      "emoji": "📷",
+      "colores": ["#0f766e", "#0ea5e9"],
+      "receta": "{prompt}. Professional photograph, natural light, sharp focus, rich detail, shot on a 35mm lens.",
+      "ejemplo": "Una comparsa con trajes brillantes desfilando de noche por una calle estrecha"
+    },
+    {
+      "id": "cartel",
+      "nombre": "Cartel de carnaval",
+      "emoji": "🎭",
+      "colores": ["#dc2626", "#f59e0b"],
+      "receta": "Vintage carnival festival poster: {prompt}. Bold flat colors, ornate frame, confetti and streamers, screen-printed texture, the word \"CARNAVAL\" in large decorative lettering.",
+      "ejemplo": "Un arlequín tocando la trompeta"
+    },
+    {
+      "id": "disfraz",
+      "nombre": "Disfraz",
+      "emoji": "🪶",
+      "colores": ["#c026d3", "#f97316"],
+      "receta": "Carnival costume portrait: {prompt}. Elaborate handmade costume with sequins, feathers and glitter, night street parade, colorful lights, festive atmosphere.",
+      "ejemplo": "Una persona disfrazada de pavo real"
+    },
+    {
+      "id": "confeti",
+      "nombre": "Pop confeti",
+      "emoji": "🎉",
+      "colores": ["#e11d48", "#06b6d4"],
+      "receta": "{prompt}. Pop art explosion of confetti, streamers and balloons, saturated neon colors, joyful carnival celebration.",
+      "ejemplo": "Un gato con gafas de sol y sombrero de fiesta"
+    },
+    {
+      "id": "ilustracion",
+      "nombre": "Ilustración",
+      "emoji": "✏️",
+      "colores": ["#2563eb", "#22c55e"],
+      "receta": "Colorful digital illustration of {prompt}. Clean lines, vibrant palette, storybook style.",
+      "ejemplo": "Una carroza con forma de dragón recorriendo la ciudad"
+    },
+    {
+      "id": "anime",
+      "nombre": "Anime",
+      "emoji": "🌸",
+      "colores": ["#ec4899", "#8b5cf6"],
+      "receta": "Anime style illustration of {prompt}. Cel shading, expressive characters, vivid colors, detailed background.",
+      "ejemplo": "Una chica con antifaz bailando entre serpentinas"
+    },
+    {
+      "id": "acuarela",
+      "nombre": "Acuarela",
+      "emoji": "🖌️",
+      "colores": ["#0891b2", "#a3e635"],
+      "receta": "Watercolor painting of {prompt}. Soft washes, visible paper texture, delicate color bleeding.",
+      "ejemplo": "Farolillos de colores sobre una plaza al atardecer"
+    },
+    {
+      "id": "3d",
+      "nombre": "3D juguete",
+      "emoji": "🧸",
+      "colores": ["#f59e0b", "#ec4899"],
+      "receta": "Cute 3D render of {prompt}. Soft studio lighting, glossy toy-like materials, pastel background, high detail.",
+      "ejemplo": "Un pulpo con disfraz de pirata"
+    },
+    {
+      "id": "comic",
+      "nombre": "Cómic",
+      "emoji": "💥",
+      "colores": ["#facc15", "#ef4444"],
+      "receta": "Comic book panel of {prompt}. Bold ink outlines, halftone dots, dynamic composition, saturated colors.",
+      "ejemplo": "Un superhéroe con capa hecha de confeti"
+    },
+    {
+      "id": "pixel",
+      "nombre": "Pixel art",
+      "emoji": "👾",
+      "colores": ["#4f46e5", "#10b981"],
+      "receta": "Pixel art of {prompt}. 16-bit retro video game style, limited palette, crisp pixels.",
+      "ejemplo": "Un desfile de carnaval visto de lado como en un videojuego"
+    }
+  ],
+  "ideas": [
+    "Un coro de pingüinos con sombrero de copa cantando en un escenario",
+    "Un pulpo gigante disfrazado de pirata desfilando por la calle",
+    "Una carroza de carnaval con forma de dragón dorado",
+    "Una abuela con un antifaz lleno de plumas sonriendo a cámara",
+    "Un robot bailando bajo una lluvia de confeti",
+    "Una ciudad hecha de caramelos en plena fiesta",
+    "Un león con traje de lentejuelas y corona de flores",
+    "Un astronauta vestido de arlequín flotando entre serpentinas",
+    "Un mercado nocturno lleno de farolillos de colores",
+    "Una banda de gatos tocando tambores en un tejado",
+    "Un tren de juguete cargado de disfraces cruzando un puente",
+    "Una sirena con maquillaje de carnaval en un acuario gigante"
+  ]
+}

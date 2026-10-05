@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel del profesor</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎛️</text></svg>">
+  <link rel="stylesheet" href="/static/estilo.css">
+  <style>
+    .panel { position: relative; z-index: 1; width: min(100%, 1280px); margin: 0 auto; padding: 22px 16px 60px; }
+    .cabecera { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
+    .cabecera .titulo-con-icono { font-size: clamp(1.6rem, 3vw, 2.2rem); }
+    .enlaces { display: flex; gap: 10px; flex-wrap: wrap; }
+    .enlaces .boton { min-height: 46px; font-size: 0.98rem; padding: 10px 18px; }
+    .resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .tarjeta h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 900; letter-spacing: 0.02em; }
+    .seccion { margin-top: 16px; }
+    .nota { color: var(--suave); font-size: 0.9rem; margin: 10px 0 0; }
+
+    .interruptor { width: 100%; min-height: 72px; font-size: 1.4rem; font-weight: 900; border-radius: 18px; border: 0; cursor: pointer; }
+    .interruptor small { display: block; font-size: 0.8rem; font-weight: 700; opacity: 0.8; }
+    .interruptor.abierto { background: linear-gradient(100deg, #1f9d5c, var(--verde)); color: #08210f; }
+    .interruptor.cerrado { background: rgba(255, 84, 112, 0.22); color: #ffd0d8; border: 2px solid rgba(255, 84, 112, 0.5); }
+
+    .punto { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+    .punto.ok { background: var(--verde); box-shadow: 0 0 12px var(--verde); }
+    .punto.mal { background: var(--rojo); box-shadow: 0 0 12px var(--rojo); }
+    .grande { font-size: 1.15rem; font-weight: 900; }
+
+    .numeros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .numero { background: rgba(0, 0, 0, 0.2); border-radius: 14px; padding: 10px 12px; }
+    .numero b { display: block; font-size: 1.6rem; font-weight: 900; color: var(--amarillo); line-height: 1.1; }
+    .numero span { color: var(--suave); font-size: 0.82rem; font-weight: 700; }
+
+    .acceso { display: flex; gap: 14px; align-items: center; }
+    .acceso img { width: 112px; height: 112px; border-radius: 12px; background: #fff; flex: none; }
+    .acceso .url { font-weight: 800; color: var(--amarillo); word-break: break-all; }
+    .acceso .boton { min-height: 38px; padding: 6px 14px; font-size: 0.85rem; margin-top: 8px; }
+
+    .fila { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--borde); }
+    .fila:first-child { border-top: 0; }
+    .pos { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--capa-2); font-weight: 900; }
+    .pos.ahora { background: var(--amarillo); color: #1b0b2e; }
+    .quien { font-weight: 800; }
+    .que { color: var(--suave); font-size: 0.92rem; overflow-wrap: anywhere; }
+    .mini-barra { height: 6px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); margin-top: 6px; overflow: hidden; }
+    .mini-barra div { height: 100%; background: var(--amarillo); transition: width 0.3s; }
+    .icono-boton { min-height: 40px; padding: 6px 12px; font-size: 0.85rem; }
+    .vacio { color: var(--suave); font-weight: 700; padding: 8px 0; margin: 0; }
+
+    .rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+    .obra { position: relative; border-radius: 16px; overflow: hidden; background: var(--capa-2); }
+    .obra img { width: 100%; aspect-ratio: 1; object-fit: cover; cursor: zoom-in; }
+    .obra.oculta img { opacity: 0.3; filter: grayscale(1); }
+    .obra .info { padding: 8px 10px 4px; font-size: 0.82rem; }
+    .obra .info b { display: block; font-size: 0.9rem; }
+    .obra .info span { color: var(--suave); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .obra .acciones { display: flex; gap: 6px; padding: 6px 8px 10px; }
+    .obra .acciones button { flex: 1; min-height: 36px; padding: 4px; font-size: 0.78rem; gap: 4px; white-space: nowrap; }
+    .etiqueta-oculta { position: absolute; top: 8px; left: 8px; padding: 4px 10px; border-radius: 99px; background: var(--rojo); font-size: 0.75rem; font-weight: 900; }
+
+    .acceso-profe { max-width: 420px; margin: 12vh auto 0; display: grid; gap: 14px; }
+    .visor { position: fixed; inset: 0; z-index: 60; background: rgba(8, 3, 18, 0.92); display: grid; place-items: center; padding: 20px; cursor: zoom-out; }
+    .visor img { max-width: 100%; max-height: 80vh; border-radius: 16px; }
+    .visor p { max-width: 70ch; text-align: center; color: var(--suave); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="cinta"></div>
+  <div class="panel">
+    <form class="tarjeta acceso-profe" id="login" hidden>
+      <h1 class="titulo-con-icono" style="font-size:1.8rem"><span class="icono" aria-hidden="true">🎛️</span><span class="titulo-evento">Panel del profesor</span></h1>
+      <p class="nota" id="login-nota">Escribe la clave del profesor de <b>config/ajustes.toml</b>.</p>
+      <input class="campo" id="clave" type="password" autocomplete="current-password" placeholder="Clave">
+      <button class="boton boton-principal" type="submit">Entrar</button>
+    </form>
+
+    <div id="contenido" hidden>
+      <header class="cabecera">
+        <div>
+          <h1 class="titulo-con-icono"><span class="icono" aria-hidden="true">🎛️</span><span class="titulo-evento">Panel del profesor</span></h1>
+          <p class="subtitulo" id="evento"></p>
+        </div>
+        <nav class="enlaces">
+          <a class="boton boton-secundario" href="/proyector" target="_blank">📺 Abrir proyector</a>
+          <a class="boton boton-secundario" href="/" target="_blank">📱 Vista del alumnado</a>
+        </nav>
+      </header>
+
+      <div class="resumen">
+        <section class="tarjeta">
+          <h2>Estudio</h2>
+          <button class="interruptor" id="interruptor" type="button"></button>
+          <p class="nota">Cerrado: no entran imágenes nuevas, pero la cola termina.</p>
+        </section>
+        <section class="tarjeta">
+          <h2>ComfyUI</h2>
+          <div class="grande" id="comfy-estado"></div>
+          <p class="nota" id="comfy-detalle"></p>
+        </section>
+        <section class="tarjeta">
+          <h2>En números</h2>
+          <div class="numeros">
+            <div class="numero"><b id="n-cola">0</b><span>en cola</span></div>
+            <div class="numero"><b id="n-media">–</b><span>s por imagen</span></div>
+            <div class="numero"><b id="n-hechas">0</b><span>imágenes</span></div>
+            <div class="numero"><b id="n-personas">0</b><span>personas</span></div>
+          </div>
+        </section>
+        <section class="tarjeta">
+          <h2>Acceso del alumnado</h2>
+          <div class="acceso">
+            <img src="/qr.svg" alt="QR de acceso">
+            <div>
+              <div class="url" id="url"></div>
+              <div class="nota" id="codigo" style="margin-top:4px"></div>
+              <button class="boton boton-secundario" id="copiar" type="button">📋 Copiar enlace</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="avisos"></div>
+
+      <section class="tarjeta seccion">
+        <h2>Cola</h2>
+        <div id="cola"></div>
+      </section>
+
+      <section class="tarjeta seccion">
+        <h2>Imágenes creadas</h2>
+        <p class="nota" style="margin:-4px 0 14px">👁️ quita o devuelve una imagen al proyector · 🚫 pausa el acceso de esa persona.</p>
+        <div class="rejilla" id="imagenes"></div>
+        <div style="text-align:center;margin-top:14px">
+          <button class="boton boton-secundario" id="mas" type="button" hidden>Cargar más</button>
+        </div>
+      </section>
+
+      <section class="tarjeta seccion" id="seccion-bloqueados" hidden>
+        <h2>Personas en pausa</h2>
+        <div id="bloqueados"></div>
+      </section>
+
+      <section class="tarjeta seccion">
+        <h2>Miniaturas de los estilos</h2>
+        <p class="nota" style="margin:0 0 12px">Genera una imagen de ejemplo por estilo con tu ComfyUI y la usa como tarjeta en la pantalla del alumnado. Hazlo antes de abrir el estudio.</p>
+        <button class="boton boton-secundario" id="miniaturas" type="button">🖼️ Generar miniaturas</button>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/static/comun.js"></script>
+  <script src="/static/panel.js"></script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proyector del estudio</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
+  <link rel="stylesheet" href="/static/estilo.css">
+  <style>
+    body { overflow: hidden; }
+    .escena {
+      position: relative; z-index: 1; height: calc(100vh - 8px); height: calc(100dvh - 8px);
+      display: grid; grid-template-columns: minmax(280px, 26vw) 1fr; gap: 2.2vw; padding: 2.2vw;
+    }
+    .lateral { display: flex; flex-direction: column; gap: 1.6vw; min-height: 0; }
+    .lateral .titulo-evento { font-size: clamp(1.8rem, 3vw, 3.4rem); }
+    .lateral .subtitulo { font-size: clamp(0.8rem, 1vw, 1.1rem); }
+    .acceso { text-align: center; padding: 1.4vw; }
+    .acceso h2 { margin: 0 0 1vw; font-size: clamp(1.3rem, 2vw, 2.2rem); font-weight: 900; }
+    .acceso img { width: 100%; max-width: 22vw; margin: 0 auto; border-radius: 16px; background: #fff; }
+    .acceso .url { margin: 1vw 0 0; font-weight: 800; font-size: clamp(0.9rem, 1.15vw, 1.3rem); word-break: break-all; color: var(--amarillo); }
+    .acceso .codigo { margin: 0.4vw 0 0; color: var(--suave); font-weight: 700; font-size: clamp(0.85rem, 1vw, 1.15rem); }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip { padding: 10px 16px; border-radius: 999px; background: var(--capa-2); border: 1px solid var(--borde); font-weight: 800; font-size: clamp(0.9rem, 1.1vw, 1.25rem); }
+    .chip.cerrado { background: rgba(255, 84, 112, 0.2); border-color: rgba(255, 84, 112, 0.5); }
+
+    .principal { display: grid; grid-template-rows: 1fr auto; gap: 1.4vw; min-height: 0; }
+    .destacada { position: relative; border-radius: 28px; overflow: hidden; background: var(--noche-2); box-shadow: var(--sombra); min-height: 0; }
+    .destacada .difuso { position: absolute; inset: -30px; width: calc(100% + 60px); height: calc(100% + 60px); object-fit: cover; filter: blur(40px) brightness(0.55) saturate(1.3); }
+    .destacada .nitida { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+    .destacada.entra .nitida { animation: entrar 0.9s cubic-bezier(.2, .9, .3, 1.15); }
+    @keyframes entrar { from { transform: scale(0.7) rotate(-3deg); opacity: 0; } }
+    .pie {
+      position: absolute; left: 0; right: 0; bottom: 0; padding: 4vw 2vw 1.4vw;
+      background: linear-gradient(transparent, rgba(10, 4, 22, 0.92));
+    }
+    .pie .autor { font-weight: 900; font-size: clamp(1.2rem, 2vw, 2.4rem); }
+    .pie .texto { margin-top: 4px; color: var(--suave); font-weight: 700; font-size: clamp(0.95rem, 1.3vw, 1.5rem); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .nueva {
+      position: absolute; top: 1.4vw; left: 1.4vw; padding: 10px 18px; border-radius: 999px;
+      background: var(--amarillo); color: #1b0b2e; font-weight: 900; font-size: clamp(0.9rem, 1.3vw, 1.4rem);
+      animation: latir 1s ease-in-out infinite;
+    }
+    @keyframes latir { 50% { transform: scale(1.08); } }
+    .tira { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1vw; }
+    .tira figure { margin: 0; position: relative; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: var(--capa-2); }
+    .tira img { width: 100%; height: 100%; object-fit: cover; }
+    .tira figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 6px 5px; font-size: clamp(0.65rem, 0.8vw, 0.95rem); font-weight: 800; text-align: center; background: linear-gradient(transparent, rgba(10, 4, 22, 0.9)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vacia { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 12px; }
+    .vacia .grande { font-size: clamp(4rem, 9vw, 9rem); animation: bailar 2.4s ease-in-out infinite; display: inline-block; }
+    .vacia p { margin: 0; font-size: clamp(1.4rem, 2.6vw, 3rem); font-weight: 900; }
+    @keyframes bailar { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg) translateY(-10px); } }
+
+    @media (max-aspect-ratio: 1/1) {
+      body { overflow: auto; }
+      .escena { grid-template-columns: 1fr; height: auto; }
+      .destacada { aspect-ratio: 1; }
+      .acceso img { max-width: 50vw; }
+      .tira { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="cinta"></div>
+  <div class="escena">
+    <aside class="lateral">
+      <div>
+        <h1 class="titulo-evento" id="evento"></h1>
+        <p class="subtitulo" id="subtitulo"></p>
+      </div>
+      <div class="tarjeta acceso">
+        <h2>📱 ¡Crea tu imagen!</h2>
+        <img src="/qr.svg" alt="Código QR para entrar al estudio">
+        <p class="url" id="url"></p>
+        <p class="codigo" id="codigo"></p>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chip-estado">🟢 Abierto</span>
+        <span class="chip" id="chip-cola">⏳ 0 en cola</span>
+        <span class="chip" id="chip-total">🎨 0 imágenes creadas</span>
+      </div>
+    </aside>
+
+    <main class="principal">
+      <div class="destacada" id="destacada">
+        <div class="vacia" id="vacia">
+          <div><span class="grande">🎭</span></div>
+          <p>¡Las primeras imágenes aparecerán aquí!</p>
+        </div>
+      </div>
+      <div class="tira" id="tira"></div>
+    </main>
+  </div>
+
+  <script src="/static/comun.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const NUEVA_DURANTE = 20000;   // ms que una imagen recién hecha se queda fija
+    const CAMBIO_CADA = 8000;      // ms entre imágenes del pase automático
+
+    let imagenes = [];
+    let destacadaId = null;
+    let ultimaNueva = 0;
+    let indicePase = 0;
+    let vistas = null;
+    const nodoVacio = $('vacia');
+
+    async function iniciar() {
+      try {
+        const info = await api('/api/info');
+        $('evento').textContent = info.evento;
+        $('subtitulo').textContent = info.subtitulo;
+        document.title = `Proyector · ${info.evento}`;
+        const url = new URL(info.url);
+        const codigo = url.searchParams.get('c');
+        url.search = '';
+        $('url').textContent = url.href.replace(/^http:\/\//, '').replace(/\/$/, '');
+        $('codigo').textContent = codigo ? `Código del aula: ${codigo}` : '';
+      } catch {
+        setTimeout(iniciar, 3000);
+        return;
+      }
+      refrescar();
+      setInterval(refrescar, 3000);
+      setInterval(pase, CAMBIO_CADA);
+    }
+
+    async function refrescar() {
+      let g;
+      try { g = await api('/api/galeria?limite=40'); } catch { return; }
+      $('chip-estado').textContent = g.abierto ? '🟢 Estudio abierto' : '🌙 Estudio cerrado';
+      $('chip-estado').classList.toggle('cerrado', !g.abierto);
+      $('chip-cola').textContent = `⏳ ${g.en_cola} en cola`;
+      imagenes = g.imagenes;
+      $('chip-total').textContent = `🎨 ${g.total} ${g.total === 1 ? 'imagen creada' : 'imágenes creadas'}`;
+
+      const ids = new Set(imagenes.map((i) => i.id));
+      if (vistas === null) {
+        vistas = ids;   // al abrir el proyector no celebramos las antiguas
+        if (imagenes.length) destacar(imagenes[0], false);
+      } else {
+        const nueva = imagenes.find((i) => !vistas.has(i.id));
+        imagenes.forEach((i) => vistas.add(i.id));
+        if (nueva) {
+          ultimaNueva = Date.now();
+          indicePase = 0;
+          destacar(nueva, true);
+        } else if (destacadaId && !ids.has(destacadaId)) {
+          imagenes.length ? destacar(imagenes[0], false) : vaciar();  // la ocultó el profesor
+        }
+      }
+      pintarTira();
+    }
+
+    function pase() {
+      if (Date.now() - ultimaNueva < NUEVA_DURANTE || imagenes.length < 2) return;
+      indicePase = (indicePase + 1) % Math.min(imagenes.length, 12);
+      destacar(imagenes[indicePase], false);
+    }
+
+    function destacar(img, esNueva) {
+      destacadaId = img.id;
+      const caja = $('destacada');
+      const precarga = new Image();
+      precarga.onload = () => {
+        if (destacadaId !== img.id) return;
+        caja.replaceChildren(...[
+          el('img', { class: 'difuso', src: img.mini, alt: '' }),
+          el('img', { class: 'nitida', src: img.imagen, alt: img.prompt }),
+          esNueva ? el('div', { class: 'nueva' }, '✨ ¡Recién salida!') : null,
+          el('div', { class: 'pie' }, el('div', { class: 'autor' }, `🎨 ${img.alias}`), el('div', { class: 'texto' }, img.prompt)),
+        ].filter(Boolean));
+        caja.classList.remove('entra');
+        void caja.offsetWidth;
+        caja.classList.add('entra');
+        if (esNueva) confeti(70);
+        pintarTira();
+      };
+      precarga.src = img.imagen;
+    }
+
+    function vaciar() {
+      destacadaId = null;
+      $('destacada').replaceChildren(nodoVacio);
+    }
+
+    function pintarTira() {
+      const otras = imagenes.filter((i) => i.id !== destacadaId).slice(0, 8);
+      $('tira').replaceChildren(...otras.map((i) =>
+        el('figure', {}, el('img', { src: i.mini, alt: i.prompt, loading: 'lazy' }), el('figcaption', {}, i.alias))));
+    }
+
+    iniciar();
+  </script>
+</body>
+</html>

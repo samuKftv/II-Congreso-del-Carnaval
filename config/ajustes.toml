@@ -1,0 +1,53 @@
+# Ajustes del Estudio de imágenes.
+# Después de cambiar algo, cierra la ventana de la app y vuelve a abrir iniciar.bat.
+
+[evento]
+nombre = "II Congreso del Carnaval"
+subtitulo = "Estudio de imágenes"
+
+[servidor]
+# Si lo cambias, cambia también el número en abrir_firewall.bat.
+puerto = 8080
+# Dirección que aparece en el QR. Vacío = se detecta sola.
+# Si el QR muestra una IP que no es la de la WiFi del aula, escríbela aquí (p. ej. "192.168.1.50").
+direccion = ""
+# Abre el panel del profesor en el navegador al arrancar.
+abrir_navegador = true
+
+[acceso]
+# Código que se pide al entrar. El QR ya lo lleva dentro, así que quien escanee no lo teclea.
+# Déjalo vacío ("") para no pedir código.
+codigo = "carnaval"
+# Clave del panel cuando lo abres desde OTRO dispositivo. Desde este PC no se pide.
+clave_profesor = "cambia-esta-clave"
+
+[comfyui]
+# ComfyUI portable o instalación manual: 8188. ComfyUI Desktop: normalmente 8000.
+url = "http://127.0.0.1:8188"
+# Workflow exportado desde ComfyUI con "Exportar (API)".
+workflow = "config/workflow_api.json"
+# Segundos máximos por imagen antes de darla por fallida.
+tiempo_maximo = 180
+# Solo si la app no encuentra sola el nodo del prompt o del tamaño: pon aquí su número de nodo.
+nodo_prompt = ""
+nodo_tamano = ""
+
+[limites]
+# Imágenes en cola a la vez por persona (1 = turnos justos para todos).
+en_cola_por_persona = 1
+max_caracteres = 400
+
+[formatos]
+# nombre = [ancho, alto]. Z-Image Turbo trabaja bien alrededor de 1 megapíxel.
+cuadrado = [1024, 1024]
+vertical = [832, 1216]
+horizontal = [1216, 832]
+
+[moderacion]
+# Palabras que bloquean el prompt (sin importar mayúsculas ni tildes).
+# Termina en * para bloquear todo lo que empiece así: "desnud*" bloquea desnudo, desnuda...
+palabras_prohibidas = [
+  "desnud*", "nude", "nudes", "naked", "nsfw", "porn*", "xxx", "hentai",
+  "sexo", "sex", "sexual*", "erotic*", "genital*", "pene", "penes", "vagina*",
+  "tetas", "pezon*", "nipple*", "topless", "gore", "decapitad*",
+]
