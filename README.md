@@ -19,7 +19,17 @@ Las decisiones de diseño están en [`docs/DIRECTRICES.md`](docs/DIRECTRICES.md)
 
 ---
 
-## Instalación (una sola vez, en el PC con ComfyUI)
+## Descarga para Windows (recomendado: sin instalar nada)
+
+1. Descarga **[`descargas/EstudioCarnaLab.zip`](descargas/EstudioCarnaLab.zip)** (botón *Download raw*)
+   y descomprímelo. Lleva dentro Python y todo lo necesario.
+2. Si tienes abierta una versión anterior del estudio, **cierra su ventana negra**.
+3. **La primera vez**: clic derecho en `1-PERMITIR-FIREWALL.bat` → *Ejecutar como administrador*.
+4. Arranca ComfyUI y haz doble clic en **`2-INICIAR-ESTUDIO.bat`**.
+
+La versión en marcha aparece en la ventana negra y en la cabecera del panel.
+
+## Instalación desde el código (alternativa)
 
 1. Doble clic en **`instalar.bat`**. Si no tienes Python, te ofrece instalarlo:
    pulsa **S**. Si eso falla, instálalo a mano desde
@@ -113,4 +123,5 @@ pip install -r requirements.txt pytest python-multipart
 python -m pytest            # pruebas con un ComfyUI simulado (sin GPU)
 python -m tests.comfy_falso # ComfyUI falso en :8188 para probar la interfaz
 python -m app               # arranca el estudio
+python herramientas/empaquetar.py  # genera dist/EstudioCarnaLab-v<versión>.zip para Windows
 ```

@@ -1,0 +1,9 @@
+# Dependencias del paquete portátil para Windows (versiones probadas).
+fastapi==0.142.2
+uvicorn==0.50.2
+httpx==0.28.1
+websockets==17.2
+pillow==12.3.0
+segno==1.6.6
+# click (de uvicorn) la usa en Windows para los colores de la consola
+colorama==0.4.6

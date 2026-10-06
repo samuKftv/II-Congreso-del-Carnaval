@@ -43,8 +43,9 @@ codigo = "carnaval"
 clave_profesor = "cambia-esta-clave"
 
 [comfyui]
-# ComfyUI portable o instalación manual: 8188. ComfyUI Desktop: normalmente 8000.
-url = "http://127.0.0.1:8188"
+# "auto" busca ComfyUI en el puerto 8188 (portable o manual) y en el 8000 (ComfyUI Desktop).
+# Si lo tienes en otro sitio, escribe la dirección, p. ej. "http://127.0.0.1:8188".
+url = "auto"
 # Workflow exportado desde ComfyUI con "Exportar (API)".
 workflow = "config/workflow_api.json"
 # Segundos máximos por imagen antes de darla por fallida.

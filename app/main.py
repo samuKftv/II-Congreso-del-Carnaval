@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pydantic import BaseModel, Field
 
-from . import config, fotos
+from . import VERSION, config, fotos
 from .cola import Estudio
 from .comfy import ComfyUI
 from .db import BaseDatos
@@ -315,6 +315,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
     @app.get("/api/info")
     def info():
         return {
+            "version": VERSION,
             "evento": aj.evento,
             "subtitulo": aj.subtitulo,
             "requiere_codigo": bool(aj.codigo),
@@ -489,7 +490,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
                 cola.append(d)
         return {
             "abierto": estudio.abierto,
-            "comfy": {"ok": info_comfy is not None, "url": aj.comfy_url, "gpu": gpu},
+            "comfy": {"ok": info_comfy is not None, "url": comfy.url, "auto": len(comfy.candidatas) > 1, "gpu": gpu},
             "cola": cola,
             "media": round(estudio.media(), 1),
             "estadisticas": db.estadisticas(),

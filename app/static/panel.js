@@ -48,7 +48,7 @@ $('login').addEventListener('submit', async (ev) => {
 async function iniciar() {
   try {
     info = await api('/api/info');
-    $('evento').textContent = `${info.evento} · ${info.subtitulo}`;
+    $('evento').textContent = `${info.evento} · ${info.subtitulo} · versión ${info.version}`;
     await refrescarEstado();
   } catch {
     return;
@@ -80,7 +80,9 @@ async function refrescarEstado() {
       : e.comfy.url;
   } else {
     $('comfy-estado').replaceChildren(el('span', { class: 'punto mal' }), 'Sin conexión');
-    $('comfy-detalle').textContent = `Arranca ComfyUI. La app lo busca en ${e.comfy.url} (ComfyUI Desktop suele usar el puerto 8000: cámbialo en config/ajustes.toml).`;
+    $('comfy-detalle').textContent = e.comfy.auto
+      ? 'Arranca ComfyUI. La app lo busca sola en los puertos 8188 (portable) y 8000 (Desktop).'
+      : `Arranca ComfyUI. La app lo busca en ${e.comfy.url} (config/ajustes.toml).`;
   }
 
   $('n-cola').textContent = e.cola.length;

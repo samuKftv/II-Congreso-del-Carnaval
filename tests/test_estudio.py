@@ -280,3 +280,50 @@ def test_identidad_del_congreso(tmp_path, monkeypatch, comfy_falso):
         assert info["logo"] is None and info["cartel"] is None
         assert c.get("/logo").status_code == 404 and c.get("/cartel").status_code == 404
         assert c.get("/tema.css").text == ""
+
+
+def test_comfy_auto_encuentra_el_puerto(comfy_falso, monkeypatch):
+    import asyncio
+    from app import comfy as modulo
+
+    url_buena = comfy_falso[0]
+    monkeypatch.setattr(modulo, "CANDIDATAS", [f"http://127.0.0.1:{puerto_libre()}", url_buena])
+
+    async def probar():
+        cliente = modulo.ComfyUI("auto")
+        try:
+            datos = await cliente.estado()
+            return datos, cliente.url
+        finally:
+            await cliente.cerrar()
+
+    datos, url = asyncio.run(probar())
+    assert datos["devices"][0]["name"].startswith("cuda:0") and url == url_buena
+
+
+def test_puerto_ocupado_avisa_de_otro_estudio(ajustes):
+    import socket
+    import threading
+
+    import uvicorn
+
+    from app.__main__ import puerto_ocupado
+
+    puerto = puerto_libre()
+    assert puerto_ocupado(puerto) is None
+    servidor = uvicorn.Server(uvicorn.Config(crear_app(ajustes), host="0.0.0.0", port=puerto, log_level="warning"))
+    servidor.install_signal_handlers = lambda: None
+    hilo = threading.Thread(target=servidor.run, daemon=True)
+    hilo.start()
+    while not servidor.started:
+        time.sleep(0.05)
+    try:
+        assert "Ya hay un Estudio abierto" in puerto_ocupado(puerto)
+    finally:
+        servidor.should_exit = True
+        hilo.join(5)
+    otro_puerto = puerto_libre()
+    with socket.socket() as otro:
+        otro.bind(("0.0.0.0", otro_puerto))
+        otro.listen()
+        assert "otro programa" in puerto_ocupado(otro_puerto)

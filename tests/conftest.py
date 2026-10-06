@@ -44,7 +44,7 @@ def preparar_ajustes(tmp_path, monkeypatch, url_comfy: str) -> config.Ajustes:
     shutil.copy(RAIZ / "config" / "estilos.json", carpeta)
     toml = (RAIZ / "config" / "ajustes.toml").read_text(encoding="utf-8")
     toml = (
-        toml.replace('url = "http://127.0.0.1:8188"', f'url = "{url_comfy}"')
+        toml.replace('url = "auto"', f'url = "{url_comfy}"')
         .replace('clave_profesor = "cambia-esta-clave"', 'clave_profesor = "secreta"')
         .replace('workflow = "config/workflow_api.json"',
                  f'workflow = "{(RAIZ / "config" / "workflow_api.json").as_posix()}"')

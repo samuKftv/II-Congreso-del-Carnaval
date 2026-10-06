@@ -75,7 +75,12 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
 - **Sin dependencias de Internet** en el navegador: ni fuentes ni librerías externas.
   Funciona aunque la WiFi del aula no tenga salida a Internet.
 - **SQLite** para el historial: sobrevive a reinicios.
-- **Windows**: `instalar.bat` (una vez) e `iniciar.bat` (cada sesión).
+- **Windows**: ZIP portátil (`descargas/EstudioCarnaLab.zip`) con Python 3.13 oficial y las
+  dependencias ya compiladas: descomprimir y doble clic. Se genera con `herramientas/empaquetar.py`.
+  Alternativa desde el código: `instalar.bat` (una vez) e `iniciar.bat` (cada sesión).
+- **ComfyUI**: se busca solo en los puertos 8188 (portable) y 8000 (Desktop), sin pasar por el
+  proxy de la red del centro.
+- Al arrancar se comprueba que el puerto 8080 está libre y se avisa si hay otro estudio abierto.
 - **Configuración editable** sin tocar código: `config/ajustes.toml`,
   `config/estilos.json` y `config/workflow_api.json`.
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import struct
 import uuid
 from typing import Callable
@@ -11,6 +12,11 @@ from typing import Callable
 import httpx
 from websockets.asyncio.client import connect
 from websockets.exceptions import WebSocketException
+
+log = logging.getLogger("estudio")
+
+# Con url = "auto" se prueban estas direcciones: ComfyUI portable/manual y ComfyUI Desktop.
+CANDIDATAS = ["http://127.0.0.1:8188", "http://127.0.0.1:8000"]
 
 # Tipos de mensajes binarios del websocket de ComfyUI
 PREVIEW_IMAGE = 1
@@ -60,29 +66,41 @@ def _mensaje_error(respuesta: httpx.Response) -> str:
 
 class ComfyUI:
     def __init__(self, url: str):
-        self.url = url.rstrip("/")
-        self.ws_url = "ws" + self.url[4:] if self.url.startswith("http") else self.url
+        self.candidatas = list(CANDIDATAS) if url == "auto" else [url.rstrip("/")]
+        self._usar(self.candidatas[0])
         self.client_id = uuid.uuid4().hex
         self.prompt_actual: str | None = None
-        self.http = httpx.AsyncClient(base_url=self.url, timeout=30)
+        # ComfyUI está en este mismo PC: nunca a través del proxy de la red del centro
+        self.http = httpx.AsyncClient(timeout=30, trust_env=False)
+
+    def _usar(self, url: str):
+        self.url = url
+        self.ws_url = "ws" + url[4:] if url.startswith("http") else url
 
     async def cerrar(self):
         await self.http.aclose()
 
     async def estado(self) -> dict | None:
-        """Datos del sistema (GPU, VRAM) o None si ComfyUI no responde."""
-        try:
-            r = await self.http.get("/system_stats", timeout=3)
-            r.raise_for_status()
-            return r.json()
-        except (httpx.HTTPError, ValueError):
-            return None
+        """Datos del sistema (GPU, VRAM) o None si ComfyUI no responde. Con "auto" busca el puerto."""
+        for url in [self.url] + [u for u in self.candidatas if u != self.url]:
+            try:
+                r = await self.http.get(f"{url}/system_stats", timeout=3)
+                r.raise_for_status()
+                datos = r.json()
+            except (httpx.HTTPError, ValueError):
+                continue
+            if isinstance(datos, dict) and ("system" in datos or "devices" in datos):
+                if url != self.url:
+                    log.info("ComfyUI encontrado en %s", url)
+                    self._usar(url)
+                return datos
+        return None
 
     async def subir_imagen(self, datos: bytes, nombre: str) -> str:
         """Sube una imagen a la carpeta input de ComfyUI y devuelve el nombre para LoadImage."""
         try:
             r = await self.http.post(
-                "/upload/image",
+                f"{self.url}/upload/image",
                 files={"image": (nombre, datos, "image/jpeg")},
                 data={"type": "input", "overwrite": "true"},
             )
@@ -97,8 +115,8 @@ class ComfyUI:
         """Quita el trabajo de la cola de ComfyUI y lo detiene si ya se está generando."""
         try:
             if prompt_id:
-                await self.http.post("/queue", json={"delete": [prompt_id]}, timeout=5)
-            await self.http.post("/interrupt", json={"prompt_id": prompt_id} if prompt_id else {}, timeout=5)
+                await self.http.post(f"{self.url}/queue", json={"delete": [prompt_id]}, timeout=5)
+            await self.http.post(f"{self.url}/interrupt", json={"prompt_id": prompt_id} if prompt_id else {}, timeout=5)
         except httpx.HTTPError:
             pass
 
@@ -110,8 +128,9 @@ class ComfyUI:
         tiempo_maximo: float,
     ) -> list[bytes]:
         try:
-            async with connect(f"{self.ws_url}/ws?clientId={self.client_id}", max_size=None, open_timeout=5) as ws:
-                r = await self.http.post("/prompt", json={"prompt": workflow, "client_id": self.client_id})
+            async with connect(f"{self.ws_url}/ws?clientId={self.client_id}", max_size=None, open_timeout=5,
+                               proxy=None) as ws:
+                r = await self.http.post(f"{self.url}/prompt", json={"prompt": workflow, "client_id": self.client_id})
                 if r.status_code != 200:
                     raise ErrorComfy(_mensaje_error(r))
                 prompt_id = self.prompt_actual = r.json()["prompt_id"]
@@ -152,7 +171,7 @@ class ComfyUI:
     async def _descargar(self, prompt_id: str) -> list[bytes]:
         # ComfyUI guarda el historial un instante después de avisar de que ha terminado.
         for _ in range(50):
-            r = await self.http.get(f"/history/{prompt_id}")
+            r = await self.http.get(f"{self.url}/history/{prompt_id}")
             historial = r.json().get(prompt_id) if r.status_code == 200 else None
             if historial and historial.get("outputs"):
                 break
@@ -165,7 +184,7 @@ class ComfyUI:
         imagenes = []
         for im in archivos:
             r = await self.http.get(
-                "/view",
+                f"{self.url}/view",
                 params={"filename": im["filename"], "subfolder": im.get("subfolder", ""), "type": im.get("type", "output")},
             )
             if r.status_code == 200:
