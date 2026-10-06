@@ -36,6 +36,13 @@
     .acceso img { width: 112px; height: 112px; border-radius: 12px; background: #fff; flex: none; }
     .acceso .url { font-weight: 800; color: var(--amarillo); word-break: break-all; }
     .acceso .boton { min-height: 38px; padding: 6px 14px; font-size: 0.85rem; margin-top: 8px; }
+    .red { margin-top: 14px; }
+    .red label { display: block; margin: 0 0 6px; }
+    .selector { padding: 8px 12px; font-size: 0.95rem; border-radius: 12px; cursor: pointer; }
+    .ayuda-red { margin-top: 12px; font-size: 0.9rem; }
+    .ayuda-red summary { cursor: pointer; font-weight: 800; color: var(--amarillo); }
+    .ayuda-red ol { margin: 8px 0 0; padding-left: 20px; color: var(--suave); display: grid; gap: 6px; }
+    .ayuda-red b { color: var(--texto); }
 
     .fila { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--borde); }
     .fila:first-child { border-top: 0; }
@@ -110,13 +117,27 @@
         <section class="tarjeta">
           <h2>Acceso del alumnado</h2>
           <div class="acceso">
-            <img src="/qr.svg" alt="QR de acceso">
+            <img id="qr" src="/qr.svg" alt="QR de acceso">
             <div>
               <div class="url" id="url"></div>
               <div class="nota" id="codigo" style="margin-top:4px"></div>
               <button class="boton boton-secundario" id="copiar" type="button">📋 Copiar enlace</button>
             </div>
           </div>
+          <div class="red" id="bloque-direccion" hidden>
+            <label class="nota" for="direccion">Dirección del QR (este PC tiene varias)</label>
+            <select class="campo selector" id="direccion"></select>
+          </div>
+          <details class="ayuda-red">
+            <summary>📱 ¿El móvil no abre la página?</summary>
+            <ol>
+              <li>El móvil tiene que estar en la <b>misma WiFi</b> que este PC. Para probar, <b>desactiva los datos móviles</b>.</li>
+              <li>Clic derecho en <b>abrir_firewall.bat</b> → <b>Ejecutar como administrador</b>. Después cierra y vuelve a abrir <b>iniciar.bat</b>.</li>
+              <li>Si arriba aparece "Dirección del QR", prueba con otra y vuelve a escanear.</li>
+              <li>Escribe la dirección a mano en el móvil, empezando por <b>http://</b> (no https).</li>
+              <li>Si nada funciona, la WiFi puede tener <b>aislamiento de clientes</b> (típico en redes de invitados y de centros): prueba otra red o un router propio.</li>
+            </ol>
+          </details>
         </section>
       </div>
 

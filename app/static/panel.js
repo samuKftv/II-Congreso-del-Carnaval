@@ -9,6 +9,7 @@ let imagenes = [];
 let hayMas = false;
 let info = null;
 let arrancado = false;
+let urlQr = '';
 
 function cabeceras() {
   return clave ? { 'X-Clave': encodeURIComponent(clave) } : {};
@@ -87,6 +88,11 @@ async function refrescarEstado() {
   $('n-hechas').textContent = e.estadisticas.hechas;
   $('n-personas').textContent = e.estadisticas.personas;
   $('url').textContent = e.url_alumnado;
+  if (e.url_alumnado !== urlQr) {
+    urlQr = e.url_alumnado;
+    $('qr').src = `/qr.svg?v=${encodeURIComponent(urlQr)}`;
+  }
+  pintarDirecciones(e);
   $('codigo').textContent = e.codigo ? `Código del aula: ${e.codigo}` : 'Sin código de acceso';
 
   $('avisos').replaceChildren(...e.avisos.map((a) =>
@@ -116,6 +122,27 @@ function pintarCola(cola) {
       }, '✕ Cancelar'));
   }));
 }
+
+function pintarDirecciones(e) {
+  const selector = $('direccion');
+  $('bloque-direccion').hidden = e.direccion_fija || e.direcciones.length < 2;
+  if (document.activeElement === selector) return;
+  const opciones = e.direcciones.join('|');
+  if (selector.dataset.opciones !== opciones) {
+    selector.replaceChildren(...e.direcciones.map((d) => el('option', { value: d }, d)));
+    selector.dataset.opciones = opciones;
+  }
+  selector.value = e.direccion;
+}
+
+$('direccion').addEventListener('change', async (ev) => {
+  try {
+    await apiProfe('/api/panel/direccion', { metodo: 'POST', datos: { direccion: ev.target.value } });
+    ev.target.blur();
+    await refrescarEstado();
+    aviso('QR actualizado: vuelve a escanearlo con el móvil.');
+  } catch (e) { aviso(e.message, true); }
+});
 
 function emojiEstilo(id) {
   const e = info && info.estilos.find((x) => x.id === id);

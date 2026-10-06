@@ -152,3 +152,17 @@ def test_qr_y_paginas(ajustes):
         for ruta in ("/", "/panel", "/proyector", "/static/alumno.js"):
             assert c.get(ruta).status_code == 200
         assert c.get("/img/../../config/ajustes.toml").status_code == 404
+
+
+def test_elegir_direccion_del_qr(ajustes, monkeypatch):
+    monkeypatch.setattr("app.main.direcciones_locales", lambda: ["192.168.1.50", "172.20.0.1"])
+    with TestClient(crear_app(ajustes)) as c:
+        e = c.get("/api/panel/estado", headers=PROFE).json()
+        assert e["direcciones"] == ["192.168.1.50", "172.20.0.1"]
+        assert e["url_alumnado"] == "http://192.168.1.50:8080/?c=carnaval"
+        assert c.post("/api/panel/direccion", json={"direccion": "8.8.8.8"}, headers=PROFE).status_code == 422
+        r = c.post("/api/panel/direccion", json={"direccion": "172.20.0.1"}, headers=PROFE)
+        assert r.json()["url_alumnado"] == "http://172.20.0.1:8080/?c=carnaval"
+        assert c.get("/api/info").json()["url"] == "http://172.20.0.1:8080/?c=carnaval"
+        assert c.get("/api/galeria").json()["url"] == "http://172.20.0.1:8080/?c=carnaval"
+        assert c.post("/api/panel/direccion", json={"direccion": "192.168.1.50"}).status_code == 401

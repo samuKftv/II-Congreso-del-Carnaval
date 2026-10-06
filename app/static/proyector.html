@@ -70,7 +70,7 @@
       </div>
       <div class="tarjeta acceso">
         <h2>📱 ¡Crea tu imagen!</h2>
-        <img src="/qr.svg" alt="Código QR para entrar al estudio">
+        <img id="qr" src="/qr.svg" alt="Código QR para entrar al estudio">
         <p class="url" id="url"></p>
         <p class="codigo" id="codigo"></p>
       </div>
@@ -111,11 +111,7 @@
         $('evento').textContent = info.evento;
         $('subtitulo').textContent = info.subtitulo;
         document.title = `Proyector · ${info.evento}`;
-        const url = new URL(info.url);
-        const codigo = url.searchParams.get('c');
-        url.search = '';
-        $('url').textContent = url.href.replace(/^http:\/\//, '').replace(/\/$/, '');
-        $('codigo').textContent = codigo ? `Código del aula: ${codigo}` : '';
+        pintarAcceso(info.url);
       } catch {
         setTimeout(iniciar, 3000);
         return;
@@ -125,9 +121,22 @@
       setInterval(pase, CAMBIO_CADA);
     }
 
+    let urlQr = '';
+    function pintarAcceso(direccion) {
+      if (direccion === urlQr) return;
+      urlQr = direccion;
+      const url = new URL(direccion);
+      const codigo = url.searchParams.get('c');
+      url.search = '';
+      $('qr').src = `/qr.svg?v=${encodeURIComponent(direccion)}`;
+      $('url').textContent = url.href.replace(/^http:\/\//, '').replace(/\/$/, '');
+      $('codigo').textContent = codigo ? `Código del aula: ${codigo}` : '';
+    }
+
     async function refrescar() {
       let g;
       try { g = await api('/api/galeria?limite=40'); } catch { return; }
+      pintarAcceso(g.url);
       $('chip-estado').textContent = g.abierto ? '🟢 Estudio abierto' : '🌙 Estudio cerrado';
       $('chip-estado').classList.toggle('cerrado', !g.abierto);
       $('chip-cola').textContent = `⏳ ${g.en_cola} en cola`;

@@ -5,6 +5,7 @@ import sys
 import threading
 import tomllib
 import webbrowser
+from urllib.parse import urlparse
 
 import uvicorn
 
@@ -26,10 +27,14 @@ def main():
     panel = f"http://127.0.0.1:{aj.puerto}/panel"
     linea = "=" * 64
     print(f"\n{linea}\n  {aj.evento} - {aj.subtitulo}\n{linea}")
-    print(f"  Alumnado:   {app.state.url_alumnado}")
+    print(f"  Alumnado:   {app.state.url()}")
     print(f"  Panel:      {panel}")
     print(f"  Proyector:  http://127.0.0.1:{aj.puerto}/proyector")
     print(f"  ComfyUI:    {aj.comfy_url}")
+    otras = [d for d in app.state.direcciones() if d != urlparse(app.state.url()).hostname]
+    if otras and not aj.direccion:
+        print(f"  Otras IP de este PC: {', '.join(otras)}")
+        print("  (Si el movil no abre la pagina, elige otra en el panel, junto al QR.)")
     if not app.state.panel_remoto:
         print("  (El panel solo se abre desde este PC: pon una clave_profesor en config/ajustes.toml")
         print("   si quieres abrirlo desde otro dispositivo.)")

@@ -9,6 +9,7 @@ import logging
 import re
 import secrets
 import socket
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import quote, unquote
@@ -53,22 +54,35 @@ class Bloqueo(BaseModel):
     valor: bool
 
 
-def ip_local() -> str:
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            s.connect(("10.255.255.255", 1))  # no envía nada: solo elige la interfaz de red
-            return s.getsockname()[0]
-    except OSError:
+class Direccion(BaseModel):
+    direccion: str
+
+
+def direcciones_locales() -> list[str]:
+    """IPs de este PC en la red, empezando por la de la conexión principal (WiFi o cable)."""
+    candidatas = []
+    for destino in ("8.8.8.8", "10.255.255.255"):
         try:
-            return socket.gethostbyname(socket.gethostname())
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.connect((destino, 1))  # no envía nada: solo elige la interfaz de red
+                candidatas.append(s.getsockname()[0])
         except OSError:
-            return "127.0.0.1"
+            pass
+    try:
+        candidatas += [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET)]
+    except OSError:
+        pass
+    unicas = []
+    for ip in candidatas:
+        if ip not in unicas and not ip.startswith(("127.", "169.254.", "0.")):
+            unicas.append(ip)
+    return unicas or ["127.0.0.1"]
 
 
-def url_alumnado(aj: config.Ajustes) -> str:
+def url_alumnado(aj: config.Ajustes, direccion: str) -> str:
     puerto = "" if aj.puerto == 80 else f":{aj.puerto}"
     codigo = f"?c={quote(aj.codigo)}" if aj.codigo else ""
-    return f"http://{aj.direccion or ip_local()}{puerto}/{codigo}"
+    return f"http://{direccion}{puerto}/{codigo}"
 
 
 def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
@@ -77,7 +91,23 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
     comfy = ComfyUI(aj.comfy_url)
     estudio = Estudio(aj, db, comfy)
     filtro = Filtro(aj.palabras_prohibidas)
-    url = url_alumnado(aj)
+    cache_red = {"hasta": 0.0, "direcciones": []}
+
+    def direcciones() -> list[str]:
+        if time.monotonic() > cache_red["hasta"]:  # la red puede cambiar con la app abierta
+            cache_red["direcciones"] = direcciones_locales()
+            cache_red["hasta"] = time.monotonic() + 15
+        return cache_red["direcciones"]
+
+    def direccion_actual() -> str:
+        if aj.direccion:
+            return aj.direccion
+        elegida = db.leer_estado("direccion", "")
+        return elegida if elegida in direcciones() else direcciones()[0]
+
+    def url() -> str:
+        return url_alumnado(aj, direccion_actual())
+
     panel_remoto = bool(aj.clave_profesor) and aj.clave_profesor != CLAVE_POR_DEFECTO
 
     @asynccontextmanager
@@ -90,7 +120,8 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
 
     app = FastAPI(lifespan=vida, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.estudio = estudio
-    app.state.url_alumnado = url
+    app.state.url = url
+    app.state.direcciones = direcciones
     app.state.panel_remoto = panel_remoto
 
     @app.middleware("http")
@@ -203,7 +234,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
     @app.get("/qr.svg")
     def qr():
         buffer = io.BytesIO()
-        segno.make(url, error="m").save(buffer, kind="svg", scale=10, border=2, dark="#1a0b2e", light="#ffffff")
+        segno.make(url(), error="m").save(buffer, kind="svg", scale=10, border=2, dark="#1a0b2e", light="#ffffff")
         return Response(buffer.getvalue(), media_type="image/svg+xml")
 
     # --- API del alumnado ---
@@ -219,7 +250,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "en_cola": len(estudio.cola),
             "media": round(estudio.media(), 1),
             "max_caracteres": aj.max_caracteres,
-            "url": url,
+            "url": url(),
             "estilos": [
                 {"id": e.id, "nombre": e.nombre, "emoji": e.emoji, "colores": e.colores,
                  "miniatura": miniatura_estilo(e.id)}
@@ -297,6 +328,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         return {
             "abierto": estudio.abierto,
             "en_cola": len(estudio.cola),
+            "url": url(),
             "total": db.estadisticas()["hechas"],
             "imagenes": [trabajo_json(t, publico=True) for t in db.galeria(min(max(limite, 1), 100))],
         }
@@ -326,7 +358,10 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "cola": cola,
             "media": round(estudio.media(), 1),
             "estadisticas": db.estadisticas(),
-            "url_alumnado": url,
+            "url_alumnado": url(),
+            "direccion": direccion_actual(),
+            "direcciones": direcciones(),
+            "direccion_fija": bool(aj.direccion),
             "codigo": aj.codigo,
             "avisos": estudio.avisos,
             "bloqueados": db.bloqueados(),
@@ -339,6 +374,15 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         estudio.abrir(i.valor)
         log.info("Estudio %s", "abierto" if i.valor else "cerrado")
         return {"abierto": estudio.abierto}
+
+    @app.post("/api/panel/direccion", dependencies=[Depends(profesor)])
+    def elegir_direccion(d: Direccion):
+        if aj.direccion:
+            raise HTTPException(409, "La dirección está fijada en config/ajustes.toml (direccion).")
+        if d.direccion not in direcciones():
+            raise HTTPException(422, "Esa dirección no es de este PC.")
+        db.guardar_estado("direccion", d.direccion)
+        return {"url_alumnado": url()}
 
     @app.post("/api/panel/cancelar/{id_}", dependencies=[Depends(profesor)])
     async def cancelar(id_: str = Depends(id_valido)):
