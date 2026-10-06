@@ -19,11 +19,11 @@
     },
     {
       "id": "cartel",
-      "nombre": "Cartel",
-      "emoji": "📜",
-      "colores": ["#dc2626", "#f59e0b"],
-      "receta": "Vintage carnival festival poster: {prompt}. Bold flat colors, ornate frame, confetti and streamers, screen-printed texture, the word \"CARNAVAL\" in large decorative lettering.",
-      "ejemplo": "Un arlequín tocando la trompeta"
+      "nombre": "Cartel CarnaLab",
+      "emoji": "🎺",
+      "colores": ["#003060", "#e33943"],
+      "receta": "Flat vector poster illustration in a playful cubist style inspired by Picasso and mid-century modern design: {prompt}. Bold geometric shapes and overlapping faces, flat colors limited to a deep navy blue background, coral red, pale aqua, steel blue and cream, thin black line details, carnival elements such as masks, trumpets and musical notes, clean minimal composition.",
+      "ejemplo": "Dos caras de carnaval tocando la trompeta"
     },
     {
       "id": "ilustracion",
@@ -84,6 +84,14 @@
   ],
   "temas": [
     {
+      "id": "canarias",
+      "nombre": "Canarias",
+      "emoji": "👑",
+      "colores": ["#0ea5e9", "#f472b6"],
+      "receta": "{prompt}, at the Carnival of Santa Cruz de Tenerife: a carnival queen in a gigantic sparkling costume with enormous feathered structures, murgas in colorful outfits, tropical night party",
+      "ejemplo": "La reina del carnaval sobre el escenario"
+    },
+    {
       "id": "cadiz",
       "nombre": "Cádiz",
       "emoji": "🎸",
@@ -106,14 +114,6 @@
       "colores": ["#16a34a", "#facc15"],
       "receta": "{prompt}, at the Rio de Janeiro Carnival: samba dancers with huge feathered headdresses, sequins and rhinestones, giant allegorical floats in the Sambadrome at night, explosive colors",
       "ejemplo": "Una bailarina de samba en pleno desfile"
-    },
-    {
-      "id": "canarias",
-      "nombre": "Canarias",
-      "emoji": "👑",
-      "colores": ["#0ea5e9", "#f472b6"],
-      "receta": "{prompt}, at the Carnival of Santa Cruz de Tenerife: a carnival queen in a gigantic sparkling costume with enormous feathered structures, murgas in colorful outfits, tropical night party",
-      "ejemplo": "La reina del carnaval sobre el escenario"
     },
     {
       "id": "oruro",
@@ -157,13 +157,17 @@
     }
   ],
   "ideas": [
+    "Una murga de Santa Cruz de Tenerife tocando en la calle con trajes de colores",
+    "La reina del carnaval con un traje gigante inspirado en el Teide",
+    "Una diseñadora cosiendo un traje de plumas enorme en su taller",
+    "Un maquillador transformando a una murguera en un pavo real",
+    "Unos artesanos construyendo una carroza gigante con forma de pez",
     "Un arlequín veneciano montando en una góndola llena de confeti",
     "Una chirigota de pingüinos cantando con guitarras en una calle de Cádiz",
     "Una bailarina de samba con un tocado de plumas del tamaño de un árbol",
     "Un diablo de Oruro tocando la trompeta en lo alto de una montaña",
     "Una carroza gigante de papel maché con forma de dragón sonriente",
     "Un Gille de Binche lanzando naranjas desde un globo aerostático",
-    "La reina del carnaval de Tenerife con un traje hecho de estrellas",
     "Una banda de jazz de Nueva Orleans formada por gatos",
     "Un robot disfrazado de marimonda bailando cumbia",
     "Un mapa del mundo hecho de máscaras de carnaval",
@@ -173,19 +177,44 @@
   "detalles": [
     {
       "grupo": "📍 Lugar",
-      "opciones": ["en un desfile nocturno", "en una plaza llena de gente", "sobre un escenario con focos", "en la playa al atardecer", "bajo una lluvia de confeti", "encima de una carroza gigante"]
+      "opciones": [
+        "en un desfile nocturno",
+        "en una plaza llena de gente",
+        "sobre un escenario con focos",
+        "en la playa al atardecer",
+        "bajo una lluvia de confeti",
+        "encima de una carroza gigante"
+      ]
     },
     {
       "grupo": "💡 Luz",
-      "opciones": ["con luces de neón", "con luz cálida de farolillos", "con fuegos artificiales de fondo", "con luz dorada de atardecer", "con iluminación dramática"]
+      "opciones": [
+        "con luces de neón",
+        "con luz cálida de farolillos",
+        "con fuegos artificiales de fondo",
+        "con luz dorada de atardecer",
+        "con iluminación dramática"
+      ]
     },
     {
       "grupo": "🎥 Plano",
-      "opciones": ["en primer plano", "en plano general", "visto desde arriba", "de cuerpo entero", "con efecto ojo de pez"]
+      "opciones": [
+        "en primer plano",
+        "en plano general",
+        "visto desde arriba",
+        "de cuerpo entero",
+        "con efecto ojo de pez"
+      ]
     },
     {
       "grupo": "🌈 Ambiente",
-      "opciones": ["con colores muy vivos", "con ambiente mágico", "muy detallado", "divertido y exagerado", "con aire antiguo"]
+      "opciones": [
+        "con colores muy vivos",
+        "con ambiente mágico",
+        "muy detallado",
+        "divertido y exagerado",
+        "con aire antiguo"
+      ]
     }
   ]
 }

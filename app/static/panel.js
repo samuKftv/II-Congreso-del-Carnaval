@@ -105,8 +105,8 @@ async function refrescarEstado() {
 
 // --- Retos ---
 
-const IDEAS_RETO = ['Tu disfraz soñado', 'El carnaval en el espacio', 'Una máscara imposible',
-  'Tu ciudad en carnaval', 'Animales de comparsa', 'Una carroza para el congreso'];
+const IDEAS_RETO = ['Tu disfraz soñado', 'Diseña el traje de la próxima reina', 'El taller de un artesano del carnaval',
+  'Una máscara imposible', 'El carnaval en el espacio', 'Una carroza para CarnaLab'];
 let finReto = null;
 
 $('ideas-reto').replaceChildren(...IDEAS_RETO.map((idea) =>

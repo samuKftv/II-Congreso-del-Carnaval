@@ -70,15 +70,19 @@ async function iniciar() {
 }
 
 function pintarMarca() {
-  const { evento, subtitulo, logo } = estado.info;
+  const { evento, subtitulo, congreso, centro, logo, cartel } = estado.info;
   document.title = `${subtitulo} · ${evento}`;
   document.querySelectorAll('[data-evento]').forEach((n) => (n.textContent = evento));
   document.querySelectorAll('[data-subtitulo]').forEach((n) => (n.textContent = subtitulo));
+  document.querySelectorAll('[data-congreso]').forEach((n) => { n.textContent = congreso; n.hidden = !congreso; });
   for (const id of ['logo-entrada', 'logo-cabecera']) {
     $(id).hidden = !logo;
-    if (logo) { $(id).src = logo; $(id).alt = evento; }
+    if (logo) { $(id).src = logo; $(id).alt = centro || evento; }
   }
-  $('mascara').hidden = !!logo;
+  $('pie-centro').hidden = !logo;
+  $('cartel-entrada').hidden = !cartel;
+  if (cartel) { $('cartel-entrada').src = cartel; $('cartel-entrada').alt = `Cartel de ${evento}`; }
+  $('mascara').hidden = !!cartel;
 }
 
 // --- Entrada ---

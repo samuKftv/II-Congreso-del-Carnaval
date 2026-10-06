@@ -74,7 +74,9 @@ function aviso(texto, error = false) {
 
 function confeti(cantidad = 90) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const colores = ['#ff2e88', '#ffd23f', '#22d3ee', '#ff8a00', '#3ddc84', '#8b5cf6'];
+  const raiz = getComputedStyle(document.documentElement);
+  const colores = ['--magenta', '--amarillo', '--cian', '--naranja', '--deco-1', '--deco-2']
+    .map((v) => raiz.getPropertyValue(v).trim()).filter(Boolean);
   for (let i = 0; i < cantidad; i++) {
     const trozo = el('div', { class: 'confeti' });
     trozo.style.left = Math.random() * 100 + 'vw';

@@ -2,18 +2,29 @@
 # Después de cambiar algo, cierra la ventana de la app y vuelve a abrir iniciar.bat.
 
 [evento]
-nombre = "II Congreso Mundial del Carnaval"
+nombre = "CarnaLab 2026"
 subtitulo = "Estudio de imágenes"
-# Logo del congreso (PNG, JPG, WEBP o SVG), por ejemplo "config/logo.png". Vacío = sin logo.
-logo = ""
+# Nombre completo del congreso y una línea con fecha y lugar: salen en la entrada y en el proyector.
+congreso = "II Congreso Internacional de Profesionalización del Carnaval"
+lema = "15 OCT · Santa Cruz de Tenerife · TEA · #CarnavalEmplea"
+# Centro que organiza el estudio (pie de la entrada y texto del logo).
+centro = "CIFP Las Indias"
+# Logo (PNG, JPG, WEBP o SVG). Vacío = sin logo.
+logo = "config/logo-las-indias.png"
+# Cartel del congreso: sale en la entrada y en el proyector mientras no hay imágenes. Vacío = sin cartel.
+cartel = "config/cartel.jpg"
 
 [colores]
-# Colores de la app en formato "#rrggbb". Quita el # del principio de la línea para usarlo.
-# fondo = "#150a29"
-# principal = "#ff2e88"
-# secundario = "#ffd23f"
-# acento = "#22d3ee"
-# extra = "#ff8a00"
+# Colores del cartel de CarnaLab 2026, en formato "#rrggbb".
+# Pon un # al principio de una línea para volver al color original de la app.
+fondo = "#003060"        # azul marino del cartel
+principal = "#e33943"    # rojo coral
+secundario = "#f6dcc1"   # crema
+acento = "#9ecac7"       # aguamarina
+extra = "#f2836f"        # coral claro (degradados)
+extra2 = "#3d86b3"       # azul medio (decoración)
+extra3 = "#165f94"       # azul intenso (decoración)
+texto_suave = "#b9d3d6"  # textos secundarios
 
 [servidor]
 # Si lo cambias, cambia también el número en abrir_firewall.bat.

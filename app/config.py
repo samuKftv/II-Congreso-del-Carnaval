@@ -18,6 +18,9 @@ COLORES_CSS = {
     "secundario": "--amarillo",
     "acento": "--cian",
     "extra": "--naranja",
+    "extra2": "--deco-1",
+    "extra3": "--deco-2",
+    "texto_suave": "--suave",
 }
 
 
@@ -47,7 +50,11 @@ class Estilo:
 class Ajustes:
     evento: str
     subtitulo: str
+    congreso: str
+    lema: str
+    centro: str
     logo: Path | None
+    cartel: Path | None
     colores: dict[str, str]
     puerto: int
     direccion: str
@@ -118,8 +125,7 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         for nombre, medidas in t.get("formatos", {"cuadrado": [1024, 1024]}).items()
     }
 
-    logo = evento.get("logo", "")
-    logo = _ruta(logo) if logo else None
+    logo, cartel = evento.get("logo", ""), evento.get("cartel", "")
     colores = {}
     for nombre, valor in t.get("colores", {}).items():
         if nombre not in COLORES_CSS or not COLOR.match(str(valor)):
@@ -135,7 +141,11 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
     return Ajustes(
         evento=evento.get("nombre", "Estudio de imágenes"),
         subtitulo=evento.get("subtitulo", ""),
-        logo=logo,
+        congreso=evento.get("congreso", ""),
+        lema=evento.get("lema", ""),
+        centro=evento.get("centro", ""),
+        logo=_ruta(logo) if logo else None,
+        cartel=_ruta(cartel) if cartel else None,
         colores=colores,
         puerto=int(servidor.get("puerto", 8080)),
         direccion=str(servidor.get("direccion", "")).strip(),

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#150a29">
+  <meta name="theme-color" content="#003060">
   <title>Estudio de imágenes</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
   <link rel="stylesheet" href="/static/estilo.css">
@@ -15,7 +15,11 @@
     .chip-galeria { min-height: 44px; padding: 8px 14px; font-size: 0.95rem; white-space: nowrap; }
     .marca { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .logo-cabecera { height: 52px; width: auto; max-width: 96px; object-fit: contain; flex: none; }
-    .logo-entrada { max-height: 150px; max-width: 80%; margin: 0 auto; object-fit: contain; filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.45)); }
+    .cartel-entrada { width: min(58vw, 240px); margin: 0 auto 6px; border-radius: 16px; box-shadow: 0 28px 60px -22px rgba(0, 0, 0, 0.8); animation: balanceo 7s ease-in-out infinite; }
+    @keyframes balanceo { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(2deg) translateY(-6px); } }
+    .congreso { margin: 8px auto 0; max-width: 34ch; font-weight: 700; font-size: 0.95rem; color: var(--texto); opacity: 0.9; }
+    .pie-centro { margin-top: 28px; display: grid; justify-items: center; gap: 8px; color: var(--suave); font-size: 0.82rem; font-weight: 700; }
+    .pie-centro img { height: 52px; width: auto; }
     .fila-saludo { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 14px; }
     .fila-saludo .saludo { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .accesos { display: flex; gap: 8px; flex: none; }
@@ -23,8 +27,8 @@
     .fila-saludo .saludo { font-size: 1rem; }
 
     /* Entrada */
-    #entrada { text-align: center; padding-top: 6vh; }
-    .mascara { font-size: 88px; line-height: 1; display: inline-block; animation: bailar 2.4s ease-in-out infinite; filter: drop-shadow(0 10px 25px rgba(255, 46, 136, 0.5)); }
+    #entrada { text-align: center; padding-top: 3vh; }
+    .mascara { font-size: 88px; line-height: 1; display: inline-block; animation: bailar 2.4s ease-in-out infinite; filter: drop-shadow(0 10px 25px color-mix(in srgb, var(--magenta) 50%, transparent)); }
     #entrada .titulo-evento { font-size: clamp(2rem, 9vw, 2.8rem); margin-top: 16px; }
     #entrada .tarjeta { margin-top: 28px; text-align: left; display: grid; gap: 14px; }
     @keyframes bailar { 0%, 100% { transform: rotate(-8deg) translateY(0); } 50% { transform: rotate(8deg) translateY(-8px); } }
@@ -58,10 +62,10 @@
       font-size: 0.82rem; font-weight: 800; text-align: center; line-height: 1.1;
       background: linear-gradient(transparent, rgba(10, 4, 22, 0.85));
     }
-    .estilo[aria-pressed="true"] { border-color: var(--amarillo); box-shadow: 0 0 0 4px rgba(255, 210, 63, 0.25), 0 10px 25px -10px rgba(255, 210, 63, 0.8); transform: translateY(-2px); }
+    .estilo[aria-pressed="true"] { border-color: var(--amarillo); box-shadow: 0 0 0 4px color-mix(in srgb, var(--amarillo) 25%, transparent), 0 10px 25px -10px color-mix(in srgb, var(--amarillo) 80%, transparent); transform: translateY(-2px); }
     .estilo[aria-pressed="true"]::after {
       content: "✓"; position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%;
-      display: grid; place-items: center; background: var(--amarillo); color: #1b0b2e; font-weight: 900;
+      display: grid; place-items: center; background: var(--amarillo); color: var(--tinta); font-weight: 900;
     }
 
     .formatos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -72,7 +76,7 @@
     }
     .formato .marco { height: 42px; display: grid; place-items: center; }
     .formato .forma { display: block; border: 3px solid currentColor; border-radius: 6px; opacity: 0.9; }
-    .formato[aria-pressed="true"] { border-color: var(--amarillo); color: var(--amarillo); background: rgba(255, 210, 63, 0.1); }
+    .formato[aria-pressed="true"] { border-color: var(--amarillo); color: var(--amarillo); background: color-mix(in srgb, var(--amarillo) 10%, transparent); }
 
     .fuerzas .formato span.cara { font-size: 2rem; line-height: 1; }
     .compartir { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 14px 16px; border-radius: 16px; background: var(--capa); border: 1px solid var(--borde); font-weight: 700; cursor: pointer; }
@@ -80,7 +84,7 @@
     .compartir small { display: block; color: var(--suave); font-weight: 600; }
 
     .botones-idea { display: flex; gap: 8px; }
-    .foto-base { display: flex; align-items: center; gap: 12px; padding: 10px; margin-bottom: 10px; border-radius: 18px; background: rgba(255, 210, 63, 0.1); border: 1px solid rgba(255, 210, 63, 0.35); }
+    .foto-base { display: flex; align-items: center; gap: 12px; padding: 10px; margin-bottom: 10px; border-radius: 18px; background: color-mix(in srgb, var(--amarillo) 10%, transparent); border: 1px solid color-mix(in srgb, var(--amarillo) 35%, transparent); }
     .foto-base img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; flex: none; background: var(--capa-2); }
     .foto-base div { flex: 1; min-width: 0; }
     .foto-base b { display: block; }
@@ -97,10 +101,10 @@
     .chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 16px 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
     .chips::-webkit-scrollbar { display: none; }
     .chip-detalle { flex: none; border: 1px solid var(--borde); background: var(--capa-2); border-radius: 999px; padding: 8px 12px; font-size: 0.88rem; font-weight: 700; cursor: pointer; min-height: 40px; white-space: nowrap; }
-    .chip-detalle[aria-pressed="true"] { background: var(--amarillo); color: #1b0b2e; border-color: var(--amarillo); }
+    .chip-detalle[aria-pressed="true"] { background: var(--amarillo); color: var(--tinta); border-color: var(--amarillo); }
 
     .reto { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 14px 16px; border-radius: 18px; font-weight: 800;
-      background: linear-gradient(100deg, rgba(255, 46, 136, 0.25), rgba(255, 210, 63, 0.2)); border: 1px solid rgba(255, 210, 63, 0.5); }
+      background: linear-gradient(100deg, color-mix(in srgb, var(--magenta) 25%, transparent), color-mix(in srgb, var(--amarillo) 20%, transparent)); border: 1px solid color-mix(in srgb, var(--amarillo) 50%, transparent); }
     .reto .icono { font-size: 1.8rem; }
     .reto div { flex: 1; min-width: 0; }
     .reto small { display: block; color: var(--suave); font-weight: 700; }
@@ -116,13 +120,13 @@
     .idea::before { content: "“"; } .idea::after { content: "”"; }
     .turno {
       width: 150px; height: 150px; margin: 10px auto 0; border-radius: 50%;
-      display: grid; place-items: center; font-size: 4.5rem; font-weight: 900; color: #1b0b2e;
-      background: conic-gradient(var(--amarillo), var(--naranja), var(--magenta), var(--violeta), var(--cian), var(--amarillo));
-      box-shadow: 0 0 60px -10px rgba(255, 46, 136, 0.7);
+      display: grid; place-items: center; font-size: 4.5rem; font-weight: 900; color: var(--tinta);
+      background: conic-gradient(var(--amarillo), var(--naranja), var(--magenta), var(--deco-2), var(--cian), var(--amarillo));
+      box-shadow: 0 0 60px -10px color-mix(in srgb, var(--magenta) 70%, transparent);
       animation: girar-sombra 3s linear infinite;
     }
     .turno span { width: 124px; height: 124px; border-radius: 50%; display: grid; place-items: center; background: var(--noche-2); color: var(--texto); }
-    @keyframes girar-sombra { 50% { box-shadow: 0 0 70px -5px rgba(34, 211, 238, 0.7); } }
+    @keyframes girar-sombra { 50% { box-shadow: 0 0 70px -5px color-mix(in srgb, var(--cian) 70%, transparent); } }
     .texto-grande { font-size: 1.5rem; font-weight: 900; margin: 18px 0 4px; }
     .texto-suave { color: var(--suave); font-weight: 700; margin: 0; }
     .bailarines { font-size: 2rem; margin-top: 18px; letter-spacing: 6px; }
@@ -147,7 +151,7 @@
     @keyframes rayas { to { background-position: 34px 0; } }
 
     /* Resultado */
-    .obra { margin: 6px auto 0; max-width: 560px; border-radius: 22px; overflow: hidden; box-shadow: 0 30px 70px -25px rgba(255, 46, 136, 0.65); animation: aparecer 0.6s cubic-bezier(.2, .9, .3, 1.2); }
+    .obra { margin: 6px auto 0; max-width: 560px; border-radius: 22px; overflow: hidden; box-shadow: 0 30px 70px -25px color-mix(in srgb, var(--magenta) 65%, transparent); animation: aparecer 0.6s cubic-bezier(.2, .9, .3, 1.2); }
     .obra img { width: 100%; height: auto; }
     @keyframes aparecer { from { transform: scale(0.85) rotate(-2deg); opacity: 0; } }
     .botones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
@@ -170,10 +174,10 @@
     .corazon:disabled { cursor: default; opacity: 0.85; }
     .corazon.late { animation: latido 0.4s ease; }
     @keyframes latido { 50% { transform: scale(1.25); } }
-    .insignia { position: absolute; top: 6px; left: 6px; padding: 3px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 900; background: var(--amarillo); color: #1b0b2e; }
+    .insignia { position: absolute; top: 6px; left: 6px; padding: 3px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 900; background: var(--amarillo); color: var(--tinta); }
     .pestanas { display: flex; gap: 8px; margin-top: 4px; overflow-x: auto; }
     .pestanas button { min-height: 44px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--borde); background: var(--capa-2); font-weight: 800; cursor: pointer; white-space: nowrap; }
-    .pestanas button[aria-selected="true"] { background: var(--amarillo); color: #1b0b2e; border-color: var(--amarillo); }
+    .pestanas button[aria-selected="true"] { background: var(--amarillo); color: var(--tinta); border-color: var(--amarillo); }
     .voto-grande { grid-column: 1 / -1; }
     .voto-grande[aria-pressed="true"] { background: var(--magenta); color: #fff; border-color: var(--magenta); }
     .privada { color: var(--suave); font-weight: 700; font-size: 0.92rem; margin: 10px 0 0; }
@@ -188,9 +192,10 @@
     <!-- 1. Entrada -->
     <section id="entrada" hidden>
       <div class="mascara" id="mascara" aria-hidden="true">🎭</div>
-      <img class="logo-entrada" id="logo-entrada" alt="" hidden>
+      <img class="cartel-entrada" id="cartel-entrada" alt="" hidden>
       <h1 class="titulo-evento" data-evento></h1>
       <p class="subtitulo" data-subtitulo></p>
+      <p class="congreso" data-congreso></p>
       <form class="tarjeta" id="form-entrada">
         <div>
           <label class="etiqueta" for="alias">¿Cómo te llamamos?</label>
@@ -202,6 +207,10 @@
         </div>
         <button class="boton boton-principal boton-grande" type="submit">¡Entrar al estudio! 🎉</button>
       </form>
+      <footer class="pie-centro" id="pie-centro" hidden>
+        <span>Un estudio del</span>
+        <img id="logo-entrada" alt="">
+      </footer>
     </section>
 
     <!-- 2. Crear -->

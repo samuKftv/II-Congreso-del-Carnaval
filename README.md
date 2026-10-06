@@ -1,4 +1,7 @@
-# 🎭 Estudio de imágenes — II Congreso del Carnaval
+# 🎭 Estudio de imágenes — CarnaLab 2026
+
+**II Congreso Internacional de Profesionalización del Carnaval** · Santa Cruz de Tenerife.
+Un estudio del **CIFP Las Indias**.
 
 El alumnado escribe una idea en el móvil y recibe una imagen generada por **ComfyUI**
 en el PC del profesor. Todo funciona dentro de la WiFi del aula.
@@ -51,10 +54,17 @@ Las decisiones de diseño están en [`docs/DIRECTRICES.md`](docs/DIRECTRICES.md)
 
 ## Identidad del congreso
 
-- **Logo**: copia el archivo a `config/` (por ejemplo `config/logo.png`) y escribe su ruta en
-  `logo` de `[evento]`. Sale en la pantalla de entrada, en la cabecera y en el proyector.
-- **Colores**: en `[colores]` de `ajustes.toml` quita el `#` del principio de las líneas que quieras
-  usar y pon tus colores (`fondo`, `principal`, `secundario`, `acento`, `extra`).
+Ya viene configurada con el cartel de CarnaLab 2026 (en `[evento]` y `[colores]` de `ajustes.toml`):
+
+- **Cartel** (`config/cartel.jpg`): en la pantalla de entrada y en el proyector mientras no hay imágenes.
+- **Logo del CIFP Las Indias** (`config/logo-las-indias.png`): versión clara del logo para que se lea
+  sobre el azul del cartel. Sale en la entrada, en la cabecera y en el proyector.
+- **Colores** sacados del cartel: azul marino, coral, crema y aguamarina.
+- **Tipografía de los títulos**: Righteous (licencia libre SIL OFL, en `app/static/fuentes/`).
+- **Técnica "Cartel CarnaLab"**: imita el estilo del cartel (cubista, colores planos, máscaras y trompetas).
+
+Para cambiar algo, edita esas rutas y colores. Si borras una línea de `[colores]`, se usa el color
+original de la app.
 
 ## Configuración (`config/`)
 

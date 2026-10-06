@@ -1,4 +1,4 @@
-# Directrices — Estudio de imágenes del II Congreso Mundial del Carnaval
+# Directrices — Estudio de imágenes de CarnaLab 2026
 
 App web para que el alumnado escriba un prompt desde su móvil o portátil y reciba
 una imagen generada con ComfyUI en el PC del profesor.
@@ -11,7 +11,7 @@ una imagen generada con ComfyUI en el PC del profesor.
 | Modelo | Z-Image Turbo en ComfyUI (9 pasos, CFG 1) |
 | Red | WiFi del aula. Sin acceso desde fuera ni túneles |
 | Usuarios | Alumnado mayor de edad |
-| Identidad visual | Ligada al **II Congreso Mundial del Carnaval** (logo y colores del cartel) |
+| Identidad visual | **CarnaLab 2026 · II Congreso Internacional de Profesionalización del Carnaval** (Santa Cruz de Tenerife). Colores y cartel del congreso, logo del **CIFP Las Indias** |
 
 ## 2. Arquitectura
 
@@ -103,5 +103,7 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
    - **Votos**: uno por persona e imagen, sin votarse a sí mismo; solo imágenes públicas y no ocultas.
    - **Retos**: fases *creando* (cuenta atrás) → *votando* → *podio* → *cerrado*. Participa lo creado
      en la fase *creando*. El paso a votación es automático al acabar el tiempo.
-   - **Identidad**: logo y colores configurables.
+   - **Identidad**: colores, cartel y técnica "Cartel CarnaLab" sacados del cartel del congreso;
+     logo del CIFP Las Indias en versión clara; Canarias como primer carnaval y ideas sobre los
+     oficios del carnaval (#CarnavalEmplea).
 3. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

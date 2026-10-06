@@ -52,7 +52,7 @@ def test_flujo_completo(ajustes, comfy_falso):
         assert "attachment" in c.get(t["imagen"] + "?descargar=1").headers["content-disposition"]
 
         enviado = comfy_app.state.recibidos[-1]
-        assert enviado["6"]["inputs"]["text"].startswith("Vintage carnival festival poster: Un gato con antifaz")
+        assert enviado["6"]["inputs"]["text"] == ajustes.estilos["cartel"].aplicar("Un gato con antifaz")
 
         assert [x["id"] for x in c.get("/api/mis-creaciones", headers=h).json()] == [id_]
         assert c.get("/api/galeria").json()["imagenes"][0]["id"] == id_
@@ -262,21 +262,21 @@ def test_reto_pasa_solo_a_votacion(ajustes, monkeypatch):
         assert c.get("/api/info").json()["reto"]["fase"] == "votando"
 
 
-def test_logo_y_colores(tmp_path, monkeypatch, comfy_falso):
+def test_identidad_del_congreso(tmp_path, monkeypatch, comfy_falso):
     ajustes = preparar_ajustes(tmp_path, monkeypatch, comfy_falso[0])
-    assert c_get_tema(ajustes) == ""
-    logo = tmp_path / "logo.png"
-    Image.new("RGB", (10, 10), "red").save(logo)
-    ajustes.logo = logo
-    ajustes.colores = {"fondo": "#102030", "principal": "#ff0000"}
-    with TestClient(crear_app(ajustes)) as c:
-        assert c.get("/api/info").json()["logo"].startswith("/logo?v=")
-        assert c.get("/logo").headers["content-type"] == "image/png"
+    with TestClient(crear_app(ajustes)) as c:  # la configuración del repositorio trae cartel, logo y colores
+        info = c.get("/api/info").json()
+        assert info["evento"] == "CarnaLab 2026" and "Profesionalización" in info["congreso"]
+        assert c.get(info["logo"]).headers["content-type"] == "image/png"
+        assert c.get(info["cartel"]).headers["content-type"] == "image/jpeg"
         css = c.get("/tema.css").text
-        assert "--noche:#102030" in css and "--magenta:#ff0000" in css and "--noche-2:#223242" in css
+        assert "--noche:#003060" in css and "--tinta:#003060" in css and "--deco-1:#3d86b3" in css
+        assert 'fill="#003060"' in c.get("/qr.svg").text or "#003060" in c.get("/qr.svg").text
 
-
-def c_get_tema(ajustes) -> str:
+    ajustes.logo = ajustes.cartel = None
+    ajustes.colores = {}
     with TestClient(crear_app(ajustes)) as c:
-        assert c.get("/logo").status_code == 404
-        return c.get("/tema.css").text
+        info = c.get("/api/info").json()
+        assert info["logo"] is None and info["cartel"] is None
+        assert c.get("/logo").status_code == 404 and c.get("/cartel").status_code == 404
+        assert c.get("/tema.css").text == ""

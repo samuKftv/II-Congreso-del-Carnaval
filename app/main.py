@@ -278,11 +278,20 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             raise HTTPException(404, "No existe")
         return FileResponse(ruta, media_type="image/webp")
 
+    def recurso(ruta: Path | None, nombre: str) -> str | None:
+        return f"/{nombre}?v={int(ruta.stat().st_mtime)}" if ruta and ruta.exists() else None
+
     @app.get("/logo")
     def logo():
         if not aj.logo or not aj.logo.exists():
             raise HTTPException(404, "Sin logo")
         return FileResponse(aj.logo)
+
+    @app.get("/cartel")
+    def cartel():
+        if not aj.cartel or not aj.cartel.exists():
+            raise HTTPException(404, "Sin cartel")
+        return FileResponse(aj.cartel)
 
     @app.get("/tema.css")
     def tema_css():
@@ -290,13 +299,15 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         if "fondo" in aj.colores:
             r, g, b = (int(aj.colores["fondo"][i:i + 2], 16) for i in (1, 3, 5))
             variables["--noche-2"] = "#%02x%02x%02x" % tuple(min(255, c + 18) for c in (r, g, b))
+            variables["--tinta"] = aj.colores["fondo"]  # texto sobre botones claros
         cuerpo = "".join(f"{k}:{v};" for k, v in variables.items())
         return Response(f":root{{{cuerpo}}}" if cuerpo else "", media_type="text/css")
 
     @app.get("/qr.svg")
     def qr():
         buffer = io.BytesIO()
-        segno.make(url(), error="m").save(buffer, kind="svg", scale=10, border=2, dark="#1a0b2e", light="#ffffff")
+        oscuro = aj.colores.get("fondo", "#1a0b2e")
+        segno.make(url(), error="m").save(buffer, kind="svg", scale=10, border=2, dark=oscuro, light="#ffffff")
         return Response(buffer.getvalue(), media_type="image/svg+xml")
 
     # --- API del alumnado ---
@@ -313,7 +324,11 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "media": round(estudio.media(), 1),
             "max_caracteres": aj.max_caracteres,
             "url": url(),
-            "logo": f"/logo?v={int(aj.logo.stat().st_mtime)}" if aj.logo and aj.logo.exists() else None,
+            "congreso": aj.congreso,
+            "lema": aj.lema,
+            "centro": aj.centro,
+            "logo": recurso(aj.logo, "logo"),
+            "cartel": recurso(aj.cartel, "cartel"),
             "estilos": tarjetas(aj.estilos),
             "temas": tarjetas(aj.temas, "tema-"),
             "formatos": [{"id": f.id, "ancho": f.ancho, "alto": f.alto} for f in aj.formatos.values()],
