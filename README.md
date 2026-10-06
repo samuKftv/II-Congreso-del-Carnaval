@@ -13,12 +13,13 @@ Las decisiones de diseño están en [`docs/DIRECTRICES.md`](docs/DIRECTRICES.md)
 
 ## Instalación (una sola vez, en el PC con ComfyUI)
 
-1. **Python 3.11 o superior** desde [python.org](https://www.python.org/downloads/).
-   Durante la instalación, marca **"Add python.exe to PATH"**.
-2. Doble clic en **`instalar.bat`**.
-3. Clic derecho en **`abrir_firewall.bat`** → **Ejecutar como administrador**.
+1. Doble clic en **`instalar.bat`**. Si no tienes Python, te ofrece instalarlo:
+   pulsa **S**. Si eso falla, instálalo a mano desde
+   [python.org](https://www.python.org/downloads/) marcando **"Add python.exe to PATH"**
+   y vuelve a ejecutar `instalar.bat`.
+2. Clic derecho en **`abrir_firewall.bat`** → **Ejecutar como administrador**.
    Así los móviles pueden llegar al PC por el puerto 8080.
-4. **Tu workflow**: en ComfyUI abre el workflow de Z-Image Turbo que usas y elige
+3. **Tu workflow**: en ComfyUI abre el workflow de Z-Image Turbo que usas y elige
    *Workflow → Exportar (API)*. Guarda el archivo como **`config/workflow_api.json`**
    (sustituye al que viene).
    > El que viene es el ejemplo oficial de Z-Image Turbo y usa los archivos
