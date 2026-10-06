@@ -76,6 +76,14 @@ Ya viene configurada con el cartel de CarnaLab 2026 (en `[evento]` y `[colores]`
 Para cambiar algo, edita esas rutas y colores. Si borras una línea de `[colores]`, se usa el color
 original de la app.
 
+## Pruebas en ComfyUI
+
+La carpeta [`comfyui/`](comfyui/LEEME.md) tiene workflows para probar directamente en ComfyUI,
+antes de llevarlos a la app:
+
+- **`referencias_flux2_klein.json`**: crea una imagen a partir de **varias imágenes de referencia**
+  (persona + disfraz + estilo) con FLUX.2 [Klein] 4B.
+
 ## Configuración (`config/`)
 
 | Archivo | Para qué |
