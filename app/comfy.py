@@ -78,6 +78,21 @@ class ComfyUI:
         except (httpx.HTTPError, ValueError):
             return None
 
+    async def subir_imagen(self, datos: bytes, nombre: str) -> str:
+        """Sube una imagen a la carpeta input de ComfyUI y devuelve el nombre para LoadImage."""
+        try:
+            r = await self.http.post(
+                "/upload/image",
+                files={"image": (nombre, datos, "image/jpeg")},
+                data={"type": "input", "overwrite": "true"},
+            )
+        except httpx.TransportError as e:
+            raise ComfyNoDisponible(f"No se puede conectar con ComfyUI: {e}") from e
+        if r.status_code != 200:
+            raise ErrorComfy(f"ComfyUI no ha aceptado la foto ({r.status_code})")
+        j = r.json()
+        return f"{j['subfolder']}/{j['name']}" if j.get("subfolder") else j["name"]
+
     async def interrumpir(self, prompt_id: str | None = None):
         """Quita el trabajo de la cola de ComfyUI y lo detiene si ya se está generando."""
         try:

@@ -39,7 +39,7 @@ class Estudio:
         self.aj, self.db, self.comfy = aj, db, comfy
         self.nodos = workflow.localizar(aj.workflow, aj.nodo_prompt, aj.nodo_tamano)
         self.avisos = workflow.avisos(aj.workflow, self.nodos)
-        for carpeta in ("imagenes", "miniaturas", "estilos"):
+        for carpeta in ("imagenes", "miniaturas", "estilos", "fotos"):
             (aj.datos / carpeta).mkdir(parents=True, exist_ok=True)
 
         self.abierto = db.leer_estado("abierto", "1") == "1"
@@ -83,14 +83,21 @@ class Estudio:
 
     # --- Acciones ---
 
-    def encolar(self, token: str, alias: str, prompt: str, estilo: Estilo, formato: Formato,
-                miniatura_estilo: str | None = None) -> str:
+    def encolar(self, token: str, alias: str, prompt: str, estilo: Estilo, formato: Formato | None, *,
+                tema: Estilo | None = None, foto: tuple[str, int, int] | None = None, fuerza: float | None = None,
+                publico: bool = True, reto: int | None = None, miniatura_estilo: str | None = None) -> str:
+        """Añade un trabajo a la cola. Con `foto` (id, ancho, alto) se usa la foto como base."""
         id_ = uuid.uuid4().hex
+        formato = formato or next(iter(self.aj.formatos.values()))
+        ancho, alto = (foto[1], foto[2]) if foto else (formato.ancho, formato.alto)
         self.db.crear_trabajo({
             "id": id_, "token": token, "alias": alias, "prompt": prompt,
-            "estilo": estilo.id, "formato": formato.id, "prompt_final": estilo.aplicar(prompt),
+            "estilo": estilo.id, "tema": tema.id if tema else None,
+            "formato": "foto" if foto else formato.id,
+            "prompt_final": estilo.aplicar(tema.aplicar(prompt) if tema else prompt),
             "semilla": random.randint(1, 2**50), "estado": "cola", "creado": time.time(),
-            "miniatura_estilo": miniatura_estilo,
+            "foto": foto[0] if foto else None, "fuerza": fuerza, "publico": int(publico),
+            "ancho": ancho, "alto": alto, "reto": reto, "miniatura_estilo": miniatura_estilo,
         })
         self.cola.append(id_)
         self.duenos[id_] = token
@@ -139,9 +146,19 @@ class Estudio:
         self.actual = Actual(id_, inicio)
         self.db.actualizar(id_, estado="generando", inicio=inicio)
         try:
-            formato = self.aj.formatos.get(t["formato"]) or next(iter(self.aj.formatos.values()))
-            wf = workflow.preparar(self.aj.workflow, self.nodos, t["prompt_final"], formato.ancho, formato.alto,
+            ancho, alto = t["ancho"], t["alto"]
+            if not ancho:  # trabajos de la primera versión
+                formato = self.aj.formatos.get(t["formato"]) or next(iter(self.aj.formatos.values()))
+                ancho, alto = formato.ancho, formato.alto
+            wf = workflow.preparar(self.aj.workflow, self.nodos, t["prompt_final"], ancho, alto,
                                    t["semilla"], "congreso_carnaval/estudio")
+            if t["foto"]:
+                try:
+                    datos = (self.aj.datos / "fotos" / f"{t['foto']}.jpg").read_bytes()
+                except OSError as e:
+                    raise ValueError("La foto ya no está en el ordenador. Súbela otra vez.") from e
+                nombre = await self.comfy.subir_imagen(datos, f"estudio_{t['foto']}.jpg")
+                wf = workflow.con_foto(wf, self.nodos, nombre, t["fuerza"] or 0.68)
             self._tarea = asyncio.create_task(
                 self.comfy.generar(wf, self._progreso, self._preview, self.aj.tiempo_maximo))
             imagenes = await self._tarea

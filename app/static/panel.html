@@ -6,6 +6,7 @@
   <title>Panel del profesor</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎛️</text></svg>">
   <link rel="stylesheet" href="/static/estilo.css">
+  <link rel="stylesheet" href="/tema.css">
   <style>
     .panel { position: relative; z-index: 1; width: min(100%, 1280px); margin: 0 auto; padding: 22px 16px 60px; }
     .cabecera { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
@@ -66,6 +67,18 @@
     .obra .acciones button { flex: 1; min-height: 36px; padding: 4px; font-size: 0.78rem; gap: 4px; white-space: nowrap; }
     .etiqueta-oculta { position: absolute; top: 8px; left: 8px; padding: 4px 10px; border-radius: 99px; background: var(--rojo); font-size: 0.75rem; font-weight: 900; }
 
+    .fila-reto { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; }
+    @media (max-width: 700px) { .fila-reto { grid-template-columns: 1fr; } }
+    .fila-reto .campo { padding: 12px 14px; font-size: 1rem; }
+    .fila-reto .boton { min-height: 50px; }
+    .ideas-reto { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .ideas-reto button { border: 1px solid var(--borde); background: var(--capa-2); border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+    .reto-estado { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 1.2rem; font-weight: 900; }
+    .fase { padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; background: var(--amarillo); color: #1b0b2e; }
+    .reto-reloj { font-variant-numeric: tabular-nums; color: var(--amarillo); font-size: 1.6rem; }
+    .acciones-reto { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .acciones-reto .boton { min-height: 48px; font-size: 0.98rem; }
+    .etiqueta-privada { position: absolute; top: 8px; right: 8px; padding: 4px 10px; border-radius: 99px; background: rgba(10, 4, 22, 0.8); font-size: 0.75rem; font-weight: 900; }
     .acceso-profe { max-width: 420px; margin: 12vh auto 0; display: grid; gap: 14px; }
     .visor { position: fixed; inset: 0; z-index: 60; background: rgba(8, 3, 18, 0.92); display: grid; place-items: center; padding: 20px; cursor: zoom-out; }
     .visor img { max-width: 100%; max-height: 80vh; border-radius: 16px; }
@@ -149,8 +162,36 @@
       </section>
 
       <section class="tarjeta seccion">
+        <h2>🏁 Reto</h2>
+        <div id="reto-nuevo">
+          <div class="fila-reto">
+            <input class="campo" id="reto-titulo" maxlength="80" placeholder="Tema del reto, p. ej. «Tu disfraz soñado»">
+            <select class="campo selector" id="reto-minutos" aria-label="Duración">
+              <option value="5">5 minutos</option>
+              <option value="10" selected>10 minutos</option>
+              <option value="15">15 minutos</option>
+              <option value="20">20 minutos</option>
+              <option value="0">Sin límite</option>
+            </select>
+            <button class="boton boton-principal" id="lanzar-reto" type="button">🏁 Lanzar reto</button>
+          </div>
+          <div class="ideas-reto" id="ideas-reto"></div>
+          <p class="nota">Lo que se cree durante el reto participa. Cuando acaba el tiempo, los móviles pasan a votar y el proyector muestra las candidatas; después enseñas el podio.</p>
+        </div>
+        <div id="reto-activo" hidden>
+          <div class="reto-estado">
+            <span id="reto-nombre"></span>
+            <span class="fase" id="reto-fase"></span>
+            <span class="reto-reloj" id="reto-reloj"></span>
+            <span class="nota" id="reto-cuenta" style="margin:0"></span>
+          </div>
+          <div class="acciones-reto" id="reto-acciones"></div>
+        </div>
+      </section>
+
+      <section class="tarjeta seccion">
         <h2>Imágenes creadas</h2>
-        <p class="nota" style="margin:-4px 0 14px">👁️ quita o devuelve una imagen al proyector · 🚫 pausa el acceso de esa persona.</p>
+        <p class="nota" style="margin:-4px 0 14px">🙈 quita o devuelve una imagen al proyector · 🚫 pausa el acceso de esa persona · 🔒 privada: hecha con foto y sin compartir (solo la ve su autor y tú).</p>
         <div class="rejilla" id="imagenes"></div>
         <div style="text-align:center;margin-top:14px">
           <button class="boton boton-secundario" id="mas" type="button" hidden>Cargar más</button>
@@ -163,8 +204,8 @@
       </section>
 
       <section class="tarjeta seccion">
-        <h2>Miniaturas de los estilos</h2>
-        <p class="nota" style="margin:0 0 12px">Genera una imagen de ejemplo por estilo con tu ComfyUI y la usa como tarjeta en la pantalla del alumnado. Hazlo antes de abrir el estudio.</p>
+        <h2>Miniaturas de técnicas y carnavales</h2>
+        <p class="nota" style="margin:0 0 12px">Genera con tu ComfyUI una imagen de ejemplo por cada técnica y cada carnaval del mundo, y la usa como tarjeta en la pantalla del alumnado. Son unas 20 imágenes: hazlo antes de abrir el estudio.</p>
         <button class="boton boton-secundario" id="miniaturas" type="button">🖼️ Generar miniaturas</button>
       </section>
     </div>

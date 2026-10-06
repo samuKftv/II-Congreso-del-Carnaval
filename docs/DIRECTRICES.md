@@ -1,4 +1,4 @@
-# Directrices — Estudio de imágenes del II Congreso del Carnaval
+# Directrices — Estudio de imágenes del II Congreso Mundial del Carnaval
 
 App web para que el alumnado escriba un prompt desde su móvil o portátil y reciba
 una imagen generada con ComfyUI en el PC del profesor.
@@ -11,7 +11,7 @@ una imagen generada con ComfyUI en el PC del profesor.
 | Modelo | Z-Image Turbo en ComfyUI (9 pasos, CFG 1) |
 | Red | WiFi del aula. Sin acceso desde fuera ni túneles |
 | Usuarios | Alumnado mayor de edad |
-| Identidad visual | Ligada al **II Congreso del Carnaval** |
+| Identidad visual | Ligada al **II Congreso Mundial del Carnaval** (logo y colores del cartel) |
 
 ## 2. Arquitectura
 
@@ -91,6 +91,17 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
 
 ## 9. Fases
 
-1. **Primera versión**: todo lo descrito arriba.
-2. **Después**: retos y temas del día, votaciones en el proyector, subir una foto como
-   base (img2img), descarga en ZIP de toda la galería.
+1. **Primera versión** ✅: todo lo descrito arriba.
+2. **Segunda versión** ✅:
+   - **Carnavales del mundo × técnicas**: se combinan; la receta del carnaval describe el lugar y la
+     tradición, la técnica cómo se pinta.
+   - **Botones de detalles** (lugar, luz, plano, ambiente): enseñan a construir un buen prompt.
+     No se usa una IA extra para "mejorar" el prompt porque competiría con Z-Image por los 12 GB de VRAM.
+   - **Foto como base (img2img)**: la foto se reduce en el móvil, se ajusta a ~1 MP y se usa con
+     `denoise` 0,5 / 0,68 / 0,82. **Privada por defecto**: solo sale en el proyector y la galería si la
+     persona marca compartirla.
+   - **Votos**: uno por persona e imagen, sin votarse a sí mismo; solo imágenes públicas y no ocultas.
+   - **Retos**: fases *creando* (cuenta atrás) → *votando* → *podio* → *cerrado*. Participa lo creado
+     en la fase *creando*. El paso a votación es automático al acabar el tiempo.
+   - **Identidad**: logo y colores configurables.
+3. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

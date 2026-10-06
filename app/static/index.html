@@ -7,13 +7,20 @@
   <title>Estudio de imágenes</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
   <link rel="stylesheet" href="/static/estilo.css">
+  <link rel="stylesheet" href="/tema.css">
   <style>
     .app { position: relative; z-index: 1; width: min(100%, 640px); margin: 0 auto; padding: 18px 16px 40px; }
     .cabecera { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
     .cabecera .titulo-evento { font-size: clamp(1.3rem, 5.2vw, 1.75rem); }
     .chip-galeria { min-height: 44px; padding: 8px 14px; font-size: 0.95rem; white-space: nowrap; }
-    .boton-galeria { flex: none; flex-direction: column; gap: 2px; min-height: 64px; padding: 8px 12px; border-radius: 18px; font-size: 0.75rem; line-height: 1.1; }
-    .boton-galeria span { font-size: 1.6rem; }
+    .marca { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .logo-cabecera { height: 52px; width: auto; max-width: 96px; object-fit: contain; flex: none; }
+    .logo-entrada { max-height: 150px; max-width: 80%; margin: 0 auto; object-fit: contain; filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.45)); }
+    .fila-saludo { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 14px; }
+    .fila-saludo .saludo { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .accesos { display: flex; gap: 8px; flex: none; }
+    .accesos .boton { min-height: 44px; padding: 8px 12px; font-size: 0.88rem; }
+    .fila-saludo .saludo { font-size: 1rem; }
 
     /* Entrada */
     #entrada { text-align: center; padding-top: 6vh; }
@@ -25,12 +32,19 @@
     /* Crear */
     .saludo { font-size: 1.05rem; font-weight: 800; margin: 0 0 14px; }
     .bloque { margin-top: 22px; }
-    .fila-texto { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 8px; }
+    .fila-texto { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-top: 8px; gap: 8px; }
+    .fila-texto .contador { margin-left: auto; }
     .contador { color: var(--suave); font-size: 0.85rem; font-weight: 700; }
-    .inspirame { min-height: 44px; padding: 8px 16px; font-size: 0.95rem; }
+    .inspirame { min-height: 44px; padding: 8px 14px; font-size: 0.92rem; }
 
-    .estilos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    @media (min-width: 520px) { .estilos { grid-template-columns: repeat(4, 1fr); } }
+    .subetiqueta { display: block; font-size: 0.92rem; font-weight: 800; color: var(--suave); margin: 12px 0 8px; }
+    .carrusel {
+      display: grid; grid-auto-flow: column; grid-auto-columns: 104px; gap: 10px;
+      overflow-x: auto; scroll-snap-type: x proximity; padding: 6px 16px 10px; margin: 0 -16px;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .carrusel::-webkit-scrollbar { display: none; }
+    .carrusel > * { scroll-snap-align: start; }
     .estilo {
       position: relative; aspect-ratio: 1; border-radius: 18px; overflow: hidden; cursor: pointer;
       border: 3px solid transparent; padding: 0; background: var(--capa-2);
@@ -59,6 +73,39 @@
     .formato .marco { height: 42px; display: grid; place-items: center; }
     .formato .forma { display: block; border: 3px solid currentColor; border-radius: 6px; opacity: 0.9; }
     .formato[aria-pressed="true"] { border-color: var(--amarillo); color: var(--amarillo); background: rgba(255, 210, 63, 0.1); }
+
+    .fuerzas .formato span.cara { font-size: 2rem; line-height: 1; }
+    .compartir { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 14px 16px; border-radius: 16px; background: var(--capa); border: 1px solid var(--borde); font-weight: 700; cursor: pointer; }
+    .compartir input { width: 24px; height: 24px; accent-color: var(--amarillo); flex: none; }
+    .compartir small { display: block; color: var(--suave); font-weight: 600; }
+
+    .botones-idea { display: flex; gap: 8px; }
+    .foto-base { display: flex; align-items: center; gap: 12px; padding: 10px; margin-bottom: 10px; border-radius: 18px; background: rgba(255, 210, 63, 0.1); border: 1px solid rgba(255, 210, 63, 0.35); }
+    .foto-base img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; flex: none; background: var(--capa-2); }
+    .foto-base div { flex: 1; min-width: 0; }
+    .foto-base b { display: block; }
+    .foto-base span { color: var(--suave); font-size: 0.88rem; font-weight: 600; }
+    .foto-base button { flex: none; width: 44px; min-height: 44px; padding: 0; font-size: 1.1rem; }
+
+    .detalles { margin-top: 12px; border-radius: 16px; background: var(--capa); border: 1px solid var(--borde); }
+    .detalles summary { cursor: pointer; padding: 12px 16px; font-weight: 800; list-style: none; display: flex; justify-content: space-between; }
+    .detalles summary::-webkit-details-marker { display: none; }
+    .detalles summary::after { content: "＋"; color: var(--amarillo); }
+    .detalles[open] summary::after { content: "－"; }
+    .grupo-detalles { padding: 0 0 12px; }
+    .grupo-detalles b { display: block; font-size: 0.88rem; color: var(--suave); margin: 0 16px 6px; }
+    .chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 16px 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip-detalle { flex: none; border: 1px solid var(--borde); background: var(--capa-2); border-radius: 999px; padding: 8px 12px; font-size: 0.88rem; font-weight: 700; cursor: pointer; min-height: 40px; white-space: nowrap; }
+    .chip-detalle[aria-pressed="true"] { background: var(--amarillo); color: #1b0b2e; border-color: var(--amarillo); }
+
+    .reto { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 14px 16px; border-radius: 18px; font-weight: 800;
+      background: linear-gradient(100deg, rgba(255, 46, 136, 0.25), rgba(255, 210, 63, 0.2)); border: 1px solid rgba(255, 210, 63, 0.5); }
+    .reto .icono { font-size: 1.8rem; }
+    .reto div { flex: 1; min-width: 0; }
+    .reto small { display: block; color: var(--suave); font-weight: 700; }
+    .reto .reloj { font-variant-numeric: tabular-nums; font-size: 1.3rem; color: var(--amarillo); }
+    .reto .boton { min-height: 44px; padding: 8px 14px; font-size: 0.92rem; flex: none; }
 
     .accion { position: sticky; bottom: 12px; margin-top: 26px; z-index: 5; }
     #estado-estudio { margin-top: 4px; }
@@ -112,8 +159,24 @@
     .velo .app { padding-top: 22px; }
     .rejilla { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
     @media (min-width: 520px) { .rejilla { grid-template-columns: repeat(3, 1fr); } }
-    .rejilla button { padding: 0; border: 0; border-radius: 16px; overflow: hidden; cursor: pointer; aspect-ratio: 1; background: var(--capa-2); }
+    .pieza { position: relative; border-radius: 16px; overflow: hidden; aspect-ratio: 1; background: var(--capa-2); }
+    .pieza .abrir { padding: 0; border: 0; width: 100%; height: 100%; cursor: pointer; background: none; display: block; }
     .rejilla img { width: 100%; height: 100%; object-fit: cover; }
+    .pieza .autor { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 8px 8px; font-size: 0.8rem; font-weight: 800; pointer-events: none;
+      background: linear-gradient(transparent, rgba(10, 4, 22, 0.9)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 70px; }
+    .corazon { position: absolute; right: 6px; bottom: 6px; min-width: 56px; min-height: 36px; padding: 4px 10px; border-radius: 999px; border: 0; cursor: pointer;
+      background: rgba(10, 4, 22, 0.75); color: var(--texto); font-weight: 900; font-size: 0.92rem; backdrop-filter: blur(4px); }
+    .corazon[aria-pressed="true"] { background: var(--magenta); }
+    .corazon:disabled { cursor: default; opacity: 0.85; }
+    .corazon.late { animation: latido 0.4s ease; }
+    @keyframes latido { 50% { transform: scale(1.25); } }
+    .insignia { position: absolute; top: 6px; left: 6px; padding: 3px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 900; background: var(--amarillo); color: #1b0b2e; }
+    .pestanas { display: flex; gap: 8px; margin-top: 4px; overflow-x: auto; }
+    .pestanas button { min-height: 44px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--borde); background: var(--capa-2); font-weight: 800; cursor: pointer; white-space: nowrap; }
+    .pestanas button[aria-selected="true"] { background: var(--amarillo); color: #1b0b2e; border-color: var(--amarillo); }
+    .voto-grande { grid-column: 1 / -1; }
+    .voto-grande[aria-pressed="true"] { background: var(--magenta); color: #fff; border-color: var(--magenta); }
+    .privada { color: var(--suave); font-weight: 700; font-size: 0.92rem; margin: 10px 0 0; }
     .vacio { text-align: center; color: var(--suave); padding: 50px 10px; font-weight: 700; }
     .vacio div { font-size: 3rem; margin-bottom: 8px; }
   </style>
@@ -124,7 +187,8 @@
   <main class="app">
     <!-- 1. Entrada -->
     <section id="entrada" hidden>
-      <div class="mascara" aria-hidden="true">🎭</div>
+      <div class="mascara" id="mascara" aria-hidden="true">🎭</div>
+      <img class="logo-entrada" id="logo-entrada" alt="" hidden>
       <h1 class="titulo-evento" data-evento></h1>
       <p class="subtitulo" data-subtitulo></p>
       <form class="tarjeta" id="form-entrada">
@@ -143,33 +207,69 @@
     <!-- 2. Crear -->
     <section id="crear" hidden>
       <header class="cabecera">
-        <div>
-          <h1 class="titulo-evento" data-evento></h1>
-          <p class="subtitulo" data-subtitulo></p>
+        <div class="marca">
+          <img class="logo-cabecera" id="logo-cabecera" alt="" hidden>
+          <div>
+            <h1 class="titulo-evento" data-evento></h1>
+            <p class="subtitulo" data-subtitulo></p>
+          </div>
         </div>
-        <button class="boton boton-secundario boton-galeria" id="abrir-galeria" type="button"><span aria-hidden="true">🖼️</span>Mis imágenes</button>
       </header>
-      <p class="saludo">¡Hola, <span id="saludo-alias"></span>! 👋</p>
+      <div class="fila-saludo">
+        <p class="saludo">¡Hola, <span id="saludo-alias"></span>! 👋</p>
+        <div class="accesos">
+          <button class="boton boton-secundario" id="abrir-clase" type="button">🌟 Galería</button>
+          <button class="boton boton-secundario" id="abrir-galeria" type="button">🖼️ Mías</button>
+        </div>
+      </div>
 
+      <div id="reto"></div>
       <div id="estado-estudio"></div>
 
       <div class="bloque">
-        <label class="etiqueta" for="prompt"><span class="paso">1</span>¿Qué quieres crear?</label>
+        <label class="etiqueta" for="prompt"><span class="paso">1</span><span id="etiqueta-idea">¿Qué quieres crear?</span></label>
+        <div class="foto-base" id="foto-base" hidden>
+          <img id="foto-mini" alt="Tu foto">
+          <div><b>📷 Tu foto</b><span id="foto-texto">La transformaremos según tu idea</span></div>
+          <button class="boton boton-secundario" id="quitar-foto" type="button" aria-label="Quitar la foto" title="Quitar la foto">✕</button>
+        </div>
         <textarea class="campo" id="prompt" placeholder="Describe tu imagen…"></textarea>
         <div class="fila-texto">
-          <button class="boton boton-secundario inspirame" id="inspirame" type="button">🎲 Inspírame</button>
+          <div class="botones-idea">
+            <button class="boton boton-secundario inspirame" id="inspirame" type="button">🎲 Inspírame</button>
+            <button class="boton boton-secundario inspirame" id="usar-foto" type="button" hidden>📷 Usar una foto</button>
+          </div>
           <span class="contador" id="contador"></span>
         </div>
+        <input type="file" id="archivo-foto" accept="image/*" hidden>
+        <details class="detalles" id="detalles" hidden>
+          <summary>✨ Añade detalles a tu idea</summary>
+          <div id="grupos-detalles"></div>
+        </details>
       </div>
 
       <div class="bloque">
-        <span class="etiqueta"><span class="paso">2</span>Elige un estilo</span>
-        <div class="estilos" id="estilos" role="group" aria-label="Estilos"></div>
+        <span class="etiqueta"><span class="paso">2</span>Elige el estilo</span>
+        <div id="bloque-temas" hidden>
+          <span class="subetiqueta">🌍 Carnaval del mundo <small>(opcional)</small></span>
+          <div class="carrusel" id="temas" role="group" aria-label="Carnaval del mundo"></div>
+        </div>
+        <span class="subetiqueta">🎨 Técnica</span>
+        <div class="carrusel" id="estilos" role="group" aria-label="Técnica"></div>
       </div>
 
-      <div class="bloque">
+      <div class="bloque" id="bloque-formato">
         <span class="etiqueta"><span class="paso">3</span>Formato</span>
         <div class="formatos" id="formatos" role="group" aria-label="Formato"></div>
+      </div>
+
+      <div class="bloque" id="bloque-fuerza" hidden>
+        <span class="etiqueta"><span class="paso">3</span>¿Cuánto transformo tu foto?</span>
+        <div class="formatos fuerzas" id="fuerzas" role="group" aria-label="Cuánto transformar la foto"></div>
+        <label class="compartir">
+          <input type="checkbox" id="compartir">
+          <span>📺 Compartir en el proyector y la galería<small>Si no lo marcas, solo la verás tú.</small></span>
+        </label>
       </div>
 
       <div class="accion">
@@ -201,6 +301,7 @@
       <p class="texto-grande" style="margin-top:0">🎉 ¡Aquí la tienes!</p>
       <div class="obra"><img id="obra" alt=""></div>
       <p class="idea" id="resultado-idea"></p>
+      <p class="privada" id="resultado-privada" hidden>🔒 Imagen privada: solo la ves tú.</p>
       <div class="botones">
         <a class="boton boton-principal boton-grande" id="descargar" download>⬇️ Descargar</a>
         <button class="boton boton-secundario" id="otra" type="button">🔁 Otra versión</button>
@@ -231,6 +332,23 @@
     </div>
   </div>
 
+  <!-- Galería de la clase -->
+  <div class="velo" id="clase" hidden>
+    <div class="app">
+      <header class="cabecera">
+        <h2 class="titulo-con-icono" style="font-size:1.6rem"><span class="icono" aria-hidden="true">🌟</span><span class="titulo-evento">Galería</span></h2>
+        <button class="boton boton-secundario chip-galeria" id="cerrar-clase" type="button">✕ Cerrar</button>
+      </header>
+      <div class="pestanas" role="tablist">
+        <button type="button" role="tab" data-pestana="recientes" aria-selected="true">🕒 Recientes</button>
+        <button type="button" role="tab" data-pestana="votos" aria-selected="false">❤️ Más votadas</button>
+        <button type="button" role="tab" data-pestana="reto" aria-selected="false" hidden>🏁 Reto</button>
+      </div>
+      <p class="texto-suave" style="margin-top:12px">Dale ❤️ a tus favoritas. Las más votadas salen en la pantalla.</p>
+      <div class="rejilla" id="rejilla-clase"></div>
+    </div>
+  </div>
+
   <!-- Ver una imagen de la galería -->
   <div class="velo" id="visor" hidden>
     <div class="app" style="text-align:center">
@@ -239,8 +357,10 @@
         <button class="boton boton-secundario chip-galeria" id="cerrar-visor" type="button">✕ Cerrar</button>
       </header>
       <div class="obra"><img id="visor-img" alt=""></div>
+      <p class="texto-suave" id="visor-autor" style="margin-top:10px"></p>
       <p class="idea" id="visor-idea"></p>
       <div class="botones">
+        <button class="boton boton-secundario boton-grande voto-grande" id="visor-voto" type="button" hidden></button>
         <a class="boton boton-principal boton-grande" id="visor-descargar" download>⬇️ Descargar</a>
         <button class="boton boton-secundario" id="visor-usar" type="button" style="grid-column: 1 / -1">✏️ Usar esta idea</button>
       </div>

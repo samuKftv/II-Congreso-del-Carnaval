@@ -4,8 +4,13 @@ El alumnado escribe una idea en el móvil y recibe una imagen generada por **Com
 en el PC del profesor. Todo funciona dentro de la WiFi del aula.
 
 - 📱 **Alumnado**: escanea el QR, pone su alias y crea. Sin instalar nada.
-- 🎛️ **Panel del profesor**: abre y cierra el estudio, controla la cola y modera imágenes y personas.
-- 📺 **Proyector**: galería en directo con el QR de acceso siempre visible.
+  - **Carnavales del mundo × técnicas**: combina Venecia, Río, Cádiz, Oruro… con acuarela, cómic, 3D…
+  - **Botones de detalles** (lugar, luz, plano, ambiente) que enriquecen la idea.
+  - **Foto como base**: transforma una foto propia. Es **privada** salvo que la persona marque compartirla.
+  - **Galería de la clase** con votos ❤️ (nadie puede votarse a sí mismo).
+- 🎛️ **Panel del profesor**: abre y cierra el estudio, controla la cola, modera, y lanza **retos con cuenta atrás**.
+- 📺 **Proyector**: galería en directo con el QR siempre visible, cuenta atrás del reto, votación en vivo,
+  **podio** de ganadoras y, de vez en cuando, las más votadas.
 
 Las decisiones de diseño están en [`docs/DIRECTRICES.md`](docs/DIRECTRICES.md).
 
@@ -31,16 +36,32 @@ Las decisiones de diseño están en [`docs/DIRECTRICES.md`](docs/DIRECTRICES.md)
 1. Arranca **ComfyUI** como siempre.
 2. Doble clic en **`iniciar.bat`**. Se abre el **panel del profesor** en el navegador.
 3. La primera vez, pulsa **"Generar miniaturas"** en el panel. Así las tarjetas de
-   estilo mostrarán imágenes reales hechas con tu modelo.
+   técnicas y carnavales mostrarán imágenes reales hechas con tu modelo (unas 20 imágenes).
 4. Pulsa **"Abrir proyector"** y llévalo a la pantalla del aula.
 5. El alumnado escanea el QR. **Deja abierta la ventana negra** mientras dure la sesión.
+
+## Retos
+
+1. En el panel, escribe el tema (o pulsa una de las ideas), elige la duración y pulsa **🏁 Lanzar reto**.
+2. Móviles y proyector muestran el reto y la cuenta atrás. Todo lo que se cree mientras tanto participa.
+3. Al acabar el tiempo (o con **⏹ Terminar y votar**), los móviles pasan a votar y el proyector enseña
+   las candidatas con sus votos en directo.
+4. **🏆 Mostrar podio** lleva las tres más votadas al proyector, con confeti.
+5. **✓ Cerrar reto** devuelve el proyector a la galería normal.
+
+## Identidad del congreso
+
+- **Logo**: copia el archivo a `config/` (por ejemplo `config/logo.png`) y escribe su ruta en
+  `logo` de `[evento]`. Sale en la pantalla de entrada, en la cabecera y en el proyector.
+- **Colores**: en `[colores]` de `ajustes.toml` quita el `#` del principio de las líneas que quieras
+  usar y pon tus colores (`fondo`, `principal`, `secundario`, `acento`, `extra`).
 
 ## Configuración (`config/`)
 
 | Archivo | Para qué |
 |---|---|
 | `ajustes.toml` | Nombre del evento, puerto, código del aula, clave del profesor, dirección de ComfyUI, formatos, palabras bloqueadas |
-| `estilos.json` | Estilos (nombre, emoji, colores y la "receta" que se añade al prompt) e ideas del botón *Inspírame* |
+| `estilos.json` | Técnicas (`estilos`), carnavales del mundo (`temas`), ideas de *Inspírame* y botones de detalles. Cada uno con nombre, emoji, colores y la "receta" que se añade al prompt |
 | `workflow_api.json` | El workflow de ComfyUI en formato API |
 
 Después de cambiar algo, cierra la ventana de la app y vuelve a abrir `iniciar.bat`.
@@ -58,7 +79,8 @@ En ese caso, indica los números de nodo en `nodo_prompt` y `nodo_tamano`.
 | El panel dice "ComfyUI: sin conexión" | Comprueba que ComfyUI está arrancado. **ComfyUI Desktop** suele usar el puerto **8000**: cambia `url` en `[comfyui]`. |
 | Las imágenes dan error | Mira la ventana de ComfyUI: suele ser un modelo que falta o un nombre de archivo distinto en el workflow. |
 | Quiero ver la imagen formándose | Arranca ComfyUI con `--preview-method auto`. Sin esa opción solo se ve la barra de progreso. |
-| Quiero empezar de cero | Cierra la app y borra la carpeta `datos/` (imágenes e historial). |
+| Quiero empezar de cero | Cierra la app y borra la carpeta `datos/` (imágenes, fotos, votos e historial). |
+| La opción de foto no aparece | Tu workflow necesita un `KSampler` y un `VAE Decode` normales. Con el de Z-Image Turbo funciona. |
 
 ## Datos
 
@@ -66,14 +88,18 @@ Todo se guarda en `datos/`, solo en este PC:
 - `estudio.db`: historial;
 - `imagenes/`: los PNG originales;
 - `miniaturas/`: las versiones ligeras para galerías;
-- `estilos/`: las tarjetas de estilo.
+- `estilos/`: las tarjetas de técnicas y carnavales;
+- `fotos/`: las fotos que sube el alumnado para transformarlas.
+
+ComfyUI guarda además una copia de cada foto en su carpeta `input/` (archivos `estudio_*.jpg`).
+**Al terminar el evento, borra `datos/fotos/` y esos archivos** si no quieres conservarlos.
 
 No se piden nombres reales ni emails: solo un alias.
 
 ## Desarrollo
 
 ```bash
-pip install -r requirements.txt pytest
+pip install -r requirements.txt pytest python-multipart
 python -m pytest            # pruebas con un ComfyUI simulado (sin GPU)
 python -m tests.comfy_falso # ComfyUI falso en :8188 para probar la interfaz
 python -m app               # arranca el estudio

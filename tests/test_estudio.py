@@ -1,5 +1,6 @@
 """Flujo completo contra el ComfyUI simulado."""
 
+import base64
 import io
 import time
 
@@ -122,15 +123,20 @@ def test_turnos_y_cancelar_en_cola(ajustes):
         assert esperar_fin(c, id_ana, ana)["estado"] == "hecho"
 
 
-def test_miniaturas_de_estilos(ajustes):
+def test_miniaturas_de_estilos_y_temas(ajustes):
     with TestClient(crear_app(ajustes)) as c:
         n = c.post("/api/panel/miniaturas", headers=PROFE).json()["encoladas"]
-        fin = time.time() + 20
-        while time.time() < fin and any(e["miniatura"] is None for e in c.get("/api/info").json()["estilos"]):
+
+        def tarjetas():
+            info = c.get("/api/info").json()
+            return info["estilos"] + info["temas"]
+
+        fin = time.time() + 30
+        while time.time() < fin and any(e["miniatura"] is None for e in tarjetas()):
             time.sleep(0.1)
-        estilos = c.get("/api/info").json()["estilos"]
-        assert n == len(estilos) and all(e["miniatura"] for e in estilos)
-        assert c.get(estilos[0]["miniatura"]).headers["content-type"] == "image/webp"
+        todas = tarjetas()
+        assert n == len(todas) and all(e["miniatura"] for e in todas)
+        assert c.get(todas[-1]["miniatura"]).headers["content-type"] == "image/webp"
         # No aparecen en el proyector ni cuentan como imágenes del alumnado
         assert c.get("/api/galeria").json()["imagenes"] == []
 
@@ -166,3 +172,111 @@ def test_elegir_direccion_del_qr(ajustes, monkeypatch):
         assert c.get("/api/info").json()["url"] == "http://172.20.0.1:8080/?c=carnaval"
         assert c.get("/api/galeria").json()["url"] == "http://172.20.0.1:8080/?c=carnaval"
         assert c.post("/api/panel/direccion", json={"direccion": "192.168.1.50"}).status_code == 401
+
+
+def foto_base64(ancho=1200, alto=1600) -> str:
+    buffer = io.BytesIO()
+    Image.new("RGB", (ancho, alto), (30, 120, 200)).save(buffer, "JPEG")
+    return "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode()
+
+
+def test_foto_como_base_privada_por_defecto(ajustes, comfy_falso):
+    _, comfy_app = comfy_falso
+    with TestClient(crear_app(ajustes)) as c:
+        assert c.get("/api/info").json()["fotos"] is True
+        h = entrar(c)
+        assert c.post("/api/fotos", json={"datos": "data:image/jpeg;base64,AAAA"}, headers=h).status_code == 422
+        f = c.post("/api/fotos", json={"datos": foto_base64()}, headers=h).json()
+        assert (f["ancho"], f["alto"]) == (880, 1184)
+        pedido = {"prompt": "Conviérteme en arlequín", "estilo": "foto", "tema": "venecia", "foto": f["id"]}
+        assert c.post("/api/crear", json=pedido, headers=h).status_code == 422  # falta la fuerza
+        r = c.post("/api/crear", json={**pedido, "fuerza": "mucho"}, headers=h)
+        assert r.status_code == 200, r.text
+        t = esperar_fin(c, r.json()["id"], h)
+        assert t["estado"] == "hecho" and t["con_foto"] and not t["publico"]
+        assert Image.open(io.BytesIO(c.get(t["imagen"]).content)).size == (880, 1184)
+
+        enviado = comfy_app.state.recibidos[-1]
+        assert enviado["9001"]["class_type"] == "LoadImage"
+        assert enviado["3"]["inputs"]["latent_image"] == ["9002", 0] and enviado["3"]["inputs"]["denoise"] == 0.82
+        assert "13" not in enviado  # el lienzo vacío sobra
+        assert "Carnival of Venice" in enviado["6"]["inputs"]["text"]
+
+        # Privada: ni proyector ni galería; sí en "mis imágenes"
+        assert c.get("/api/galeria").json()["imagenes"] == []
+        assert c.get("/api/mis-creaciones", headers=h).json()[0]["id"] == t["id"]
+
+        # Compartida si la persona lo marca
+        r = c.post("/api/crear", json={**pedido, "fuerza": "poco", "publico": True}, headers=h)
+        esperar_fin(c, r.json()["id"], h)
+        assert [x["id"] for x in c.get("/api/galeria").json()["imagenes"]] == [r.json()["id"]]
+
+
+def test_votos(ajustes):
+    with TestClient(crear_app(ajustes)) as c:
+        ana, luis = entrar(c, "Ana"), entrar(c, "Luis")
+        r = c.post("/api/crear", json={"prompt": "Un dragón de carnaval", "estilo": "foto", "formato": "cuadrado"}, headers=ana)
+        id_ = esperar_fin(c, r.json()["id"], ana)["id"]
+        assert c.post(f"/api/trabajos/{id_}/voto", json={"valor": True}, headers=ana).status_code == 422  # la suya
+        assert c.post(f"/api/trabajos/{id_}/voto", json={"valor": True}, headers=luis).json() == {"votos": 1, "votado": True}
+        assert c.post(f"/api/trabajos/{id_}/voto", json={"valor": True}, headers=luis).json()["votos"] == 1  # solo un voto
+        g = c.get("/api/galeria?ranking=true", headers=luis).json()
+        assert g["imagenes"][0]["votos"] == 1 and g["imagenes"][0]["votado"] and not g["imagenes"][0]["mia"]
+        assert g["ranking"][0]["id"] == id_
+        assert c.get("/api/galeria", headers=ana).json()["imagenes"][0]["mia"] is True
+        assert c.post(f"/api/trabajos/{id_}/voto", json={"valor": False}, headers=luis).json()["votos"] == 0
+        # Imagen oculta: no se puede votar
+        c.post(f"/api/panel/ocultar/{id_}", json={"valor": True}, headers=PROFE)
+        assert c.post(f"/api/trabajos/{id_}/voto", json={"valor": True}, headers=luis).status_code == 404
+
+
+def test_reto_completo(ajustes):
+    with TestClient(crear_app(ajustes)) as c:
+        ana, luis = entrar(c, "Ana"), entrar(c, "Luis")
+        pedido = {"prompt": "Mi disfraz soñado", "estilo": "foto", "formato": "cuadrado"}
+        fuera = esperar_fin(c, c.post("/api/crear", json=pedido, headers=ana).json()["id"], ana)["id"]
+
+        r = c.post("/api/panel/reto", json={"titulo": "Tu disfraz soñado", "minutos": 10}, headers=PROFE).json()
+        assert r["fase"] == "creando" and 590 <= r["quedan"] <= 600
+        assert c.get("/api/info").json()["reto"]["titulo"] == "Tu disfraz soñado"
+        dentro = esperar_fin(c, c.post("/api/crear", json=pedido, headers=ana).json()["id"], ana)["id"]
+        assert [x["id"] for x in c.get("/api/galeria?ambito=reto").json()["imagenes"]] == [dentro]
+
+        c.post(f"/api/trabajos/{dentro}/voto", json={"valor": True}, headers=luis)
+        assert c.post("/api/panel/reto/fase", json={"fase": "votando"}, headers=PROFE).json()["fase"] == "votando"
+        # Lo creado durante la votación ya no participa
+        tarde = esperar_fin(c, c.post("/api/crear", json=pedido, headers=luis).json()["id"], luis)["id"]
+        assert tarde not in [x["id"] for x in c.get("/api/galeria?ambito=reto").json()["imagenes"]]
+
+        podio = c.post("/api/panel/reto/fase", json={"fase": "podio"}, headers=PROFE).json()["podio"]
+        assert podio[0]["id"] == dentro and podio[0]["votos"] == 1 and fuera not in [x["id"] for x in podio]
+        c.post("/api/panel/reto/fase", json={"fase": "cerrado"}, headers=PROFE)
+        assert c.get("/api/galeria").json()["reto"] is None
+
+
+def test_reto_pasa_solo_a_votacion(ajustes, monkeypatch):
+    with TestClient(crear_app(ajustes)) as c:
+        c.post("/api/panel/reto", json={"titulo": "Rápido", "minutos": 1}, headers=PROFE)
+        real = time.time
+        monkeypatch.setattr("app.main.time.time", lambda: real() + 61)
+        assert c.get("/api/info").json()["reto"]["fase"] == "votando"
+
+
+def test_logo_y_colores(tmp_path, monkeypatch, comfy_falso):
+    ajustes = preparar_ajustes(tmp_path, monkeypatch, comfy_falso[0])
+    assert c_get_tema(ajustes) == ""
+    logo = tmp_path / "logo.png"
+    Image.new("RGB", (10, 10), "red").save(logo)
+    ajustes.logo = logo
+    ajustes.colores = {"fondo": "#102030", "principal": "#ff0000"}
+    with TestClient(crear_app(ajustes)) as c:
+        assert c.get("/api/info").json()["logo"].startswith("/logo?v=")
+        assert c.get("/logo").headers["content-type"] == "image/png"
+        css = c.get("/tema.css").text
+        assert "--noche:#102030" in css and "--magenta:#ff0000" in css and "--noche-2:#223242" in css
+
+
+def c_get_tema(ajustes) -> str:
+    with TestClient(crear_app(ajustes)) as c:
+        assert c.get("/logo").status_code == 404
+        return c.get("/tema.css").text

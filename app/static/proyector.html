@@ -6,6 +6,7 @@
   <title>Proyector del estudio</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
   <link rel="stylesheet" href="/static/estilo.css">
+  <link rel="stylesheet" href="/tema.css">
   <style>
     body { overflow: hidden; }
     .escena {
@@ -13,27 +14,38 @@
       display: grid; grid-template-columns: minmax(280px, 26vw) 1fr; gap: 2.2vw; padding: 2.2vw;
     }
     .lateral { display: flex; flex-direction: column; gap: 1.6vw; min-height: 0; }
-    .lateral .titulo-evento { font-size: clamp(1.8rem, 3vw, 3.4rem); }
+    .logo-proyector { max-height: 15vh; max-width: 100%; object-fit: contain; align-self: flex-start; }
+    .lateral .titulo-evento { font-size: clamp(1.8rem, 2.8vw, 3.2rem); }
     .lateral .subtitulo { font-size: clamp(0.8rem, 1vw, 1.1rem); }
     .acceso { text-align: center; padding: 1.4vw; }
     .acceso h2 { margin: 0 0 1vw; font-size: clamp(1.3rem, 2vw, 2.2rem); font-weight: 900; }
-    .acceso img { width: 100%; max-width: 22vw; margin: 0 auto; border-radius: 16px; background: #fff; }
+    .acceso img { width: 100%; max-width: 20vw; max-height: 36vh; object-fit: contain; margin: 0 auto; border-radius: 16px; background: #fff; }
     .acceso .url { margin: 1vw 0 0; font-weight: 800; font-size: clamp(0.9rem, 1.15vw, 1.3rem); word-break: break-all; color: var(--amarillo); }
     .acceso .codigo { margin: 0.4vw 0 0; color: var(--suave); font-weight: 700; font-size: clamp(0.85rem, 1vw, 1.15rem); }
     .chips { display: flex; flex-wrap: wrap; gap: 10px; }
     .chip { padding: 10px 16px; border-radius: 999px; background: var(--capa-2); border: 1px solid var(--borde); font-weight: 800; font-size: clamp(0.9rem, 1.1vw, 1.25rem); }
     .chip.cerrado { background: rgba(255, 84, 112, 0.2); border-color: rgba(255, 84, 112, 0.5); }
 
-    .principal { display: grid; grid-template-rows: 1fr auto; gap: 1.4vw; min-height: 0; }
-    .destacada { position: relative; border-radius: 28px; overflow: hidden; background: var(--noche-2); box-shadow: var(--sombra); min-height: 0; }
+    .principal { display: grid; grid-template-rows: auto 1fr auto; gap: 1.4vw; min-height: 0; }
+
+    /* Reto en marcha */
+    .banda-reto {
+      display: flex; align-items: center; gap: 1.4vw; padding: 1vw 1.8vw; border-radius: 24px;
+      background: linear-gradient(100deg, rgba(255, 46, 136, 0.35), rgba(255, 210, 63, 0.22));
+      border: 2px solid rgba(255, 210, 63, 0.6); font-weight: 900; font-size: clamp(1.2rem, 2vw, 2.4rem); line-height: 1.15;
+    }
+    .banda-reto .bandera { font-size: 1.6em; }
+    .banda-reto small { display: block; font-size: 0.55em; color: var(--suave); font-weight: 800; }
+    .banda-reto .reloj { margin-left: auto; font-variant-numeric: tabular-nums; font-size: clamp(2.2rem, 4.4vw, 5.2rem); color: var(--amarillo); line-height: 1; white-space: nowrap; }
+    .banda-reto .reloj.ultimo { color: var(--magenta); animation: latir 1s ease-in-out infinite; }
+
+    /* Imagen destacada y tira */
+    .destacada { position: relative; border-radius: 28px; overflow: hidden; background: var(--noche-2); box-shadow: var(--sombra); min-height: 0; grid-row: 2; }
     .destacada .difuso { position: absolute; inset: -30px; width: calc(100% + 60px); height: calc(100% + 60px); object-fit: cover; filter: blur(40px) brightness(0.55) saturate(1.3); }
     .destacada .nitida { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
     .destacada.entra .nitida { animation: entrar 0.9s cubic-bezier(.2, .9, .3, 1.15); }
     @keyframes entrar { from { transform: scale(0.7) rotate(-3deg); opacity: 0; } }
-    .pie {
-      position: absolute; left: 0; right: 0; bottom: 0; padding: 4vw 2vw 1.4vw;
-      background: linear-gradient(transparent, rgba(10, 4, 22, 0.92));
-    }
+    .pie { position: absolute; left: 0; right: 0; bottom: 0; padding: 4vw 2vw 1.4vw; background: linear-gradient(transparent, rgba(10, 4, 22, 0.92)); }
     .pie .autor { font-weight: 900; font-size: clamp(1.2rem, 2vw, 2.4rem); }
     .pie .texto { margin-top: 4px; color: var(--suave); font-weight: 700; font-size: clamp(0.95rem, 1.3vw, 1.5rem); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .nueva {
@@ -42,7 +54,7 @@
       animation: latir 1s ease-in-out infinite;
     }
     @keyframes latir { 50% { transform: scale(1.08); } }
-    .tira { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1vw; }
+    .tira { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1vw; grid-row: 3; }
     .tira figure { margin: 0; position: relative; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: var(--capa-2); }
     .tira img { width: 100%; height: 100%; object-fit: cover; }
     .tira figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 6px 5px; font-size: clamp(0.65rem, 0.8vw, 0.95rem); font-weight: 800; text-align: center; background: linear-gradient(transparent, rgba(10, 4, 22, 0.9)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -51,12 +63,40 @@
     .vacia p { margin: 0; font-size: clamp(1.4rem, 2.6vw, 3rem); font-weight: 900; }
     @keyframes bailar { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg) translateY(-10px); } }
 
+    /* Votación, podio y ranking */
+    .especial { grid-row: 2 / 4; display: flex; flex-direction: column; gap: 1.2vw; min-height: 0; }
+    .especial h2 { margin: 0; font-size: clamp(1.8rem, 3.2vw, 3.8rem); font-weight: 900; line-height: 1.1; }
+    .especial .sub { margin: 0; color: var(--suave); font-weight: 800; font-size: clamp(1rem, 1.5vw, 1.8rem); }
+    .votacion { flex: 1; display: grid; grid-template-columns: repeat(var(--columnas, 4), 1fr); align-content: start; gap: 1vw; min-height: 0; }
+    .votacion figure { position: relative; margin: 0; aspect-ratio: 1; border-radius: 20px; overflow: hidden; background: var(--capa-2); }
+    .votacion figure.lider { outline: 5px solid var(--amarillo); outline-offset: -5px; }
+    .votacion img { width: 100%; height: 100%; object-fit: cover; }
+    .votacion figcaption { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: end; gap: 8px; padding: 30px 12px 10px; font-weight: 900; font-size: clamp(0.9rem, 1.3vw, 1.6rem); background: linear-gradient(transparent, rgba(10, 4, 22, 0.92)); }
+    .votacion figcaption span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .votos-chip { flex: none; padding: 4px 12px; border-radius: 999px; background: var(--magenta); }
+    .votacion figure.sube .votos-chip { animation: subir 0.7s ease; }
+    @keyframes subir { 40% { transform: scale(1.5); } }
+    .podio { flex: 1; display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: end; gap: 2vw; min-height: 0; padding-bottom: 1vh; }
+    .puesto { display: flex; flex-direction: column; align-items: center; gap: 0.8vh; min-width: 0; animation: aparecer-puesto 0.8s cubic-bezier(.2, .9, .3, 1.2) both; }
+    .puesto.p2 { animation-delay: 0.4s; } .puesto.p3 { animation-delay: 0.8s; } .puesto.p1 { animation-delay: 1.2s; }
+    @keyframes aparecer-puesto { from { transform: translateY(40px) scale(0.9); opacity: 0; } }
+    .puesto .marco { width: min(100%, 32vh); aspect-ratio: 1; border-radius: 24px; overflow: hidden; box-shadow: var(--sombra); background: var(--capa-2); }
+    .puesto.p1 .marco { width: min(100%, 40vh); outline: 6px solid var(--amarillo); }
+    .puesto img { width: 100%; height: 100%; object-fit: cover; }
+    .puesto .medalla { font-size: clamp(2.2rem, 3.6vw, 4.6rem); line-height: 1; }
+    .puesto .nombre { font-weight: 900; font-size: clamp(1.1rem, 1.9vw, 2.3rem); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .puesto .votos-chip { font-weight: 900; font-size: clamp(0.9rem, 1.3vw, 1.6rem); }
+    .puesto .peana { width: 100%; border-radius: 18px 18px 0 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)); display: grid; place-items: center; font-weight: 900; font-size: clamp(1.8rem, 3.2vw, 4rem); color: var(--suave); }
+    .puesto.p1 .peana { height: 9vh; color: var(--amarillo); } .puesto.p2 .peana { height: 6vh; } .puesto.p3 .peana { height: 4vh; }
+    .podio-vacio { flex: 1; display: grid; place-content: center; text-align: center; font-size: clamp(1.4rem, 2.4vw, 2.8rem); font-weight: 900; color: var(--suave); }
+
     @media (max-aspect-ratio: 1/1) {
       body { overflow: auto; }
       .escena { grid-template-columns: 1fr; height: auto; }
       .destacada { aspect-ratio: 1; }
       .acceso img { max-width: 50vw; }
       .tira { grid-template-columns: repeat(4, 1fr); }
+      .votacion { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 40vw; }
     }
   </style>
 </head>
@@ -64,6 +104,7 @@
   <div class="cinta"></div>
   <div class="escena">
     <aside class="lateral">
+      <img class="logo-proyector" id="logo" alt="" hidden>
       <div>
         <h1 class="titulo-evento" id="evento"></h1>
         <p class="subtitulo" id="subtitulo"></p>
@@ -82,6 +123,7 @@
     </aside>
 
     <main class="principal">
+      <div class="banda-reto" id="banda-reto" hidden></div>
       <div class="destacada" id="destacada">
         <div class="vacia" id="vacia">
           <div><span class="grande">🎭</span></div>
@@ -89,6 +131,7 @@
         </div>
       </div>
       <div class="tira" id="tira"></div>
+      <section class="especial" id="especial" hidden></section>
     </main>
   </div>
 
@@ -97,12 +140,21 @@
     const $ = (id) => document.getElementById(id);
     const NUEVA_DURANTE = 20000;   // ms que una imagen recién hecha se queda fija
     const CAMBIO_CADA = 8000;      // ms entre imágenes del pase automático
+    const RANKING_CADA = 75000;    // ms entre apariciones del ranking
+    const RANKING_DURA = 12000;    // ms que se muestra el ranking
 
     let imagenes = [];
     let destacadaId = null;
     let ultimaNueva = 0;
     let indicePase = 0;
     let vistas = null;
+    let modo = 'normal';           // normal | votacion | podio | ranking
+    let finRanking = 0;
+    let proximoRanking = Date.now() + RANKING_CADA;
+    let firmaEspecial = '';
+    let celebrado = null;
+    let finReto = null;
+    let votosPrevios = new Map();
     const nodoVacio = $('vacia');
 
     async function iniciar() {
@@ -111,6 +163,11 @@
         $('evento').textContent = info.evento;
         $('subtitulo').textContent = info.subtitulo;
         document.title = `Proyector · ${info.evento}`;
+        if (info.logo) {
+          $('logo').src = info.logo;
+          $('logo').alt = info.evento;
+          $('logo').hidden = false;
+        }
         pintarAcceso(info.url);
       } catch {
         setTimeout(iniciar, 3000);
@@ -119,6 +176,7 @@
       refrescar();
       setInterval(refrescar, 3000);
       setInterval(pase, CAMBIO_CADA);
+      setInterval(pintarReloj, 1000);
     }
 
     let urlQr = '';
@@ -135,34 +193,149 @@
 
     async function refrescar() {
       let g;
-      try { g = await api('/api/galeria?limite=40'); } catch { return; }
+      try { g = await api('/api/galeria?limite=40&ranking=true'); } catch { return; }
       pintarAcceso(g.url);
       $('chip-estado').textContent = g.abierto ? '🟢 Estudio abierto' : '🌙 Estudio cerrado';
       $('chip-estado').classList.toggle('cerrado', !g.abierto);
       $('chip-cola').textContent = `⏳ ${g.en_cola} en cola`;
-      imagenes = g.imagenes;
       $('chip-total').textContent = `🎨 ${g.total} ${g.total === 1 ? 'imagen creada' : 'imágenes creadas'}`;
+      imagenes = g.imagenes;
 
+      const r = g.reto;
+      pintarBandaReto(r);
+      const nueva = detectarNueva();
+
+      if (r && r.fase === 'votando') return mostrarVotacion(r);
+      if (r && r.fase === 'podio') return mostrarPodio(r.podio, `🏆 Podio del reto «${r.titulo}»`, `reto-${r.id}`, 'podio');
+      if (modo === 'ranking' && Date.now() < finRanking && !nueva) return;
+      if (modo !== 'normal') volverNormal();
+
+      const ids = new Set(imagenes.map((i) => i.id));
+      if (nueva) {
+        ultimaNueva = Date.now();
+        indicePase = 0;
+        destacar(nueva, true);
+      } else if (destacadaId && !ids.has(destacadaId)) {
+        imagenes.length ? destacar(imagenes[0], false) : vaciar();  // la ocultó el profesor
+      } else if (!destacadaId && imagenes.length) {
+        destacar(imagenes[0], false);
+      }
+      pintarTira();
+
+      const tranquilo = Date.now() - ultimaNueva > NUEVA_DURANTE;
+      if (!r && tranquilo && Date.now() > proximoRanking && g.ranking && g.ranking.length) {
+        proximoRanking = Date.now() + RANKING_CADA;
+        finRanking = Date.now() + RANKING_DURA;
+        mostrarPodio(g.ranking, '🏆 Las más votadas', null, 'ranking');
+      }
+    }
+
+    function detectarNueva() {
       const ids = new Set(imagenes.map((i) => i.id));
       if (vistas === null) {
         vistas = ids;   // al abrir el proyector no celebramos las antiguas
-        if (imagenes.length) destacar(imagenes[0], false);
-      } else {
-        const nueva = imagenes.find((i) => !vistas.has(i.id));
-        imagenes.forEach((i) => vistas.add(i.id));
-        if (nueva) {
-          ultimaNueva = Date.now();
-          indicePase = 0;
-          destacar(nueva, true);
-        } else if (destacadaId && !ids.has(destacadaId)) {
-          imagenes.length ? destacar(imagenes[0], false) : vaciar();  // la ocultó el profesor
-        }
+        return null;
       }
-      pintarTira();
+      const nueva = imagenes.find((i) => !vistas.has(i.id));
+      imagenes.forEach((i) => vistas.add(i.id));
+      return nueva || null;
     }
 
+    // --- Reto ---
+
+    function pintarBandaReto(r) {
+      const banda = $('banda-reto');
+      if (!r || r.fase !== 'creando') {
+        banda.hidden = true;
+        finReto = null;
+        return;
+      }
+      finReto = r.quedan != null ? Date.now() + r.quedan * 1000 : null;
+      banda.replaceChildren(
+        el('span', { class: 'bandera' }, '🏁'),
+        el('div', {}, `RETO: «${r.titulo}»`,
+          el('small', {}, `${r.imagenes} ${r.imagenes === 1 ? 'imagen participa' : 'imágenes participan'} · ¡crea la tuya desde el móvil!`)),
+        el('span', { class: 'reloj', id: 'reloj' }, finReto ? textoReloj() : '¡A crear!'));
+      banda.hidden = false;
+    }
+
+    function textoReloj() {
+      const s = Math.max(0, Math.round((finReto - Date.now()) / 1000));
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function pintarReloj() {
+      if (!finReto || !$('reloj')) return;
+      $('reloj').textContent = textoReloj();
+      $('reloj').classList.toggle('ultimo', finReto - Date.now() < 30000);
+    }
+
+    // --- Modos especiales ---
+
+    function mostrarEspecial(nuevoModo) {
+      modo = nuevoModo;
+      $('destacada').hidden = true;
+      $('tira').hidden = true;
+      $('especial').hidden = false;
+    }
+
+    function volverNormal() {
+      modo = 'normal';
+      firmaEspecial = '';
+      $('especial').hidden = true;
+      $('destacada').hidden = false;
+      $('tira').hidden = false;
+    }
+
+    async function mostrarVotacion(r) {
+      let g;
+      try { g = await api('/api/galeria?ambito=reto&orden=votos&limite=12'); } catch { return; }
+      mostrarEspecial('votacion');
+      const lista = g.imagenes;
+      const firma = JSON.stringify(['votacion', r.titulo, lista.map((t) => [t.id, t.votos])]);
+      if (firma === firmaEspecial) return;
+      firmaEspecial = firma;
+      const subieron = new Set(lista.filter((t) => votosPrevios.has(t.id) && t.votos > votosPrevios.get(t.id)).map((t) => t.id));
+      votosPrevios = new Map(lista.map((t) => [t.id, t.votos]));
+      $('especial').replaceChildren(
+        el('h2', {}, `🗳️ ¡A votar! «${r.titulo}»`),
+        el('p', { class: 'sub' }, 'En el móvil: 🌟 Galería → 🏁 Reto, y dale ❤️ a tus favoritas'),
+        lista.length
+          ? el('div', { class: 'votacion', style: { '--columnas': lista.length <= 3 ? 3 : lista.length <= 8 ? 4 : 6 } }, lista.map((t, i) =>
+              el('figure', { class: `${i === 0 && t.votos ? 'lider' : ''} ${subieron.has(t.id) ? 'sube' : ''}` },
+                el('img', { src: t.mini, alt: t.prompt }),
+                el('figcaption', {}, el('span', {}, t.alias), el('span', { class: 'votos-chip' }, `❤️ ${t.votos}`)))))
+          : el('div', { class: 'podio-vacio' }, 'Nadie ha participado en este reto… ¡todavía!'));
+    }
+
+    function mostrarPodio(lista, titulo, clave, nuevoModo) {
+      mostrarEspecial(nuevoModo);
+      const firma = JSON.stringify([titulo, lista.map((t) => [t.id, t.votos])]);
+      if (firma === firmaEspecial) return;
+      firmaEspecial = firma;
+      const orden = [[lista[1], 'p2', '🥈', '2'], [lista[0], 'p1', '🥇', '1'], [lista[2], 'p3', '🥉', '3']];
+      $('especial').replaceChildren(
+        el('h2', {}, titulo),
+        lista.length
+          ? el('div', { class: 'podio' }, orden.map(([t, clase, medalla, numero]) => t
+              ? el('div', { class: `puesto ${clase}` },
+                  el('div', { class: 'medalla' }, medalla),
+                  el('div', { class: 'marco' }, el('img', { src: t.imagen, alt: t.prompt })),
+                  el('div', { class: 'nombre' }, t.alias),
+                  el('span', { class: 'votos-chip' }, `❤️ ${t.votos} ${t.votos === 1 ? 'voto' : 'votos'}`),
+                  el('div', { class: 'peana' }, numero))
+              : el('div', {})))
+          : el('div', { class: 'podio-vacio' }, 'Aún no hay votos.'));
+      if (clave === null || clave !== celebrado) {
+        celebrado = clave;
+        setTimeout(() => confeti(clave ? 160 : 70), 1200);
+      }
+    }
+
+    // --- Modo normal ---
+
     function pase() {
-      if (Date.now() - ultimaNueva < NUEVA_DURANTE || imagenes.length < 2) return;
+      if (modo !== 'normal' || Date.now() - ultimaNueva < NUEVA_DURANTE || imagenes.length < 2) return;
       indicePase = (indicePase + 1) % Math.min(imagenes.length, 12);
       destacar(imagenes[indicePase], false);
     }
@@ -173,11 +346,12 @@
       const precarga = new Image();
       precarga.onload = () => {
         if (destacadaId !== img.id) return;
+        const autor = `🎨 ${img.alias}${img.votos ? ` · ❤️ ${img.votos}` : ''}`;
         caja.replaceChildren(...[
           el('img', { class: 'difuso', src: img.mini, alt: '' }),
           el('img', { class: 'nitida', src: img.imagen, alt: img.prompt }),
           esNueva ? el('div', { class: 'nueva' }, '✨ ¡Recién salida!') : null,
-          el('div', { class: 'pie' }, el('div', { class: 'autor' }, `🎨 ${img.alias}`), el('div', { class: 'texto' }, img.prompt)),
+          el('div', { class: 'pie' }, el('div', { class: 'autor' }, autor), el('div', { class: 'texto' }, img.prompt)),
         ].filter(Boolean));
         caja.classList.remove('entra');
         void caja.offsetWidth;
@@ -196,7 +370,8 @@
     function pintarTira() {
       const otras = imagenes.filter((i) => i.id !== destacadaId).slice(0, 8);
       $('tira').replaceChildren(...otras.map((i) =>
-        el('figure', {}, el('img', { src: i.mini, alt: i.prompt, loading: 'lazy' }), el('figcaption', {}, i.alias))));
+        el('figure', {}, el('img', { src: i.mini, alt: i.prompt, loading: 'lazy' }),
+          el('figcaption', {}, i.votos ? `${i.alias} · ❤️ ${i.votos}` : i.alias))));
     }
 
     iniciar();

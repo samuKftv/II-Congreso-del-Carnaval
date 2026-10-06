@@ -1,5 +1,5 @@
 {
-  "_ayuda": "receta: lo que se envía al modelo; {prompt} es lo que escribe el alumno. ejemplo: prompt para generar la miniatura del estilo desde el panel.",
+  "_ayuda": "estilos = técnicas (cómo se pinta); temas = carnavales del mundo (dónde y con qué tradición). Se pueden combinar. receta: lo que se envía al modelo; {prompt} es la idea del alumno. ejemplo: prompt de la miniatura que se genera desde el panel. detalles: botones que añaden frases a la idea.",
   "estilos": [
     {
       "id": "libre",
@@ -19,27 +19,11 @@
     },
     {
       "id": "cartel",
-      "nombre": "Cartel de carnaval",
-      "emoji": "🎭",
+      "nombre": "Cartel",
+      "emoji": "📜",
       "colores": ["#dc2626", "#f59e0b"],
       "receta": "Vintage carnival festival poster: {prompt}. Bold flat colors, ornate frame, confetti and streamers, screen-printed texture, the word \"CARNAVAL\" in large decorative lettering.",
       "ejemplo": "Un arlequín tocando la trompeta"
-    },
-    {
-      "id": "disfraz",
-      "nombre": "Disfraz",
-      "emoji": "🪶",
-      "colores": ["#c026d3", "#f97316"],
-      "receta": "Carnival costume portrait: {prompt}. Elaborate handmade costume with sequins, feathers and glitter, night street parade, colorful lights, festive atmosphere.",
-      "ejemplo": "Una persona disfrazada de pavo real"
-    },
-    {
-      "id": "confeti",
-      "nombre": "Pop confeti",
-      "emoji": "🎉",
-      "colores": ["#e11d48", "#06b6d4"],
-      "receta": "{prompt}. Pop art explosion of confetti, streamers and balloons, saturated neon colors, joyful carnival celebration.",
-      "ejemplo": "Un gato con gafas de sol y sombrero de fiesta"
     },
     {
       "id": "ilustracion",
@@ -66,6 +50,14 @@
       "ejemplo": "Farolillos de colores sobre una plaza al atardecer"
     },
     {
+      "id": "oleo",
+      "nombre": "Óleo",
+      "emoji": "🖼️",
+      "colores": ["#92400e", "#b45309"],
+      "receta": "Oil painting of {prompt}. Visible brushstrokes, rich deep colors, classical composition, museum quality.",
+      "ejemplo": "Retrato de una dama con máscara y abanico"
+    },
+    {
       "id": "3d",
       "nombre": "3D juguete",
       "emoji": "🧸",
@@ -90,18 +82,110 @@
       "ejemplo": "Un desfile de carnaval visto de lado como en un videojuego"
     }
   ],
+  "temas": [
+    {
+      "id": "cadiz",
+      "nombre": "Cádiz",
+      "emoji": "🎸",
+      "colores": ["#0369a1", "#facc15"],
+      "receta": "{prompt}, at the Carnival of Cádiz, Spain: chirigota singers in matching humorous costumes with guitars, bass drum and kazoos, painted faces, narrow white streets of the old town by the sea, festive crowd",
+      "ejemplo": "Un grupo de amigos cantando disfrazados en la calle"
+    },
+    {
+      "id": "venecia",
+      "nombre": "Venecia",
+      "emoji": "🎭",
+      "colores": ["#7c2d12", "#d4a017"],
+      "receta": "{prompt}, at the Carnival of Venice: ornate porcelain masks, baroque costumes with gold embroidery, tricorn hats and velvet capes, misty canals with gondolas, elegant and mysterious atmosphere",
+      "ejemplo": "Una pareja con máscaras posando en un puente"
+    },
+    {
+      "id": "rio",
+      "nombre": "Río de Janeiro",
+      "emoji": "💃",
+      "colores": ["#16a34a", "#facc15"],
+      "receta": "{prompt}, at the Rio de Janeiro Carnival: samba dancers with huge feathered headdresses, sequins and rhinestones, giant allegorical floats in the Sambadrome at night, explosive colors",
+      "ejemplo": "Una bailarina de samba en pleno desfile"
+    },
+    {
+      "id": "canarias",
+      "nombre": "Canarias",
+      "emoji": "👑",
+      "colores": ["#0ea5e9", "#f472b6"],
+      "receta": "{prompt}, at the Carnival of Santa Cruz de Tenerife: a carnival queen in a gigantic sparkling costume with enormous feathered structures, murgas in colorful outfits, tropical night party",
+      "ejemplo": "La reina del carnaval sobre el escenario"
+    },
+    {
+      "id": "oruro",
+      "nombre": "Oruro",
+      "emoji": "👹",
+      "colores": ["#b91c1c", "#ca8a04"],
+      "receta": "{prompt}, at the Carnival of Oruro, Bolivia: Diablada dancers with spectacular devil masks with horns and bulging eyes, embroidered capes with mirrors, Andean mountains in the background",
+      "ejemplo": "Un bailarín de la diablada saltando"
+    },
+    {
+      "id": "viareggio",
+      "nombre": "Viareggio",
+      "emoji": "🎡",
+      "colores": ["#7c3aed", "#f97316"],
+      "receta": "{prompt}, at the Carnival of Viareggio, Italy: giant satirical papier-mâché floats with enormous caricature figures, seaside promenade, confetti in the air",
+      "ejemplo": "Una carroza gigante de papel maché"
+    },
+    {
+      "id": "binche",
+      "nombre": "Binche",
+      "emoji": "🍊",
+      "colores": ["#ea580c", "#facc15"],
+      "receta": "{prompt}, at the Carnival of Binche, Belgium: Gilles in wax masks with green glasses and huge ostrich-feather hats, throwing oranges, wooden clogs, medieval square",
+      "ejemplo": "Un Gille con su sombrero de plumas"
+    },
+    {
+      "id": "mardigras",
+      "nombre": "Nueva Orleans",
+      "emoji": "⚜️",
+      "colores": ["#6b21a8", "#16a34a"],
+      "receta": "{prompt}, at Mardi Gras in New Orleans: purple, green and gold decorations, bead necklaces, brass band, French Quarter balconies with wrought iron, parade floats",
+      "ejemplo": "Una banda de música desfilando por el barrio francés"
+    },
+    {
+      "id": "barranquilla",
+      "nombre": "Barranquilla",
+      "emoji": "🌺",
+      "colores": ["#dc2626", "#2563eb"],
+      "receta": "{prompt}, at the Carnival of Barranquilla, Colombia: marimonda and torito masks, colorful polleras with ruffles, cumbia dancers, tropical Caribbean colors",
+      "ejemplo": "Una pareja bailando cumbia con trajes de colores"
+    }
+  ],
   "ideas": [
-    "Un coro de pingüinos con sombrero de copa cantando en un escenario",
-    "Un pulpo gigante disfrazado de pirata desfilando por la calle",
-    "Una carroza de carnaval con forma de dragón dorado",
-    "Una abuela con un antifaz lleno de plumas sonriendo a cámara",
-    "Un robot bailando bajo una lluvia de confeti",
-    "Una ciudad hecha de caramelos en plena fiesta",
-    "Un león con traje de lentejuelas y corona de flores",
-    "Un astronauta vestido de arlequín flotando entre serpentinas",
-    "Un mercado nocturno lleno de farolillos de colores",
-    "Una banda de gatos tocando tambores en un tejado",
-    "Un tren de juguete cargado de disfraces cruzando un puente",
-    "Una sirena con maquillaje de carnaval en un acuario gigante"
+    "Un arlequín veneciano montando en una góndola llena de confeti",
+    "Una chirigota de pingüinos cantando con guitarras en una calle de Cádiz",
+    "Una bailarina de samba con un tocado de plumas del tamaño de un árbol",
+    "Un diablo de Oruro tocando la trompeta en lo alto de una montaña",
+    "Una carroza gigante de papel maché con forma de dragón sonriente",
+    "Un Gille de Binche lanzando naranjas desde un globo aerostático",
+    "La reina del carnaval de Tenerife con un traje hecho de estrellas",
+    "Una banda de jazz de Nueva Orleans formada por gatos",
+    "Un robot disfrazado de marimonda bailando cumbia",
+    "Un mapa del mundo hecho de máscaras de carnaval",
+    "Un astronauta celebrando el carnaval en la Luna",
+    "Un pulpo gigante disfrazado de pirata desfilando por la calle"
+  ],
+  "detalles": [
+    {
+      "grupo": "📍 Lugar",
+      "opciones": ["en un desfile nocturno", "en una plaza llena de gente", "sobre un escenario con focos", "en la playa al atardecer", "bajo una lluvia de confeti", "encima de una carroza gigante"]
+    },
+    {
+      "grupo": "💡 Luz",
+      "opciones": ["con luces de neón", "con luz cálida de farolillos", "con fuegos artificiales de fondo", "con luz dorada de atardecer", "con iluminación dramática"]
+    },
+    {
+      "grupo": "🎥 Plano",
+      "opciones": ["en primer plano", "en plano general", "visto desde arriba", "de cuerpo entero", "con efecto ojo de pez"]
+    },
+    {
+      "grupo": "🌈 Ambiente",
+      "opciones": ["con colores muy vivos", "con ambiente mágico", "muy detallado", "divertido y exagerado", "con aire antiguo"]
+    }
   ]
 }

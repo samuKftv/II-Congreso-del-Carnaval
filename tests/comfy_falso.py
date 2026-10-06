@@ -1,6 +1,6 @@
 """ComfyUI simulado para probar el estudio sin GPU.
 
-Imita /prompt, /ws, /history, /view, /system_stats, /interrupt y /queue.
+Imita /prompt, /ws, /history, /view, /upload/image, /system_stats, /interrupt y /queue.
 Uso manual: python -m tests.comfy_falso  (escucha en 127.0.0.1:8188)
 """
 
@@ -21,16 +21,20 @@ from PIL import Image, ImageDraw, ImageFont
 PASOS = 9
 
 
-def pintar(texto: str, ancho: int, alto: int, semilla: int) -> Image.Image:
+def pintar(texto: str, ancho: int, alto: int, semilla: int, base: Image.Image | None = None) -> Image.Image:
     rnd = random.Random(semilla)
     colores = [(255, 46, 136), (255, 210, 63), (34, 211, 238), (255, 138, 0), (61, 220, 132), (139, 92, 246)]
     a, b = rnd.sample(colores, 2)
-    im = Image.new("RGB", (ancho, alto))
+    if base is not None:  # img2img: la foto teñida de un color
+        ancho, alto = base.size
+        im = Image.blend(base.convert("RGB"), Image.new("RGB", base.size, a), 0.35)
+    else:
+        im = Image.new("RGB", (ancho, alto))
     d = ImageDraw.Draw(im)
-    for y in range(alto):
+    for y in range(alto if base is None else 0):
         t = y / alto
         d.line([(0, y), (ancho, y)], fill=tuple(int(a[i] * (1 - t) + b[i] * t) for i in range(3)))
-    for _ in range(60):
+    for _ in range(60 if base is None else 15):
         x, y, r = rnd.randrange(ancho), rnd.randrange(alto), rnd.randrange(6, 40)
         d.ellipse([x - r, y - r, x + r, y + r], fill=rnd.choice(colores), outline=(255, 255, 255))
     fuente = ImageFont.load_default(size=max(28, ancho // 22))
@@ -58,6 +62,7 @@ def crear_comfy_falso(retardo_paso: float = 0.15, fallar_con: str | None = None)
     app = FastAPI(lifespan=vida)
     clientes: dict[str, WebSocket] = {}
     historial: dict[str, dict] = {}
+    entradas: dict[str, bytes] = {}
     archivos: dict[str, bytes] = {}
     cola: asyncio.Queue = asyncio.Queue()
     interrumpir = asyncio.Event()
@@ -80,13 +85,15 @@ def crear_comfy_falso(retardo_paso: float = 0.15, fallar_con: str | None = None)
             pid, wf, cid = await cola.get()
             interrumpir.clear()
             texto = next(n["inputs"]["text"] for n in wf.values() if n["class_type"] == "CLIPTextEncode")
-            tam = next(n["inputs"] for n in wf.values() if "width" in n.get("inputs", {}))
             semilla = next(n["inputs"]["seed"] for n in wf.values() if "seed" in n.get("inputs", {}))
+            carga = next((n for n in wf.values() if n["class_type"] == "LoadImage"), None)
+            base = Image.open(io.BytesIO(entradas[carga["inputs"]["image"]])) if carga else None
+            tam = next((n["inputs"] for n in wf.values() if "width" in n.get("inputs", {})), {"width": 0, "height": 0})
             await enviar(cid, {"type": "execution_start", "data": {"prompt_id": pid}})
             if fallar_con and fallar_con in texto:
                 await enviar(cid, {"type": "execution_error", "data": {"prompt_id": pid, "exception_message": "CUDA out of memory (simulado)"}})
                 continue
-            im = pintar(texto, tam["width"], tam["height"], semilla)
+            im = pintar(texto, tam["width"], tam["height"], semilla, base)
             interrumpido = False
             for paso in range(1, PASOS + 1):
                 await asyncio.sleep(retardo_paso)
@@ -125,6 +132,13 @@ def crear_comfy_falso(retardo_paso: float = 0.15, fallar_con: str | None = None)
         app.state.recibidos.append(wf)
         await cola.put((pid, wf, cuerpo.get("client_id", "")))
         return {"prompt_id": pid, "number": len(app.state.recibidos), "node_errors": {}}
+
+    @app.post("/upload/image")
+    async def upload(request: Request):
+        formulario = await request.form()
+        archivo = formulario["image"]
+        entradas[archivo.filename] = await archivo.read()
+        return {"name": archivo.filename, "subfolder": "", "type": "input"}
 
     @app.get("/history/{pid}")
     async def history(pid: str):

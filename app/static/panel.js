@@ -100,6 +100,66 @@ async function refrescarEstado() {
 
   pintarCola(e.cola);
   pintarBloqueados(e.bloqueados);
+  pintarReto(e.reto);
+}
+
+// --- Retos ---
+
+const IDEAS_RETO = ['Tu disfraz soñado', 'El carnaval en el espacio', 'Una máscara imposible',
+  'Tu ciudad en carnaval', 'Animales de comparsa', 'Una carroza para el congreso'];
+let finReto = null;
+
+$('ideas-reto').replaceChildren(...IDEAS_RETO.map((idea) =>
+  el('button', { type: 'button', onclick: () => ($('reto-titulo').value = idea) }, idea)));
+
+const FASES = {
+  creando: ['✏️ Creando', [['⏹ Terminar y votar', 'votando', 'boton-principal'], ['✕ Cancelar reto', 'cerrado', 'boton-peligro']]],
+  votando: ['🗳️ Votando', [['🏆 Mostrar podio', 'podio', 'boton-principal'], ['✕ Cancelar reto', 'cerrado', 'boton-peligro']]],
+  podio: ['🏆 Podio', [['✓ Cerrar reto y volver a la galería', 'cerrado', 'boton-principal']]],
+};
+
+function pintarReto(r) {
+  $('reto-nuevo').hidden = !!r;
+  $('reto-activo').hidden = !r;
+  if (!r) { finReto = null; return; }
+  const [nombreFase, acciones] = FASES[r.fase] || [r.fase, []];
+  $('reto-nombre').textContent = `«${r.titulo}»`;
+  $('reto-fase').textContent = nombreFase;
+  $('reto-cuenta').textContent = `${r.imagenes} ${r.imagenes === 1 ? 'imagen participa' : 'imágenes participan'}`;
+  finReto = r.fase === 'creando' && r.quedan != null ? Date.now() + r.quedan * 1000 : null;
+  pintarRelojReto();
+  const firma = r.fase;
+  if ($('reto-acciones').dataset.firma !== firma) {
+    $('reto-acciones').dataset.firma = firma;
+    $('reto-acciones').replaceChildren(...acciones.map(([texto, fase, clase]) =>
+      el('button', { class: `boton ${clase}`, type: 'button', onclick: () => cambiarFase(fase) }, texto)));
+  }
+}
+
+function pintarRelojReto() {
+  if (!finReto) { $('reto-reloj').textContent = ''; return; }
+  const s = Math.max(0, Math.round((finReto - Date.now()) / 1000));
+  $('reto-reloj').textContent = `⏱ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+setInterval(pintarRelojReto, 1000);
+
+$('lanzar-reto').addEventListener('click', async () => {
+  const titulo = $('reto-titulo').value.trim();
+  if (!titulo) { aviso('Escribe el tema del reto', true); $('reto-titulo').focus(); return; }
+  try {
+    await apiProfe('/api/panel/reto', { metodo: 'POST', datos: { titulo, minutos: Number($('reto-minutos').value) } });
+    $('reto-titulo').value = '';
+    aviso('🏁 ¡Reto lanzado! Ya aparece en los móviles y en el proyector.');
+    refrescarEstado();
+  } catch (e) { aviso(e.message, true); }
+});
+
+async function cambiarFase(fase) {
+  if (fase === 'cerrado' && !confirm('¿Cerrar el reto? Las imágenes se quedan en la galería.')) return;
+  try {
+    await apiProfe('/api/panel/reto/fase', { metodo: 'POST', datos: { fase } });
+    refrescarEstado();
+  } catch (e) { aviso(e.message, true); }
 }
 
 function pintarCola(cola) {
@@ -114,7 +174,7 @@ function pintarCola(cola) {
       el('div', { class: `pos ${generando ? 'ahora' : ''}` }, generando ? '🎨' : i),
       el('div', {},
         el('div', { class: 'quien' }, t.miniatura_estilo ? `🖼️ Miniatura · ${t.estilo}` : t.alias),
-        el('div', { class: 'que' }, `${emojiEstilo(t.estilo)} ${t.prompt}`),
+        el('div', { class: 'que' }, `${t.con_foto ? '📷 ' : ''}${emojiTema(t.tema)}${emojiEstilo(t.estilo)} ${t.prompt}`),
         generando ? el('div', { class: 'mini-barra' }, el('div', { style: { width: `${progreso}%` } })) : null),
       el('button', {
         class: 'boton boton-peligro icono-boton', type: 'button', title: 'Cancelar',
@@ -147,6 +207,11 @@ $('direccion').addEventListener('change', async (ev) => {
 function emojiEstilo(id) {
   const e = info && info.estilos.find((x) => x.id === id);
   return e ? e.emoji : '';
+}
+
+function emojiTema(id) {
+  const t = id && info && info.temas.find((x) => x.id === id);
+  return t ? `${t.emoji} ` : '';
 }
 
 function pintarBloqueados(lista) {
@@ -248,8 +313,10 @@ function pintarImagenes() {
   $('imagenes').replaceChildren(...imagenes.map((t) =>
     el('div', { class: `obra ${t.oculto ? 'oculta' : ''}` },
       t.oculto ? el('span', { class: 'etiqueta-oculta' }, 'Fuera del proyector') : null,
+      t.publico ? null : el('span', { class: 'etiqueta-privada' }, '🔒 Privada'),
       el('img', { src: t.mini, alt: t.prompt, loading: 'lazy', onclick: () => ampliar(t) }),
-      el('div', { class: 'info' }, el('b', {}, t.alias), el('span', { title: t.prompt }, `${emojiEstilo(t.estilo)} ${t.prompt}`)),
+      el('div', { class: 'info' }, el('b', {}, `${t.alias}${t.votos ? ` · ❤️ ${t.votos}` : ''}`),
+        el('span', { title: t.prompt }, `${emojiTema(t.tema)}${emojiEstilo(t.estilo)} ${t.prompt}`)),
       el('div', { class: 'acciones' },
         el('button', { class: 'boton boton-secundario', type: 'button', onclick: () => ocultar(t) },
           t.oculto ? '👁️ Mostrar' : '🙈 Ocultar'),

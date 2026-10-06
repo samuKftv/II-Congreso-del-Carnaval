@@ -4,11 +4,21 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
+COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+# Nombres de los colores en ajustes.toml -> variables CSS de la app
+COLORES_CSS = {
+    "fondo": "--noche",
+    "principal": "--magenta",
+    "secundario": "--amarillo",
+    "acento": "--cian",
+    "extra": "--naranja",
+}
 
 
 @dataclass
@@ -20,6 +30,8 @@ class Formato:
 
 @dataclass
 class Estilo:
+    """Una técnica (foto, acuarela…) o una temática (Venecia, Río…)."""
+
     id: str
     nombre: str
     emoji: str
@@ -35,6 +47,8 @@ class Estilo:
 class Ajustes:
     evento: str
     subtitulo: str
+    logo: Path | None
+    colores: dict[str, str]
     puerto: int
     direccion: str
     abrir_navegador: bool
@@ -48,15 +62,32 @@ class Ajustes:
     en_cola_por_persona: int
     max_caracteres: int
     formatos: dict[str, Formato]
+    fuerzas: dict[str, float]
     palabras_prohibidas: list[str]
     estilos: dict[str, Estilo]
+    temas: dict[str, Estilo]
     ideas: list[str]
+    detalles: list[dict]
     datos: Path = field(default_factory=lambda: RAIZ / "datos")
 
 
 def _ruta(valor: str) -> Path:
     ruta = Path(valor)
     return ruta if ruta.is_absolute() else RAIZ / ruta
+
+
+def _estilos(lista: list[dict]) -> dict[str, Estilo]:
+    return {
+        d["id"]: Estilo(
+            id=d["id"],
+            nombre=d.get("nombre", d["id"]),
+            emoji=d.get("emoji", "🎨"),
+            colores=d.get("colores", ["#6d28d9", "#db2777"]),
+            receta=d.get("receta", "{prompt}"),
+            ejemplo=d.get("ejemplo", d.get("nombre", d["id"])),
+        )
+        for d in lista
+    }
 
 
 def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
@@ -78,17 +109,7 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
     ruta_estilos = ruta_ajustes.parent / "estilos.json"
     with open(ruta_estilos, encoding="utf-8") as f:
         e = json.load(f)
-    estilos = {
-        d["id"]: Estilo(
-            id=d["id"],
-            nombre=d.get("nombre", d["id"]),
-            emoji=d.get("emoji", "🎨"),
-            colores=d.get("colores", ["#6d28d9", "#db2777"]),
-            receta=d.get("receta", "{prompt}"),
-            ejemplo=d.get("ejemplo", d.get("nombre", d["id"])),
-        )
-        for d in e["estilos"]
-    }
+    estilos = _estilos(e.get("estilos", []))
     if not estilos:
         raise ValueError("config/estilos.json no tiene ningún estilo.")
 
@@ -97,11 +118,25 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         for nombre, medidas in t.get("formatos", {"cuadrado": [1024, 1024]}).items()
     }
 
+    logo = evento.get("logo", "")
+    logo = _ruta(logo) if logo else None
+    colores = {}
+    for nombre, valor in t.get("colores", {}).items():
+        if nombre not in COLORES_CSS or not COLOR.match(str(valor)):
+            raise ValueError(f"Color no válido en [colores]: {nombre} = {valor!r} (usa el formato \"#rrggbb\").")
+        colores[nombre] = valor
+
+    fuerzas = {k: float(v) for k, v in t.get("fotos", {}).get("fuerzas", {}).items()} or {
+        "poco": 0.5, "bastante": 0.68, "mucho": 0.82,
+    }
+
     datos = _ruta(os.environ.get("ESTUDIO_DATOS", "datos"))
 
     return Ajustes(
         evento=evento.get("nombre", "Estudio de imágenes"),
         subtitulo=evento.get("subtitulo", ""),
+        logo=logo,
+        colores=colores,
         puerto=int(servidor.get("puerto", 8080)),
         direccion=str(servidor.get("direccion", "")).strip(),
         abrir_navegador=bool(servidor.get("abrir_navegador", True)),
@@ -115,8 +150,11 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         en_cola_por_persona=max(1, int(limites.get("en_cola_por_persona", 1))),
         max_caracteres=int(limites.get("max_caracteres", 400)),
         formatos=formatos,
+        fuerzas=fuerzas,
         palabras_prohibidas=list(moderacion.get("palabras_prohibidas", [])),
         estilos=estilos,
+        temas=_estilos(e.get("temas", [])),
         ideas=list(e.get("ideas", [])),
+        detalles=list(e.get("detalles", [])),
         datos=datos,
     )

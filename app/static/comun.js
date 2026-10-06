@@ -45,7 +45,12 @@ function el(etiqueta, props = {}, ...hijos) {
   const nodo = document.createElement(etiqueta);
   for (const [clave, valor] of Object.entries(props)) {
     if (clave === 'class') nodo.className = valor;
-    else if (clave === 'style' && typeof valor === 'object') Object.assign(nodo.style, valor);
+    else if (clave === 'style' && typeof valor === 'object') {
+      for (const [propiedad, v] of Object.entries(valor)) {
+        if (propiedad.startsWith('--')) nodo.style.setProperty(propiedad, v);
+        else nodo.style[propiedad] = v;
+      }
+    }
     else if (clave.startsWith('on')) nodo.addEventListener(clave.slice(2), valor);
     else if (valor === true) nodo.setAttribute(clave, '');
     else if (valor !== false && valor != null) nodo.setAttribute(clave, valor);

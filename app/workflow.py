@@ -18,6 +18,12 @@ class Nodos:
     tamano: str | None
     semillas: list[tuple[str, str]]  # (nodo, nombre de la entrada)
     guardar: list[str]
+    sampler: str | None = None
+    vae: list | None = None  # enlace al VAE que usa el VAEDecode
+
+    @property
+    def admite_fotos(self) -> bool:
+        return self.vae is not None and self.sampler is not None
 
 
 def _es_enlace(valor) -> bool:
@@ -83,7 +89,12 @@ def localizar(wf: dict, nodo_prompt: str = "", nodo_tamano: str = "") -> Nodos:
     ]
     guardar = [k for k, n in wf.items() if n.get("class_type") == "SaveImage"]
 
-    return Nodos(prompt=prompt, tamano=tamano, semillas=semillas, guardar=guardar)
+    # Para usar una foto como base hace falta un KSampler normal (tiene "denoise") y el VAE.
+    sampler = next((k for k in samplers if wf[k]["class_type"] == "KSampler"), None)
+    vae = next((n["inputs"]["vae"] for n in wf.values()
+                if n.get("class_type") == "VAEDecode" and _es_enlace(n.get("inputs", {}).get("vae"))), None)
+
+    return Nodos(prompt=prompt, tamano=tamano, semillas=semillas, guardar=guardar, sampler=sampler, vae=vae)
 
 
 def avisos(wf: dict, nodos: Nodos) -> list[str]:
@@ -108,4 +119,21 @@ def preparar(wf: dict, nodos: Nodos, prompt: str, ancho: int, alto: int, semilla
         wf[nodo]["inputs"][entrada] = semilla
     for nodo in nodos.guardar:
         wf[nodo]["inputs"]["filename_prefix"] = prefijo
+    return wf
+
+
+def con_foto(wf: dict, nodos: Nodos, imagen: str, fuerza: float) -> dict:
+    """Cambia el lienzo vacío por la foto subida a ComfyUI (img2img). `wf` ya viene preparado."""
+    if not nodos.admite_fotos:
+        raise ErrorWorkflow("Este workflow no permite usar fotos como base.")
+    sampler = wf[nodos.sampler]["inputs"]
+    latente = sampler.get("latent_image")
+    wf["9001"] = {"class_type": "LoadImage", "inputs": {"image": imagen}, "_meta": {"title": "Foto del alumno"}}
+    wf["9002"] = {"class_type": "VAEEncode", "inputs": {"pixels": ["9001", 0], "vae": nodos.vae}}
+    sampler["latent_image"] = ["9002", 0]
+    sampler["denoise"] = fuerza
+    if _es_enlace(latente) and not any(  # el lienzo vacío ya no lo usa nadie
+        v == latente for n in wf.values() for v in n.get("inputs", {}).values()
+    ):
+        wf.pop(latente[0], None)
     return wf

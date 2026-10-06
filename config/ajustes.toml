@@ -2,8 +2,18 @@
 # Después de cambiar algo, cierra la ventana de la app y vuelve a abrir iniciar.bat.
 
 [evento]
-nombre = "II Congreso del Carnaval"
+nombre = "II Congreso Mundial del Carnaval"
 subtitulo = "Estudio de imágenes"
+# Logo del congreso (PNG, JPG, WEBP o SVG), por ejemplo "config/logo.png". Vacío = sin logo.
+logo = ""
+
+[colores]
+# Colores de la app en formato "#rrggbb". Quita el # del principio de la línea para usarlo.
+# fondo = "#150a29"
+# principal = "#ff2e88"
+# secundario = "#ffd23f"
+# acento = "#22d3ee"
+# extra = "#ff8a00"
 
 [servidor]
 # Si lo cambias, cambia también el número en abrir_firewall.bat.
@@ -36,6 +46,10 @@ nodo_tamano = ""
 # Imágenes en cola a la vez por persona (1 = turnos justos para todos).
 en_cola_por_persona = 1
 max_caracteres = 400
+
+[fotos]
+# Cuánto cambia la foto del alumno cada opción (0 = nada, 1 = imagen totalmente nueva).
+fuerzas = { poco = 0.5, bastante = 0.68, mucho = 0.82 }
 
 [formatos]
 # nombre = [ancho, alto]. Z-Image Turbo trabaja bien alrededor de 1 megapíxel.
