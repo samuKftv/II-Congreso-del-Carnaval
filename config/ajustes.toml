@@ -1,5 +1,5 @@
 # Ajustes del Estudio de imágenes.
-# Después de cambiar algo, cierra la ventana de la app y vuelve a abrir iniciar.bat.
+# Después de cambiar algo, cierra la ventana negra del estudio y vuelve a abrirlo.
 
 [evento]
 nombre = "CarnaLab 2026"
@@ -27,7 +27,8 @@ extra3 = "#165f94"       # azul intenso (decoración)
 texto_suave = "#b9d3d6"  # textos secundarios
 
 [servidor]
-# Si lo cambias, cambia también el número en abrir_firewall.bat.
+# Si lo cambias, cambia también el número en el archivo del firewall
+# (1-PERMITIR-FIREWALL.bat o abrir_firewall.bat).
 puerto = 8080
 # Dirección que aparece en el QR. Vacío = se detecta sola.
 # Si el QR muestra una IP que no es la de la WiFi del aula, escríbela aquí (p. ej. "192.168.1.50").

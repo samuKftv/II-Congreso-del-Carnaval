@@ -86,6 +86,7 @@ CADA VEZ
 
 Para parar el estudio, cierra la ventana negra.
 Las imágenes se guardan en la carpeta "datos".
+En la carpeta "comfyui" hay workflows para probar en ComfyUI (imágenes de referencia).
 Más ayuda: README.md
 """
 
@@ -141,6 +142,7 @@ def main():
     shutil.copytree(RAIZ / "app", obra / "app", ignore=sin_cache)
     shutil.copytree(RAIZ / "config", obra / "config", ignore=sin_cache)
     shutil.copytree(RAIZ / "docs", obra / "docs", ignore=sin_cache)
+    shutil.copytree(RAIZ / "comfyui", obra / "comfyui", ignore=sin_cache)
     shutil.copy(RAIZ / "README.md", obra / "README.md")
 
     # 4. Lanzadores e instrucciones

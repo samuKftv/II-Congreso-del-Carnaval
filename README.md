@@ -47,7 +47,8 @@ La versión en marcha aparece en la ventana negra y en la cabecera del panel.
 ## Cada sesión
 
 1. Arranca **ComfyUI** como siempre.
-2. Doble clic en **`iniciar.bat`**. Se abre el **panel del profesor** en el navegador.
+2. Doble clic en **`2-INICIAR-ESTUDIO.bat`** (o `iniciar.bat` si instalaste desde el código).
+   Se abre el **panel del profesor** en el navegador.
 3. La primera vez, pulsa **"Generar miniaturas"** en el panel. Así las tarjetas de
    técnicas y carnavales mostrarán imágenes reales hechas con tu modelo (unas 20 imágenes).
 4. Pulsa **"Abrir proyector"** y llévalo a la pantalla del aula.
@@ -92,7 +93,7 @@ antes de llevarlos a la app:
 | `estilos.json` | Técnicas (`estilos`), carnavales del mundo (`temas`), ideas de *Inspírame* y botones de detalles. Cada uno con nombre, emoji, colores y la "receta" que se añade al prompt |
 | `workflow_api.json` | El workflow de ComfyUI en formato API |
 
-Después de cambiar algo, cierra la ventana de la app y vuelve a abrir `iniciar.bat`.
+Después de cambiar algo, cierra la ventana negra del estudio y vuelve a abrirlo.
 
 La app encuentra sola en el workflow el texto del prompt, el tamaño, la semilla y el
 nodo *Save Image*. Si usas un workflow raro y no los encuentra, el panel te avisará.
@@ -102,9 +103,9 @@ En ese caso, indica los números de nodo en `nodo_prompt` y `nodo_tamano`.
 
 | Problema | Solución |
 |---|---|
-| Los móviles no cargan la página | El PC y los móviles deben estar en la **misma red**. Ejecuta `abrir_firewall.bat` como administrador. Si sigue sin ir, la WiFi puede tener **aislamiento de clientes**: pide a informática que lo desactive. |
+| Los móviles no cargan la página | El PC y los móviles deben estar en la **misma red**. Ejecuta `1-PERMITIR-FIREWALL.bat` (o `abrir_firewall.bat`) como administrador. Si sigue sin ir, la WiFi puede tener **aislamiento de clientes**: pide a informática que lo desactive. |
 | El QR muestra una IP rara | Escribe la IP correcta del PC en `direccion` (`ajustes.toml`). La ves con `ipconfig` en una terminal. |
-| El panel dice "ComfyUI: sin conexión" | Comprueba que ComfyUI está arrancado. **ComfyUI Desktop** suele usar el puerto **8000**: cambia `url` en `[comfyui]`. |
+| El panel dice "ComfyUI: sin conexión" | Comprueba que ComfyUI está arrancado. La app lo busca sola en los puertos **8188** (portable) y **8000** (Desktop); si lo tienes en otro, escribe su dirección en `url` de `[comfyui]`. |
 | Las imágenes dan error | Mira la ventana de ComfyUI: suele ser un modelo que falta o un nombre de archivo distinto en el workflow. |
 | Quiero ver la imagen formándose | Arranca ComfyUI con `--preview-method auto`. Sin esa opción solo se ve la barra de progreso. |
 | Quiero empezar de cero | Cierra la app y borra la carpeta `datos/` (imágenes, fotos, votos e historial). |
