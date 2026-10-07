@@ -82,6 +82,8 @@ original de la app.
 La carpeta [`comfyui/`](comfyui/LEEME.md) tiene workflows para probar directamente en ComfyUI,
 antes de llevarlos a la app:
 
+- **`reina_tenerife_referencia.json`**: enseña al modelo **cómo es una reina del Carnaval de Tenerife**
+  con 1 o 2 fotos reales y compara el resultado **sin y con referencias**.
 - **`referencias_flux2_klein.json`**: crea una imagen a partir de **varias imágenes de referencia**
   (persona + disfraz + estilo) con FLUX.2 [Klein] 4B.
 
