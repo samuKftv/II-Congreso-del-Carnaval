@@ -5,7 +5,7 @@ arrastra el archivo `.json` a la ventana de ComfyUI.
 
 | Archivo | Para qué |
 |---|---|
-| **`reina_tenerife_referencia.json`** | Enseñar al modelo **cómo es una reina del Carnaval de Tenerife** con 1 o 2 fotos reales |
+| **`reina_tenerife_referencia.json`** | Crear reinas del Carnaval de Tenerife **rediseñando la foto de una reina real** con una idea |
 | `referencias_flux2_klein.json` | Combinar varias imágenes: una persona, un disfraz y un estilo |
 
 ## Modelos (sirven para los dos)
@@ -26,30 +26,37 @@ versión de 2026.
 ## 👑 Reina del Carnaval de Tenerife (`reina_tenerife_referencia.json`)
 
 Los modelos saben poco de cómo es de verdad una reina de Santa Cruz: suelen pintar trajes de samba
-genéricos. Este workflow **le enseña el estilo con fotos reales**, sin entrenar nada.
+genéricos. Este workflow **parte de la foto de una reina real y la rediseña con la idea**.
+
+> **Por qué así:** FLUX.2 [Klein] es un modelo de **edición**. Copia muy bien lo que ve en una foto
+> (la estructura, el tamaño, el acabado), pero **no aprende un estilo** para inventar desde cero
+> "algo parecido". Si se le pide una reina nueva "al estilo de las fotos", casi no les hace caso.
+> Si se le pide **cambiar el traje de la foto**, el resultado sí parece una reina de Tenerife.
 
 **Cómo funciona:**
 
-1. **Fotos de reina A y B:** 1 o 2 fotos de trajes de reina. Mejor si se ve el traje completo, de
-   frente y con buena luz. Con **dos trajes distintos** el modelo aprende el estilo en vez de copiar
-   un traje concreto.
-2. **Texto fijo:** describe cómo es una reina de Tenerife (estructura gigante a la espalda, lentejuelas,
-   pedrería, espejos y plumas, tocado, escenario de la gala). Además pide **copiar solo el traje, no la
-   persona**, para no reproducir la cara de la reina real.
-3. **Idea:** lo que pediría el alumno, por ejemplo *"a carnival queen inspired by volcanoes"*. Funciona
-   mejor en inglés.
-4. **Run** genera **dos imágenes con la misma idea y la misma semilla**:
-   - **SIN referencias:** lo que sabe el modelo por sí solo.
-   - **CON referencias:** después de ver las fotos.
+1. **Foto:** una reina con el **traje entero, de frente, ocupando casi toda la foto**. Si sale mucho
+   público o escenario alrededor, recórtala antes. El resultado tiene la misma forma que la foto
+   (vertical u horizontal).
+2. **Idea:** solo el **tema del traje**, mejor en inglés: *"the Teide volcano with lava and stars"*,
+   *"a peacock"*, *"the Canary Islands sea"*…
+3. **Run** genera **tres imágenes con la misma idea y la misma semilla**:
+   - **① Misma estructura, tema nuevo:** conserva la forma del traje de la foto y cambia colores,
+     adornos y figuras. Es la más fiel.
+   - **② Traje nuevo, mismo estilo:** un traje distinto, pero construido y decorado igual que el de
+     la foto. Tiene más libertad.
+   - **③ Sin foto:** solo con texto, para comparar.
 
-Comparándolas se ve si las fotos ayudan y cuánto.
-
-**Con una sola foto:** selecciona los dos nodos *Referencia B* y pulsa **Ctrl+B** para saltarlos.
+Las tres recetas son los nodos *Receta*: se pueden retocar, y **{idea}** es donde entra la idea.
+Todas piden **otra cara** para no copiar a la reina real.
 
 **Consejos:**
 
-- Si el resultado copia demasiado la foto, usa dos fotos distintas o pon una idea más concreta.
-- Si no se parece lo suficiente, prueba con fotos donde el traje se vea entero y ocupe toda la imagen.
+- **¿Se parece demasiado a la foto?** Quédate con la ②. **¿Se aleja demasiado?** Con la ①.
+- **Para tener variedad, cambia de foto:** cada reina da otra estructura. Tener 5 o 6 fotos distintas
+  da mucho juego.
+- Si la idea no se nota, ponla más concreta y visual (*"a volcano: black lava rocks, red and orange
+  flames, smoke"* en vez de *"fire"*).
 - Usa fotos que tengáis derecho a usar: de la organización, de prensa con permiso o propias.
 
 ### ¿Y si quiero que lo sepa siempre, sin pasarle fotos?
@@ -57,7 +64,8 @@ Comparándolas se ve si las fotos ayudan y cuánto.
 Para eso se entrena un **LoRA**: un pequeño complemento del modelo hecho con unas 20 o 30 fotos de
 trajes de reina. Después, Z-Image Turbo sabría pintar reinas de Tenerife solo con escribirlo, y la app
 podría usarlo directamente. Hacen falta las fotos, una herramienta de entrenamiento y una o dos horas
-de la gráfica. Si las fotos de referencia dan buen resultado, este es el siguiente paso natural.
+de la gráfica. Es la forma de que **invente reinas nuevas desde cero** con sentido, cosa que las
+fotos de referencia no consiguen.
 
 ## Combinar varias imágenes (`referencias_flux2_klein.json`)
 
