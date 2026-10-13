@@ -115,6 +115,7 @@
     .vistas button span { font-size: 1.5rem; }
     .vistas button[aria-pressed="true"] { background: var(--amarillo); color: var(--tinta); border-color: var(--amarillo); }
 
+    .etiqueta-simulacro { display: inline-block; margin: 8px 0 0; padding: 4px 12px; border-radius: 999px; background: var(--amarillo); color: var(--tinta); font-weight: 900; font-size: 0.85rem; }
     .etiqueta-pendiente { position: absolute; top: 8px; left: 8px; padding: 4px 10px; border-radius: 99px; background: var(--amarillo); color: var(--tinta); font-size: 0.75rem; font-weight: 900; }
     .visor { position: fixed; inset: 0; z-index: 60; background: rgba(8, 3, 18, 0.92); display: grid; place-items: center; padding: 20px; cursor: zoom-out; }
     .visor img { max-width: 100%; max-height: 80vh; border-radius: 16px; }
@@ -136,6 +137,7 @@
         <div>
           <h1 class="titulo-con-icono"><span class="icono" aria-hidden="true">🎛️</span><span class="titulo-evento">Panel del profesor</span></h1>
           <p class="subtitulo" id="evento"></p>
+          <p class="etiqueta-simulacro" id="simulacro" hidden>🧪 SIMULACRO · datos de prueba (no son los de verdad)</p>
         </div>
         <nav class="enlaces">
           <a class="boton boton-secundario" href="/proyector" target="_blank">📺 Abrir proyector</a>

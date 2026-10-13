@@ -131,8 +131,12 @@ class Estudio:
     # --- Bucles en segundo plano ---
 
     async def vigilar_comfy(self):
+        fallos = 0
         while True:
-            self.comfy_info = await self.comfy.estado()
+            info = await self.comfy.estado()
+            fallos = 0 if info is not None else fallos + 1
+            if info is not None or fallos >= 2:  # un fallo suelto (ComfyUI muy ocupado) no cuenta
+                self.comfy_info = info
             await asyncio.sleep(5)
 
     async def bucle(self):

@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
+CARPETA_SIMULACRO = "datos-simulacro"  # carpeta de datos del simulacro (3-PROBAR-CON-100-PERSONAS.bat)
 COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 # Nombres de los colores en ajustes.toml -> variables CSS de la app
 COLORES_CSS = {

@@ -66,6 +66,32 @@ pause
 exit /b 1
 """
 
+SIMULACRO = r"""@echo off
+setlocal
+cd /d "%~dp0"
+title Simulacro - 100 personas virtuales
+set PYTHONIOENCODING=utf-8
+echo.
+echo  SIMULACRO: 100 personas virtuales usan el estudio a la vez durante 10 minutos.
+echo  Piden ideas a tu ComfyUI de verdad, esperan su turno, miran la galeria y votan.
+echo.
+echo  Antes de seguir:
+echo   - Cierra la ventana negra del estudio normal (si esta abierta).
+echo   - Arranca ComfyUI.
+echo  Todo se guarda aparte, en la carpeta "datos-simulacro": tus datos de verdad no se tocan.
+echo.
+choice /c SN /m "Quieres que las imagenes se publiquen solas? (N = las apruebas tu en el panel)"
+if errorlevel 2 (set "PUBLICAR=") else (set "PUBLICAR=--publicar")
+if exist "datos-simulacro" rmdir /s /q "datos-simulacro"
+set "ESTUDIO_DATOS=%~dp0datos-simulacro"
+start "Estudio (SIMULACRO)" "%~dp0python\python.exe" -m app
+"%~dp0python\python.exe" -m app.simulacro --personas 100 --minutos 10 %PUBLICAR%
+echo.
+echo  Cuando acabes, cierra tambien la ventana "Estudio (SIMULACRO)".
+echo  La carpeta "datos-simulacro" se puede borrar.
+pause
+"""
+
 LEEME = f"""ESTUDIO DE IMÁGENES · CarnaLab 2026 (versión {VERSION})
 CIFP Las Indias
 
@@ -88,6 +114,13 @@ CONCURSO
  Cada imagen nueva espera en "Por revisar" del panel hasta que pulsas
  "Publicar". Entonces entra en el mosaico gigante del proyector y se puede
  votar. Al final: Proyector > Ganadoras (cierra la votación y enseña el podio).
+
+PROBAR CON 100 PERSONAS (SIMULACRO)
+ Cierra el estudio, arranca ComfyUI y haz doble clic en "3-PROBAR-CON-100-PERSONAS.bat".
+ 100 personas virtuales usan el estudio durante 10 minutos con tu ComfyUI de
+ verdad. Abre el proyector para ver el mosaico y practica de jurado en el panel.
+ Al final sale un resumen: segundos por imagen y cuánto esperaría la gente.
+ Usa la carpeta "datos-simulacro": no toca tus datos de verdad.
 
 Para parar el estudio, cierra la ventana negra.
 Las imágenes se guardan en la carpeta "datos".
@@ -153,6 +186,7 @@ def main():
     # 4. Lanzadores e instrucciones
     escribir_windows(obra / "2-INICIAR-ESTUDIO.bat", INICIAR)
     escribir_windows(obra / "1-PERMITIR-FIREWALL.bat", FIREWALL)
+    escribir_windows(obra / "3-PROBAR-CON-100-PERSONAS.bat", SIMULACRO)
     escribir_windows(obra / "LEEME.txt", LEEME)
 
     # 5. ZIP con una carpeta dentro

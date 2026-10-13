@@ -106,6 +106,7 @@ async function refrescarEstado() {
   pintarBloqueados(e.bloqueados);
   pintarReto(e.reto);
   pintarConcurso(e.concurso);
+  $('simulacro').hidden = !e.simulacro;
   document.title = e.por_revisar ? `(${e.por_revisar}) 🛂 Panel del profesor` : 'Panel del profesor';
 }
 

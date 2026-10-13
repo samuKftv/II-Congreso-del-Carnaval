@@ -557,6 +557,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "reto": reto_json(reto_actual()),
             "concurso": concurso(),
             "por_revisar": db.cuantas_por_revisar(),
+            "simulacro": aj.datos.name == config.CARPETA_SIMULACRO,
         }
 
     @app.post("/api/panel/reto", dependencies=[Depends(profesor)])

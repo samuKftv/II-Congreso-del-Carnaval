@@ -80,6 +80,25 @@ El estudio funciona como un concurso durante toda la sesión:
 > Para moderar desde el móvil mientras das la charla, pon una `clave_profesor` propia en `ajustes.toml`
 > y abre `http://<IP del PC>:8080/panel` en tu teléfono.
 
+## Probar con 100 personas (simulacro)
+
+Antes del evento, comprueba cómo responde **tu PC con tu ComfyUI de verdad**:
+
+1. Cierra la ventana negra del estudio normal y arranca ComfyUI.
+2. Doble clic en **`3-PROBAR-CON-100-PERSONAS.bat`** (o `probar_100_personas.bat` si instalaste desde el código).
+   Te pregunta si las imágenes se publican solas o si quieres practicar de jurado.
+3. Se abre un estudio aparte, con su panel, y **100 personas virtuales** ("Prueba 001"…) lo usan durante
+   10 minutos: piden ideas, esperan su turno, miran la galería y votan. Abre el **proyector** para ver
+   cómo se llena el mosaico. Puedes entrar también con tu móvil para ver la espera desde dentro.
+4. La ventana del simulacro informa cada 10 s y al final enseña un **resumen**: segundos por imagen,
+   imágenes por hora, cuánto esperaría la última persona si todas pidieran a la vez y si hubo errores.
+
+Todo se guarda en `datos-simulacro/`, que se borra al empezar cada simulacro: **tus datos de verdad no se
+tocan**. El panel lo indica con la etiqueta *🧪 SIMULACRO*.
+
+El simulacro prueba tu PC, pero no la WiFi del recinto. Para eso, el día antes, entra en la red del
+recinto con 3 o 4 móviles y comprueba que abren el QR.
+
 ## Retos
 
 1. En el panel, escribe el tema (o pulsa una de las ideas), elige la duración y pulsa **🏁 Lanzar reto**.
