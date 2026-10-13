@@ -115,6 +115,10 @@
     .vistas button span { font-size: 1.5rem; }
     .vistas button[aria-pressed="true"] { background: var(--amarillo); color: var(--tinta); border-color: var(--amarillo); }
 
+    .interprete { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--borde); }
+    .interprete b { color: var(--texto); }
+    .ia { display: block; margin-top: 6px; font-size: 0.78rem; color: var(--cian); font-style: italic; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .visor .ia { display: block; -webkit-line-clamp: unset; max-width: 70ch; margin: 8px auto 0; font-size: 0.9rem; }
     .etiqueta-simulacro { display: inline-block; margin: 8px 0 0; padding: 4px 12px; border-radius: 999px; background: var(--amarillo); color: var(--tinta); font-weight: 900; font-size: 0.85rem; }
     .etiqueta-pendiente { position: absolute; top: 8px; left: 8px; padding: 4px 10px; border-radius: 99px; background: var(--amarillo); color: var(--tinta); font-size: 0.75rem; font-weight: 900; }
     .visor { position: fixed; inset: 0; z-index: 60; background: rgba(8, 3, 18, 0.92); display: grid; place-items: center; padding: 20px; cursor: zoom-out; }
@@ -155,6 +159,7 @@
           <h2>ComfyUI</h2>
           <div class="grande" id="comfy-estado"></div>
           <p class="nota" id="comfy-detalle"></p>
+          <p class="nota interprete" id="interprete" hidden></p>
         </section>
         <section class="tarjeta">
           <h2>En números</h2>

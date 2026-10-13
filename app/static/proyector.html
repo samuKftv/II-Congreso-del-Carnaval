@@ -215,7 +215,7 @@
           <div class="tarjeta">
             <h2>🏆 Las más votadas</h2>
             <ol class="top" id="m-top"></ol>
-            <p class="sub">📱 Vota en el móvil: 🌟 Galería → ❤️</p>
+            <p class="sub">📱 Vota en el móvil: botón ❤️ Votar</p>
           </div>
           <div class="tarjeta">
             <h2>✨ Últimas piezas</h2>
@@ -411,7 +411,7 @@
       votosPrevios = new Map(lista.map((t) => [t.id, t.votos]));
       $('especial').replaceChildren(
         el('h2', {}, `🗳️ ¡A votar! «${r.titulo}»`),
-        el('p', { class: 'sub' }, 'En el móvil: 🌟 Galería → 🏁 Reto, y dale ❤️ a tus favoritas'),
+        el('p', { class: 'sub' }, 'En el móvil: pulsa ❤️ Votar y dale ❤️ a tus favoritas'),
         lista.length
           ? el('div', { class: 'votacion', style: { '--columnas': lista.length <= 3 ? 3 : lista.length <= 8 ? 4 : 6 } }, lista.map((t, i) =>
               el('figure', { class: `${i === 0 && t.votos ? 'lider' : ''} ${subieron.has(t.id) ? 'sube' : ''}` },

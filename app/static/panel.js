@@ -87,6 +87,13 @@ async function refrescarEstado() {
       : `Arranca ComfyUI. La app lo busca en ${e.comfy.url} (config/ajustes.toml).`;
   }
 
+  const ia = e.interprete || { activado: false };
+  $('interprete').hidden = !ia.activado;
+  if (ia.activado) {
+    $('interprete').replaceChildren(el('span', { class: `punto ${ia.ok ? 'ok' : 'mal'}` }),
+      el('b', {}, '🧠 Intérprete de ideas: '), ia.ok ? `listo (${ia.modelo})` : `${ia.detalle}. Las ideas se pintan tal cual.`);
+  }
+
   $('n-cola').textContent = e.cola.length;
   $('n-media').textContent = e.media.toFixed(1);
   $('n-hechas').textContent = e.estadisticas.hechas;
@@ -141,7 +148,8 @@ function pintarRevision() {
     el('div', { class: 'candidata' },
       el('img', { src: t.mini, alt: t.prompt, onclick: () => ampliar(t) }),
       el('div', { class: 'info' }, el('b', {}, t.alias),
-        el('span', { title: t.prompt }, `${emojiTema(t.tema)}${emojiEstilo(t.estilo)} ${t.prompt}`)),
+        el('span', { title: t.prompt }, `${emojiTema(t.tema)}${emojiEstilo(t.estilo)} ${t.prompt}`),
+        t.prompt_ia ? el('small', { class: 'ia', title: t.prompt_ia }, `🧠 ${t.prompt_ia}`) : null),
       el('div', { class: 'decidir' },
         el('button', { class: 'boton boton-si', type: 'button', onclick: () => revisar([t.id], 'aprobada') }, '✅ Publicar'),
         el('button', { class: 'boton boton-peligro', type: 'button', onclick: () => revisar([t.id], 'rechazada') }, '❌ Rechazar')),
@@ -443,7 +451,8 @@ function pintarImagenes() {
 
 function ampliar(t) {
   const visor = el('div', { class: 'visor', onclick: () => visor.remove() },
-    el('div', {}, el('img', { src: t.imagen, alt: t.prompt }), el('p', {}, `${t.alias}: ${t.prompt}`)));
+    el('div', {}, el('img', { src: t.imagen, alt: t.prompt }), el('p', {}, `${t.alias}: ${t.prompt}`),
+      t.prompt_ia ? el('p', { class: 'ia' }, `🧠 Lo que entendió el intérprete: ${t.prompt_ia}`) : null));
   document.body.append(visor);
 }
 

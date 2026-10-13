@@ -420,3 +420,23 @@ def test_migracion_de_imagenes_ocultas(tmp_path):
     db = BaseDatos(ruta)
     assert {t["id"]: t["revision"] for t in db.galeria(10, panel=True)} == {"a": "aprobada", "b": "rechazada"}
     assert [t["id"] for t in db.galeria(10)] == ["a"]
+
+
+def test_votar_de_una_en_una(ajustes):
+    with TestClient(crear_app(ajustes)) as c:
+        ana, luis, eva = entrar(c, "Ana"), entrar(c, "Luis"), entrar(c, "Eva")
+        de_ana = [crear_y_esperar(c, ana, f"Idea de Ana {i}")["id"] for i in range(3)]
+        de_luis = crear_y_esperar(c, luis, "Idea de Luis")["id"]
+        r = c.get("/api/votar", headers=eva).json()
+        assert r["abierta"] and {t["id"] for t in r["imagenes"]} == set(de_ana) | {de_luis}
+        # Ni las propias ni las ya votadas
+        assert {t["id"] for t in c.get("/api/votar", headers=ana).json()["imagenes"]} == {de_luis}
+        c.post(f"/api/trabajos/{de_ana[0]}/voto", json={"valor": True}, headers=eva)
+        assert de_ana[0] not in {t["id"] for t in c.get("/api/votar", headers=eva).json()["imagenes"]}
+        assert c.get("/api/votar").status_code == 401
+        # Durante un reto, solo las del reto
+        c.post("/api/panel/reto", json={"titulo": "Rápido", "minutos": 0}, headers=PROFE)
+        del_reto = crear_y_esperar(c, luis, "Para el reto")["id"]
+        assert [t["id"] for t in c.get("/api/votar?ambito=reto", headers=eva).json()["imagenes"]] == [del_reto]
+        c.post("/api/panel/proyector", json={"vista": "podio"}, headers=PROFE)
+        assert c.get("/api/votar", headers=eva).json()["abierta"] is False

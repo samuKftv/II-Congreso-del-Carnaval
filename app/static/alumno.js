@@ -341,7 +341,7 @@ function pintarReto() {
     contenido = [
       el('span', { class: 'icono' }, '🗳️'),
       el('div', {}, `¡A votar el reto «${r.titulo}»!`, el('small', {}, 'Elige tus favoritas con ❤️')),
-      el('button', { class: 'boton boton-principal', type: 'button', onclick: () => abrirClase('reto') }, 'Votar'),
+      el('button', { class: 'boton boton-principal', type: 'button', onclick: () => abrirVotar() }, '❤️ Votar'),
     ];
   } else {
     estado.finReto = null;
@@ -366,7 +366,7 @@ function bandaConcurso() {
       el('small', {}, c.revisar_antes
         ? 'Si el jurado la aprueba, tu imagen entra en el mosaico de la pantalla.'
         : 'Tus imágenes entran en el mosaico de la pantalla.')),
-    el('button', { class: 'boton boton-principal', type: 'button', onclick: () => abrirClase('recientes') }, '❤️ Votar'))];
+    el('button', { class: 'boton boton-principal', type: 'button', onclick: () => abrirVotar() }, '❤️ Votar'))];
 }
 
 function relojReto() {
@@ -480,6 +480,7 @@ function esperar(trabajo) {
   $('lienzo').style.aspectRatio = trabajo.ancho && trabajo.alto ? `${trabajo.ancho} / ${trabajo.alto}` : '1';
   pintarEspera(trabajo);
   mostrar('espera');
+  votadorEspera.activar();
   clearTimeout(estado.sondeo);
   sondear();
 }
@@ -709,7 +710,7 @@ $('cerrar-galeria').addEventListener('click', () => ($('galeria').hidden = true)
 // Galería de la clase
 let sondeoClase = null;
 
-$('abrir-clase').addEventListener('click', () => abrirClase());
+$('abrir-votar').addEventListener('click', () => abrirVotar());
 $('cerrar-clase').addEventListener('click', () => {
   $('clase').hidden = true;
   clearInterval(sondeoClase);
@@ -779,6 +780,189 @@ $('mas-clase').addEventListener('click', async () => {
   } catch (e) { aviso(e.message, true); }
 });
 
+// --- Votar de una en una ---
+// Tarjetas grandes: deslizar a la derecha (o tocar dos veces) = me gusta; a la izquierda = otra.
+// Están en su propia pantalla y también en la de espera, para votar mientras llega tu turno.
+
+const saltadas = new Set();   // las que esta persona ha pasado sin votar (no vuelven hasta que lo pida)
+
+function contarVoto() {
+  const clave = `estudio.votos.${estado.token}`;
+  const n = Number(almacen.leer(clave) || 0) + 1;
+  almacen.guardar(clave, String(n));
+  return n;
+}
+
+function votosDados() {
+  return Number(almacen.leer(`estudio.votos.${estado.token}`) || 0);
+}
+
+class Votador {
+  constructor(caja) {
+    this.caja = caja;
+    this.lista = [];
+    this.actual = null;
+    this.abierta = true;
+    this.cargada = 0;
+    this.ocupado = false;
+  }
+
+  async activar() {
+    if (this.actual && this.caja.querySelector('.carta')) return;
+    await this.cargar();
+    this.siguiente();
+  }
+
+  async cargar() {
+    const r = estado.info && estado.info.reto;
+    const ambito = r && r.fase === 'votando' ? 'reto' : 'todo';
+    try {
+      const datos = await api(`/api/votar?ambito=${ambito}`, { cabeceras: cabeceras() });
+      this.abierta = datos.abierta;
+      this.total = datos.imagenes.length;
+      this.lista = datos.imagenes.filter((t) => !saltadas.has(t.id));
+      this.cargada = Date.now();
+    } catch (e) {
+      if (e.estado === 401) return salir(e.message);
+    }
+  }
+
+  async siguiente() {
+    this.actual = this.lista.shift() || null;
+    if (!this.actual && Date.now() - this.cargada > 4000) {  // se acabaron: ¿han llegado nuevas?
+      await this.cargar();
+      this.actual = this.lista.shift() || null;
+    }
+    this.pintar();
+    if (this.lista[0]) new Image().src = this.lista[0].mini;  // la siguiente, ya cargada
+  }
+
+  pintar() {
+    if (!this.abierta) {
+      return this.caja.replaceChildren(el('div', { class: 'votar-vacio' }, el('div', {}, '🔒'),
+        'La votación está cerrada: ¡mira las ganadoras en la pantalla!'));
+    }
+    const t = this.actual;
+    if (!t) {
+      const vacio = this.total
+        ? [el('div', {}, '🎉'), '¡Las has visto todas! Vuelve en un rato: siempre llegan nuevas.',
+            el('button', { class: 'boton boton-secundario', type: 'button', onclick: () => { saltadas.clear(); this.activar(); } },
+              '🔁 Ver otra vez las que pasé')]
+        : [el('div', {}, '🎨'), 'Todavía no hay imágenes para votar. ¡Vuelve en un rato!'];
+      this.caja.replaceChildren(el('div', { class: 'votar-vacio' }, vacio));
+      clearTimeout(this.reintento);
+      this.reintento = setTimeout(() => { if (!this.actual && !this.caja.closest('[hidden]')) this.activar(); }, 10000);
+      return;
+    }
+    const carta = el('div', { class: 'carta', role: 'img', 'aria-label': `${t.alias}: ${t.prompt}` },
+      el('img', { src: t.mini, alt: '' }),
+      el('div', { class: 'pie-carta' }, el('b', {}, `🎨 ${t.alias}`), el('span', {}, t.prompt)),
+      el('div', { class: 'sello sello-si' }, '❤️'),
+      el('div', { class: 'sello sello-no' }, '⏭'));
+    this.arrastre(carta);
+    const n = votosDados();
+    this.caja.replaceChildren(carta,
+      el('div', { class: 'votar-botones' },
+        el('button', { class: 'boton boton-secundario', type: 'button', onclick: () => this.saltar() }, '⏭ Otra'),
+        el('button', { class: 'boton boton-principal', type: 'button', onclick: () => this.megusta() }, '❤️ Me gusta')),
+      el('p', { class: 'votar-cuenta' }, n ? `Has dado ${n} ❤️` : 'Dale ❤️ a las que más te gusten'));
+  }
+
+  arrastre(carta) {
+    let x0 = null;
+    let dx = 0;
+    let ultimoToque = 0;
+    const sellos = () => {
+      carta.querySelector('.sello-si').style.opacity = Math.max(0, Math.min(1, dx / 90));
+      carta.querySelector('.sello-no').style.opacity = Math.max(0, Math.min(1, -dx / 90));
+    };
+    carta.addEventListener('pointerdown', (ev) => {
+      x0 = ev.clientX;
+      dx = 0;
+      carta.classList.add('arrastrando');
+      carta.setPointerCapture(ev.pointerId);
+    });
+    carta.addEventListener('pointermove', (ev) => {
+      if (x0 === null) return;
+      dx = ev.clientX - x0;
+      carta.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`;
+      sellos();
+    });
+    const soltar = () => {
+      if (x0 === null) return;
+      x0 = null;
+      carta.classList.remove('arrastrando');
+      if (dx > 90) return this.megusta();
+      if (dx < -90) return this.saltar();
+      if (Math.abs(dx) < 8) {  // un toque: dos seguidos = me gusta
+        if (Date.now() - ultimoToque < 350) return this.megusta();
+        ultimoToque = Date.now();
+      }
+      dx = 0;
+      carta.style.transform = '';
+      sellos();
+    };
+    carta.addEventListener('pointerup', soltar);
+    carta.addEventListener('pointercancel', soltar);
+  }
+
+  irse(direccion) {
+    const carta = this.caja.querySelector('.carta');
+    if (!carta) return Promise.resolve();
+    carta.style.transform = `translateX(${direccion * 130}%) rotate(${direccion * 18}deg)`;
+    carta.style.opacity = '0';
+    return new Promise((fin) => setTimeout(fin, 260));
+  }
+
+  async megusta() {
+    const t = this.actual;
+    if (!t || this.ocupado) return;
+    this.ocupado = true;
+    const carta = this.caja.querySelector('.carta');
+    if (carta) carta.append(el('div', { class: 'corazon-grande' }, '❤️'));
+    if (navigator.vibrate) navigator.vibrate(30);
+    try {
+      await api(`/api/trabajos/${t.id}/voto`, { metodo: 'POST', datos: { valor: true }, cabeceras: cabeceras() });
+      contarVoto();
+    } catch (e) {
+      if (e.estado === 401) return salir(e.message);
+      if (e.estado === 423) this.abierta = false;
+      else aviso(e.message, true);
+    }
+    await new Promise((fin) => setTimeout(fin, 350));
+    await this.irse(1);
+    this.ocupado = false;
+    this.siguiente();
+  }
+
+  async saltar() {
+    const t = this.actual;
+    if (!t || this.ocupado) return;
+    saltadas.add(t.id);
+    this.ocupado = true;
+    await this.irse(-1);
+    this.ocupado = false;
+    this.siguiente();
+  }
+}
+
+const votadorGrande = new Votador($('votador-grande'));
+const votadorEspera = new Votador($('votador-espera'));
+
+function abrirVotar() {
+  cerrarVelos();
+  $('votar').hidden = false;
+  votadorGrande.actual = null;
+  votadorGrande.activar();
+}
+
+$('cerrar-votar').addEventListener('click', () => ($('votar').hidden = true));
+$('votar-galeria').addEventListener('click', () => {
+  $('votar').hidden = true;
+  abrirClase('recientes');
+});
+$('resultado-votar').addEventListener('click', () => abrirVotar());
+
 // Visor
 function abrirVisor(t) {
   $('visor-img').src = t.imagen;
@@ -807,13 +991,13 @@ function abrirVisor(t) {
 $('cerrar-visor').addEventListener('click', () => ($('visor').hidden = true));
 
 function cerrarVelos() {
-  for (const id of ['visor', 'galeria', 'clase']) $(id).hidden = true;
+  for (const id of ['visor', 'galeria', 'clase', 'votar']) $(id).hidden = true;
   clearInterval(sondeoClase);
 }
 
 document.addEventListener('keydown', (ev) => {
   if (ev.key !== 'Escape') return;
-  const abierto = ['visor', 'galeria', 'clase'].find((id) => !$(id).hidden);
+  const abierto = ['visor', 'galeria', 'clase', 'votar'].find((id) => !$(id).hidden);
   if (abierto) $(abierto).hidden = true;
   if (abierto === 'clase') clearInterval(sondeoClase);
 });

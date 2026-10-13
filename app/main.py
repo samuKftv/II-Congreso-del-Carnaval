@@ -25,6 +25,7 @@ from . import VERSION, config, fotos
 from .cola import Estudio, guardar_tesela
 from .comfy import ComfyUI
 from .db import BaseDatos
+from .interprete import Interprete
 from .moderacion import Filtro, normalizar
 
 log = logging.getLogger("estudio")
@@ -119,8 +120,9 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
     aj = aj or config.cargar()
     db = BaseDatos(aj.datos / "estudio.db")
     comfy = ComfyUI(aj.comfy_url)
-    estudio = Estudio(aj, db, comfy)
     filtro = Filtro(aj.palabras_prohibidas)
+    interprete = Interprete(aj.interprete_url, aj.interprete_modelo, filtro) if aj.interprete_activado else None
+    estudio = Estudio(aj, db, comfy, interprete)
     cache_red = {"hasta": 0.0, "direcciones": []}
 
     def direcciones() -> list[str]:
@@ -152,11 +154,14 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def vida(_app):
-        tareas = [asyncio.create_task(estudio.bucle()), asyncio.create_task(estudio.vigilar_comfy())]
+        tareas = [asyncio.create_task(estudio.bucle()), asyncio.create_task(estudio.vigilar_comfy()),
+                  asyncio.create_task(estudio.bucle_interprete())]
         yield
         for t in tareas:
             t.cancel()
         await comfy.cerrar()
+        if interprete:
+            await interprete.cerrar()
 
     app = FastAPI(lifespan=vida, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.estudio = estudio
@@ -461,6 +466,14 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             raise HTTPException(423, "La votación está cerrada: ¡mira las ganadoras en la pantalla! 🏆")
         return {"votos": db.votar(id_, p["token"], v.valor), "votado": v.valor}
 
+    @app.get("/api/votar")
+    def para_votar(ambito: str = "todo", p: dict = Depends(persona)):
+        """Imágenes para votar de una en una. Con ambito=reto, solo las del reto en marcha."""
+        r = reto_actual()
+        filas = db.para_votar(p["token"], 150, reto=r["id"] if ambito == "reto" and r else None)
+        return {"abierta": vista() != "podio",
+                "imagenes": [trabajo_json(t, publico=True, token=p["token"]) for t in filas]}
+
     @app.get("/api/trabajos/{id_}")
     def ver_trabajo(id_: str = Depends(id_valido), p: dict = Depends(persona)):
         t = db.trabajo(id_)
@@ -558,6 +571,8 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "concurso": concurso(),
             "por_revisar": db.cuantas_por_revisar(),
             "simulacro": aj.datos.name == config.CARPETA_SIMULACRO,
+            "interprete": {"activado": True, "ok": interprete.ok, "modelo": interprete.modelo,
+                           "detalle": interprete.detalle} if interprete else {"activado": False},
         }
 
     @app.post("/api/panel/reto", dependencies=[Depends(profesor)])
@@ -602,14 +617,16 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
     @app.get("/api/panel/imagenes", dependencies=[Depends(profesor)])
     def imagenes(antes: float | None = None, limite: int = 60):
         filas = db.galeria(min(max(limite, 1), 200), panel=True, antes=antes)
-        return [trabajo_json(t, publico=True) | {"token": t["token"]} for t in filas]
+        return [trabajo_json(t, publico=True) | {"token": t["token"], "prompt_ia": t.get("prompt_ia") or ""}
+                for t in filas]
 
     @app.get("/api/panel/revision", dependencies=[Depends(profesor)])
     def revision(limite: int = 40):
         """Imágenes que esperan la aprobación del profesor, de la más antigua a la más nueva."""
         filas = db.por_revisar(min(max(limite, 1), 200))
         return {"total": db.cuantas_por_revisar(),
-                "imagenes": [trabajo_json(t, publico=True) | {"token": t["token"]} for t in filas]}
+                "imagenes": [trabajo_json(t, publico=True) | {"token": t["token"], "prompt_ia": t.get("prompt_ia") or ""}
+                             for t in filas]}
 
     @app.post("/api/panel/revisar", dependencies=[Depends(profesor)])
     def revisar(r: Revision):

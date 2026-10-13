@@ -55,6 +55,15 @@ tiempo_maximo = 180
 nodo_prompt = ""
 nodo_tamano = ""
 
+[interprete]
+# Una IA de texto (Ollama) convierte cada idea del alumnado, aunque sea corta, rara o en español,
+# en una descripción detallada en inglés antes de pintarla. Funciona sin internet, en el procesador
+# (no le quita memoria a la gráfica) y trabaja por adelantado mientras la gente espera turno.
+# Se instala con 4-INSTALAR-INTERPRETE.bat. Si Ollama no está abierto, las ideas se pintan tal cual.
+activado = true
+url = "http://127.0.0.1:11434"
+modelo = "qwen2.5:3b"
+
 [limites]
 # Imágenes en cola a la vez por persona (1 = turnos justos para todos).
 en_cola_por_persona = 1

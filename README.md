@@ -10,7 +10,10 @@ en el PC del profesor. Todo funciona dentro de la WiFi del aula.
   - **Carnavales del mundo × técnicas**: combina Venecia, Río, Cádiz, Oruro… con acuarela, cómic, 3D…
   - **Botones de detalles** (lugar, luz, plano, ambiente) que enriquecen la idea.
   - **Foto como base**: transforma una foto propia. Es **privada** salvo que la persona marque compartirla.
-  - **Galería de la clase** con votos ❤️ (nadie puede votarse a sí mismo).
+  - **❤️ Votar** de una en una, deslizando como en una app de citas, también mientras esperan su turno.
+    Nadie puede votarse a sí mismo.
+  - **Intérprete de ideas** (opcional): una IA de texto en tu PC entiende ideas cortas, raras o en español
+    y las convierte en una descripción detallada antes de pintarlas.
 - 🎛️ **Panel del profesor**: abre y cierra el estudio, controla la cola, **aprueba cada imagen antes de que
   salga en público** y lanza **retos con cuenta atrás**.
 - 📺 **Proyector**: un **mosaico gigante con la forma del cartel** que se completa con las imágenes aprobadas,
@@ -68,7 +71,9 @@ El estudio funciona como un concurso durante toda la sesión:
 3. **El mosaico crece en el proyector**: la imagen aprobada sale en grande con su autor y vuela a su hueco.
    Los huecos libres enseñan el cartel en oscuro y, cada medio minuto, el cartel aparece entero encima de
    todas las piezas. Cuando se llena, se hace más grande.
-4. **Todo el mundo vota** desde el móvil (🌟 Galería → ❤️). Las tres más votadas llevan medalla en el
+4. **Todo el mundo vota** desde el móvil con el botón **❤️ Votar**: las imágenes salen de una en una,
+   deslizar a la derecha (o tocar dos veces) es *me gusta*, a la izquierda pasa a otra. También se vota
+   mientras se espera turno. Las tres más votadas llevan medalla en el
    mosaico y salen en el lateral del proyector.
 5. **Al final**, en el panel, **📺 Proyector → 🏆 Ganadoras**: se cierra la votación y el proyector
    enseña el podio con confeti. **🧩 Mosaico** vuelve atrás y reabre la votación.
@@ -79,6 +84,27 @@ El estudio funciona como un concurso durante toda la sesión:
 >
 > Para moderar desde el móvil mientras das la charla, pon una `clave_profesor` propia en `ajustes.toml`
 > y abre `http://<IP del PC>:8080/panel` en tu teléfono.
+
+## Intérprete de ideas (recomendado)
+
+La gente escribe ideas cortas, raras o en español ("un pulpo pirata", "conviérteme en reina"). El modelo
+de imágenes entiende mucho mejor una descripción detallada en inglés. El intérprete hace esa traducción:
+
+> *un pulpo pirata* → *A cheerful giant purple octopus dressed as a pirate captain, with a tricorn hat
+> trimmed in gold, an eye patch and a tiny wooden sword…*
+
+1. Una sola vez, con internet: doble clic en **`4-INSTALAR-INTERPRETE.bat`** (o `instalar_interprete.bat`).
+   Instala [Ollama](https://ollama.com) y el modelo **qwen2.5:3b** (unos 2 GB).
+2. Abre el estudio. En el panel, junto a ComfyUI, verás **🧠 Intérprete de ideas: listo**.
+
+- Funciona **sin internet** y en el **procesador**, así que no le quita memoria a la gráfica.
+- Trabaja **por adelantado** mientras la gente espera en la cola. Si no le da tiempo o Ollama está
+  cerrado, la idea se pinta tal cual: nunca frena la cola.
+- El alumnado sigue viendo su idea original. En el panel, debajo de cada imagen, ves en azul
+  **🧠 lo que entendió**.
+- El simulacro te dice en cuántas imágenes llegó a tiempo. Si llega a pocas, tu procesador va justo:
+  puedes probar otro modelo más pequeño en `[interprete]` de `ajustes.toml` (por ejemplo `qwen2.5:1.5b`,
+  después de `ollama pull qwen2.5:1.5b`) o desactivarlo con `activado = false`.
 
 ## Probar con 100 personas (simulacro)
 
@@ -138,7 +164,7 @@ antes de llevarlos a la app:
 
 | Archivo | Para qué |
 |---|---|
-| `ajustes.toml` | Nombre del evento, puerto, código del aula, clave del profesor, dirección de ComfyUI, formatos, revisión antes de publicar, palabras bloqueadas |
+| `ajustes.toml` | Nombre del evento, puerto, código del aula, clave del profesor, dirección de ComfyUI, intérprete de ideas, formatos, revisión antes de publicar, palabras bloqueadas |
 | `estilos.json` | Técnicas (`estilos`), carnavales del mundo (`temas`), ideas de *Inspírame* y botones de detalles. Cada uno con nombre, emoji, colores y la "receta" que se añade al prompt |
 | `workflow_api.json` | El workflow de ComfyUI en formato API |
 
@@ -156,6 +182,7 @@ En ese caso, indica los números de nodo en `nodo_prompt` y `nodo_tamano`.
 | El QR muestra una IP rara | Escribe la IP correcta del PC en `direccion` (`ajustes.toml`). La ves con `ipconfig` en una terminal. |
 | El panel dice "ComfyUI: sin conexión" | Comprueba que ComfyUI está arrancado. La app lo busca sola en los puertos **8188** (portable) y **8000** (Desktop); si lo tienes en otro, escribe su dirección en `url` de `[comfyui]`. |
 | Las imágenes dan error | Mira la ventana de ComfyUI: suele ser un modelo que falta o un nombre de archivo distinto en el workflow. |
+| El panel dice "Intérprete: Ollama no está abierto" | Abre Ollama desde el menú Inicio (icono de la llama junto al reloj). Si dice "falta el modelo", ejecuta `4-INSTALAR-INTERPRETE.bat`. Mientras tanto, las ideas se pintan tal cual. |
 | Quiero ver la imagen formándose | Arranca ComfyUI con `--preview-method auto`. Sin esa opción solo se ve la barra de progreso. |
 | Quiero empezar de cero | Cierra la app y borra la carpeta `datos/` (imágenes, fotos, votos e historial). |
 | La opción de foto no aparece | Tu workflow necesita un `KSampler` y un `VAE Decode` normales. Con el de Z-Image Turbo funciona. |

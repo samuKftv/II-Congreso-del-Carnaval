@@ -65,6 +65,7 @@ COLUMNAS_NUEVAS = {
         "reto": "INTEGER",
         "revision": "TEXT NOT NULL DEFAULT 'aprobada'",
         "revisado": "REAL",
+        "prompt_ia": "TEXT",  # lo que entendió el intérprete ("" = se pintó la idea tal cual)
     },
 }
 
@@ -189,6 +190,16 @@ class BaseDatos:
             limite,
         )
         return filas[::-1]
+
+    def para_votar(self, token: str, limite: int, reto: int | None = None) -> list[dict]:
+        """Imágenes que esa persona puede votar todavía (ni suyas ni ya votadas), en orden aleatorio."""
+        sql = (f"SELECT t.*, {VOTOS} FROM trabajos t WHERE {VISIBLES} AND t.token != ? "
+               "AND NOT EXISTS (SELECT 1 FROM votos v WHERE v.trabajo = t.id AND v.token = ?)")
+        args: list = [token, token]
+        if reto is not None:
+            sql += " AND t.reto = ?"
+            args.append(reto)
+        return self._todas(sql + " ORDER BY RANDOM() LIMIT ?", *args, limite)
 
     # Revisión del profesor
     def por_revisar(self, limite: int) -> list[dict]:

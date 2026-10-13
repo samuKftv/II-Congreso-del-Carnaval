@@ -188,10 +188,24 @@ class Simulacro:
                     partes.append(f"por revisar {e['por_revisar']}")
                 if not e["comfy"]["ok"]:
                     partes.append("¡ComfyUI NO RESPONDE!")
+                ia = e.get("interprete", {})
+                if ia.get("activado"):
+                    partes.append("intérprete " + ("listo" if ia.get("ok") else "NO disponible"))
                 partes.append(f"errores {self.errores}")
                 self.salida(" · ".join(partes))
 
     # --- Al terminar ---
+
+    async def contar_interpretadas(self):
+        """Cuántas imágenes de las personas virtuales pasaron por el intérprete a tiempo."""
+        async with self.cliente() as c:
+            r = await self.pedir(c, "GET", "/api/panel/imagenes?limite=200")
+            e = await self.pedir(c, "GET", "/api/panel/estado")
+        if r is None or r.status_code != 200 or e is None or not e.json().get("interprete", {}).get("activado"):
+            self.interpretadas = None
+            return
+        mias = [t for t in r.json() if t["alias"].startswith("Prueba ")]
+        self.interpretadas = (sum(1 for t in mias if t.get("prompt_ia")), len(mias))
 
     async def recoger(self):
         """Cancela lo que las personas virtuales tengan en cola para no dejar la gráfica trabajando."""
@@ -227,6 +241,9 @@ class Simulacro:
                      f"máxima {minutos(datos['espera_max'])}.")
         if self.pendientes_al_final:
             s.append(f"  Al acabar quedaban {self.pendientes_al_final} imágenes en cola (se han cancelado).")
+        if getattr(self, "interpretadas", None):
+            hechas, total = self.interpretadas
+            s.append(f"  Intérprete de ideas: llegó a tiempo en {hechas} de {total} imágenes.")
         s.append(f"  Servidor: respondió en {datos['respuesta_media'] * 1000:.0f} ms de media "
                  f"(la más lenta, {datos['respuesta_max']:.1f} s) · errores: {self.errores}.")
         s.append(linea)
@@ -263,6 +280,7 @@ class Simulacro:
             await asyncio.gather(*tareas)
         finally:
             await self.recoger()
+        await self.contar_interpretadas()
         return self.resumen()
 
 

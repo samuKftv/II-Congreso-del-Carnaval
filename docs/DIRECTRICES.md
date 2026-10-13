@@ -106,7 +106,7 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
    - **Carnavales del mundo × técnicas**: se combinan; la receta del carnaval describe el lugar y la
      tradición, la técnica cómo se pinta.
    - **Botones de detalles** (lugar, luz, plano, ambiente): enseñan a construir un buen prompt.
-     No se usa una IA extra para "mejorar" el prompt porque competiría con Z-Image por los 12 GB de VRAM.
+     (En la cuarta versión se añade un intérprete de ideas que va en el procesador, sin tocar la VRAM.)
    - **Foto como base (img2img)**: la foto se reduce en el móvil, se ajusta a ~1 MP y se usa con
      `denoise` 0,5 / 0,68 / 0,82. **Privada por defecto**: solo sale en el proyector y la galería si la
      persona marca compartirla.
@@ -126,4 +126,14 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
      160 px para que el proyector aguante miles.
    - **Ganadoras**: al mostrar el podio del concurso se **cierra la votación**; al volver al mosaico se
      reabre.
-4. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+4. **Cuarta versión** ✅:
+   - **Votar de una en una**: botón ❤️ Votar siempre a mano, tarjetas grandes (deslizar a la derecha o
+     tocar dos veces = me gusta; a la izquierda = otra), también en la pantalla de espera y en el
+     resultado. Las imágenes salen en orden aleatorio, sin las propias ni las ya votadas, para que todas
+     se vean.
+   - **Intérprete de ideas** (opcional, Ollama + qwen2.5:3b): convierte la idea en una descripción en
+     inglés de 40–70 palabras sin cambiar lo que se pidió; las recetas de técnica y carnaval se aplican
+     encima. Va en el procesador (`num_gpu = 0`) y trabaja por adelantado sobre la cola: elige la
+     primera idea que le dé tiempo a terminar antes de que llegue su turno, y si no llega, se pinta la
+     idea tal cual. Lo que devuelve pasa también por el filtro de palabras.
+5. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

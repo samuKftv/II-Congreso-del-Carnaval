@@ -17,6 +17,7 @@ from . import workflow
 from .comfy import ComfyNoDisponible, ComfyUI, Interrumpido
 from .config import Ajustes, Estilo, Formato
 from .db import BaseDatos
+from .interprete import Interprete
 
 log = logging.getLogger("estudio")
 
@@ -42,8 +43,8 @@ def guardar_tesela(imagen: Image.Image, ruta) -> None:
 
 
 class Estudio:
-    def __init__(self, aj: Ajustes, db: BaseDatos, comfy: ComfyUI):
-        self.aj, self.db, self.comfy = aj, db, comfy
+    def __init__(self, aj: Ajustes, db: BaseDatos, comfy: ComfyUI, interprete: Interprete | None = None):
+        self.aj, self.db, self.comfy, self.interprete = aj, db, comfy, interprete
         self.nodos = workflow.localizar(aj.workflow, aj.nodo_prompt, aj.nodo_tamano)
         self.avisos = workflow.avisos(aj.workflow, self.nodos)
         for carpeta in ("imagenes", "miniaturas", "teselas", "estilos", "fotos"):
@@ -64,6 +65,10 @@ class Estudio:
         self._tarea: asyncio.Task | None = None
         self._cancelados: set[str] = set()
         self._intentos: dict[str, int] = {}
+        self._hay_ideas = asyncio.Event()       # despierta al intérprete
+        self._ia_en_curso: str | None = None     # trabajo que está interpretando ahora
+        self._ia_decidida: set[str] = set()      # trabajos que ya no necesitan intérprete
+        self._ia_media = 6.0                     # segundos que tarda en interpretar una idea
 
     # --- Consultas ---
 
@@ -113,6 +118,8 @@ class Estudio:
         self.cola.append(id_)
         self.duenos[id_] = token
         self._despertar.set()
+        if self.interprete and not miniatura_estilo:
+            self._hay_ideas.set()
         return id_
 
     async def cancelar(self, id_: str) -> bool:
@@ -137,7 +144,74 @@ class Estudio:
             fallos = 0 if info is not None else fallos + 1
             if info is not None or fallos >= 2:  # un fallo suelto (ComfyUI muy ocupado) no cuenta
                 self.comfy_info = info
+            if self.interprete:
+                await self.interprete.comprobar()
             await asyncio.sleep(5)
+
+    # --- Intérprete de ideas: trabaja por adelantado sobre la cola ---
+
+    def _siguiente_idea(self) -> str | None:
+        """La primera idea de la cola que dé tiempo a interpretar antes de que le toque a la gráfica.
+        Si el intérprete va más lento que la gráfica, se salta las más cercanas en vez de hacerla esperar."""
+        pendientes = []
+        for posicion, id_ in enumerate(list(self.cola)):
+            if id_ in self._ia_decidida:
+                continue
+            t = self.db.trabajo(id_)
+            if not t or t["miniatura_estilo"] or t["prompt_ia"] is not None:
+                self._ia_decidida.add(id_)
+                continue
+            if posicion * self.media() >= self._ia_media * 0.8:
+                return id_
+            pendientes.append(id_)
+        return pendientes[0] if pendientes else None
+
+    async def bucle_interprete(self):
+        if not self.interprete:
+            return
+        while True:
+            id_ = self._siguiente_idea()
+            if id_ is None:
+                self._hay_ideas.clear()
+                await self._hay_ideas.wait()
+                continue
+            if not self.interprete.ok:  # Ollama cerrado: se pinta la idea tal cual hasta que vuelva
+                await asyncio.sleep(3)
+                continue
+            t = self.db.trabajo(id_)
+            self._ia_en_curso, inicio = id_, time.time()
+            try:
+                texto = await self.interprete.interpretar(t["prompt"])
+            finally:
+                self._ia_en_curso = None
+            self._ia_media = 0.7 * self._ia_media + 0.3 * (time.time() - inicio)
+            self._ia_decidida.add(id_)
+            ahora = self.db.trabajo(id_)
+            if ahora and ahora["prompt_ia"] is None:  # si la gráfica no se ha adelantado
+                self.db.actualizar(id_, prompt_ia=texto or "")
+                if texto:
+                    log.info("Intérprete: «%s» → %s", t["prompt"], texto)
+
+    async def _idea_interpretada(self, id_: str) -> str | None:
+        """Lo que entendió el intérprete. Lo espera si está con esta idea o libre para empezarla;
+        si está ocupado con otra o no funciona, se pinta la idea tal cual."""
+        limite = time.time() + 15
+        while time.time() < limite:
+            t = self.db.trabajo(id_)
+            if t["prompt_ia"] is not None:
+                return t["prompt_ia"] or None
+            if not self.interprete.ok or self._ia_en_curso not in (None, id_):
+                break
+            self._hay_ideas.set()
+            await asyncio.sleep(0.2)
+        self._ia_decidida.add(id_)
+        self.db.actualizar(id_, prompt_ia="")
+        return None
+
+    def _receta(self, t: dict, idea: str) -> str:
+        estilo, tema = self.aj.estilos.get(t["estilo"]), self.aj.temas.get(t["tema"] or "")
+        texto = tema.aplicar(idea) if tema else idea
+        return estilo.aplicar(texto) if estilo else texto
 
     async def bucle(self):
         while True:
@@ -165,7 +239,12 @@ class Estudio:
             if not ancho:  # trabajos de la primera versión
                 formato = self.aj.formatos.get(t["formato"]) or next(iter(self.aj.formatos.values()))
                 ancho, alto = formato.ancho, formato.alto
-            wf = workflow.preparar(self.aj.workflow, self.nodos, t["prompt_final"], ancho, alto,
+            prompt_final = t["prompt_final"]
+            if self.interprete and not t["miniatura_estilo"]:
+                if idea := await self._idea_interpretada(id_):
+                    prompt_final = self._receta(t, idea)
+                    self.db.actualizar(id_, prompt_final=prompt_final)
+            wf = workflow.preparar(self.aj.workflow, self.nodos, prompt_final, ancho, alto,
                                    t["semilla"], "congreso_carnaval/estudio")
             if t["foto"]:
                 try:

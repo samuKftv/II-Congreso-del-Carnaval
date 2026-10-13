@@ -110,6 +110,13 @@ CADA VEZ
  3. El alumnado escanea el QR del panel o del proyector.
  4. La primera vez, pulsa "Generar miniaturas" en el panel.
 
+INTERPRETE DE IDEAS (recomendado)
+ Doble clic en "4-INSTALAR-INTERPRETE.bat" (una sola vez, con internet).
+ Instala Ollama y una IA de texto pequeña que convierte cada idea, aunque sea
+ corta o rara, en una descripción detallada antes de pintarla. Va en el
+ procesador y no le quita memoria a la gráfica. En el panel, junto a ComfyUI,
+ verás "Intérprete de ideas: listo". Si no está, las ideas se pintan tal cual.
+
 CONCURSO
  Cada imagen nueva espera en "Por revisar" del panel hasta que pulsas
  "Publicar". Entonces entra en el mosaico gigante del proyector y se puede
@@ -187,6 +194,7 @@ def main():
     escribir_windows(obra / "2-INICIAR-ESTUDIO.bat", INICIAR)
     escribir_windows(obra / "1-PERMITIR-FIREWALL.bat", FIREWALL)
     escribir_windows(obra / "3-PROBAR-CON-100-PERSONAS.bat", SIMULACRO)
+    escribir_windows(obra / "4-INSTALAR-INTERPRETE.bat", (RAIZ / "instalar_interprete.bat").read_text(encoding="ascii"))
     escribir_windows(obra / "LEEME.txt", LEEME)
 
     # 5. ZIP con una carpeta dentro
