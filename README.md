@@ -85,6 +85,44 @@ El estudio funciona como un concurso durante toda la sesión:
 > Para moderar desde el móvil mientras das la charla, pon una `clave_profesor` propia en `ajustes.toml`
 > y abre `http://<IP del PC>:8080/panel` en tu teléfono.
 
+## Pensada para el móvil
+
+El público solo usa el móvil, así que la app está hecha para él y para una WiFi con 100 teléfonos:
+
+- **Ligera**: la primera carga pesa unos 90 KB. Textos y datos van comprimidos, y el cartel, el logo y la
+  fuente se envían en versiones reducidas.
+- **Imágenes ligeras**: en el móvil se ve un WebP mucho más ligero que el PNG original. El PNG sigue
+  disponible en ⬇️ Descargar, a calidad completa.
+- **A mano con el pulgar**: ❤️ Votar y Mías se quedan arriba al bajar por la pantalla, y ✨ Crear se
+  queda abajo. Los botones miden al menos 44 px, el iPhone no hace zoom al escribir y se respetan la
+  muesca y la barra de inicio.
+- **Fluida en móviles sencillos**: sin desenfoques costosos y sin el retraso de 300 ms al tocar.
+- **Si bloquean el móvil** mientras esperan, al volver se pone al día al momento.
+- **iPhone**: se explica cómo guardar la imagen en Fotos (mantener el dedo sobre ella).
+
+## Modelo de imágenes
+
+Recomendado para una RTX 5070 de 12 GB y 100 personas: **Z-Image Turbo**, el que ya usas.
+
+- Es de los modelos rápidos (9 pasos) con mejor calidad: personas, disfraces, luces y texto. Además
+  entiende frases largas, que es justo lo que le da el intérprete de ideas.
+- **Cárgalo en fp8** (ya viene así: `ligero = true` en `[comfyui]` de `ajustes.toml`). El modelo normal
+  ocupa 12 GB y no cabe entero en tu gráfica, así que ComfyUI va pasando trozos y tarda más. En fp8
+  ocupa la mitad, cabe entero y va bastante más rápido, con una diferencia de calidad casi imperceptible.
+  No hace falta descargar nada: la app le pide a ComfyUI que cargue el mismo archivo en fp8.
+- **Compruébalo con el simulacro**: lanza uno con `ligero = true` y otro con `ligero = false`, y compara
+  los "s por imagen".
+
+| Modelo | Velocidad | Calidad | ¿Para el evento? |
+|---|---|---|---|
+| **Z-Image Turbo en fp8** | Rápido | Muy buena | ✅ Recomendado |
+| Z-Image Turbo en bf16 (normal) | Más lento en 12 GB | Muy buena | Solo si en el simulacro va igual |
+| FLUX.2 [Klein] 4B | El más rápido (4 pasos) | Buena, algo menos detalle | Plan B si el simulacro va justo (habría que adaptar el workflow) |
+| SDXL con LoRA rápida | Rápido | Entiende peor las frases | ❌ |
+| FLUX.1 dev, Qwen-Image | Lentos en 12 GB | Muy buena | ❌ Demasiado grandes para 100 personas |
+
+Si aun así va justo, baja el tamaño en `[formatos]` (por ejemplo `cuadrado = [768, 768]`).
+
 ## Intérprete de ideas (recomendado)
 
 La gente escribe ideas cortas, raras o en español ("un pulpo pirata", "conviérteme en reina"). El modelo
@@ -164,7 +202,7 @@ antes de llevarlos a la app:
 
 | Archivo | Para qué |
 |---|---|
-| `ajustes.toml` | Nombre del evento, puerto, código del aula, clave del profesor, dirección de ComfyUI, intérprete de ideas, formatos, revisión antes de publicar, palabras bloqueadas |
+| `ajustes.toml` | Nombre del evento, puerto, código del aula, clave del profesor, dirección de ComfyUI, modelo en fp8 (`ligero`), intérprete de ideas, formatos, revisión antes de publicar, palabras bloqueadas |
 | `estilos.json` | Técnicas (`estilos`), carnavales del mundo (`temas`), ideas de *Inspírame* y botones de detalles. Cada uno con nombre, emoji, colores y la "receta" que se añade al prompt |
 | `workflow_api.json` | El workflow de ComfyUI en formato API |
 
@@ -192,6 +230,7 @@ En ese caso, indica los números de nodo en `nodo_prompt` y `nodo_tamano`.
 Todo se guarda en `datos/`, solo en este PC:
 - `estudio.db`: historial;
 - `imagenes/`: los PNG originales;
+- `vistas/`: las versiones WebP que se ven en los móviles;
 - `miniaturas/`: las versiones ligeras para galerías;
 - `teselas/`: las piezas pequeñas del mosaico;
 - `estilos/`: las tarjetas de técnicas y carnavales;

@@ -440,3 +440,27 @@ def test_votar_de_una_en_una(ajustes):
         assert [t["id"] for t in c.get("/api/votar?ambito=reto", headers=eva).json()["imagenes"]] == [del_reto]
         c.post("/api/panel/proyector", json={"vista": "podio"}, headers=PROFE)
         assert c.get("/api/votar", headers=eva).json()["abierta"] is False
+
+
+def test_ligero_para_el_movil(ajustes, comfy_falso):
+    with TestClient(crear_app(ajustes)) as c:
+        h = entrar(c)
+        t = crear_y_esperar(c, h, "Un farolillo de papel")
+        # La imagen para ver es un WebP ligero; el PNG sigue para descargar
+        vista = c.get(t["vista"])
+        assert vista.headers["content-type"] == "image/webp"
+        assert Image.open(io.BytesIO(vista.content)).size == (1024, 1024)
+        (ajustes.datos / "vistas" / f"{t['id']}.webp").unlink()  # imagen antigua: se hace al pedirla
+        assert c.get(t["vista"]).status_code == 200
+        # Cartel y logo reducidos
+        cartel = c.get("/cartel?ancho=480")
+        assert cartel.headers["content-type"] == "image/webp" and Image.open(io.BytesIO(cartel.content)).width == 480
+        assert len(cartel.content) < (ajustes.cartel.stat().st_size / 2)
+        assert Image.open(io.BytesIO(c.get("/logo?alto=120").content)).height == 120
+        assert c.get("/cartel?ancho=123").headers["content-type"] == "image/jpeg"  # tamaños fijos: original
+        # Textos comprimidos; imágenes tal cual
+        assert c.get("/static/alumno.js", headers={"Accept-Encoding": "gzip"}).headers.get("content-encoding") == "gzip"
+        assert c.get("/api/info", headers={"Accept-Encoding": "gzip"}).headers.get("content-encoding") == "gzip"
+        assert "content-encoding" not in c.get(t["imagen"], headers={"Accept-Encoding": "gzip"}).headers
+        # El modelo se carga en fp8
+        assert comfy_falso[1].state.recibidos[-1]["16"]["inputs"]["weight_dtype"] == "fp8_e4m3fn"

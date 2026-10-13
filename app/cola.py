@@ -36,6 +36,14 @@ class Actual:
 
 
 TESELA = 160  # lado de la pieza del mosaico: pequeña para que el proyector aguante cientos
+VISTA = 1280  # lado máximo de la imagen que se ve en el móvil
+
+
+def guardar_vista(imagen: Image.Image, ruta) -> None:
+    """La imagen para ver en el móvil: WebP de unos 150 KB en vez del PNG de 1,5 MB (que sigue para descargar)."""
+    vista = imagen.convert("RGB")
+    vista.thumbnail((VISTA, VISTA))
+    vista.save(ruta, "WEBP", quality=86, method=4)
 
 
 def guardar_tesela(imagen: Image.Image, ruta) -> None:
@@ -45,9 +53,10 @@ def guardar_tesela(imagen: Image.Image, ruta) -> None:
 class Estudio:
     def __init__(self, aj: Ajustes, db: BaseDatos, comfy: ComfyUI, interprete: Interprete | None = None):
         self.aj, self.db, self.comfy, self.interprete = aj, db, comfy, interprete
+        self.workflow = workflow.aligerar(aj.workflow) if aj.ligero else aj.workflow
         self.nodos = workflow.localizar(aj.workflow, aj.nodo_prompt, aj.nodo_tamano)
         self.avisos = workflow.avisos(aj.workflow, self.nodos)
-        for carpeta in ("imagenes", "miniaturas", "teselas", "estilos", "fotos"):
+        for carpeta in ("imagenes", "vistas", "miniaturas", "teselas", "estilos", "fotos"):
             (aj.datos / carpeta).mkdir(parents=True, exist_ok=True)
 
         self.abierto = db.leer_estado("abierto", "1") == "1"
@@ -244,7 +253,7 @@ class Estudio:
                 if idea := await self._idea_interpretada(id_):
                     prompt_final = self._receta(t, idea)
                     self.db.actualizar(id_, prompt_final=prompt_final)
-            wf = workflow.preparar(self.aj.workflow, self.nodos, prompt_final, ancho, alto,
+            wf = workflow.preparar(self.workflow, self.nodos, prompt_final, ancho, alto,
                                    t["semilla"], "congreso_carnaval/estudio")
             if t["foto"]:
                 try:
@@ -308,6 +317,7 @@ class Estudio:
             else:
                 im.save(ruta, "PNG")
             rgb = im.convert("RGB")
+        guardar_vista(rgb, carpeta / "vistas" / f"{id_}.webp")
         mini = rgb.copy()
         mini.thumbnail((512, 512))
         mini.save(carpeta / "miniaturas" / f"{id_}.webp", "WEBP", quality=82)

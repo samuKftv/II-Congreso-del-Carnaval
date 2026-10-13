@@ -9,7 +9,8 @@
   <link rel="stylesheet" href="/static/estilo.css">
   <link rel="stylesheet" href="/tema.css">
   <style>
-    .app { position: relative; z-index: 1; width: min(100%, 640px); margin: 0 auto; padding: 18px 16px 40px; }
+    .app { position: relative; z-index: 1; width: min(100%, 640px); margin: 0 auto;
+      padding: calc(18px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
     .cabecera { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
     .cabecera .titulo-evento { font-size: clamp(1.3rem, 5.2vw, 1.75rem); }
     .chip-galeria { min-height: 44px; padding: 8px 14px; font-size: 0.95rem; white-space: nowrap; }
@@ -20,7 +21,10 @@
     .congreso { margin: 8px auto 0; max-width: 34ch; font-weight: 700; font-size: 0.95rem; color: var(--texto); opacity: 0.9; }
     .pie-centro { margin-top: 28px; display: grid; justify-items: center; gap: 8px; color: var(--suave); font-size: 0.82rem; font-weight: 700; }
     .pie-centro img { height: 52px; width: auto; }
-    .fila-saludo { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 14px; }
+    /* Saludo con ❤️ Votar y Mías: se queda arriba al bajar, siempre a mano */
+    .fila-saludo { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 -16px 14px;
+      position: sticky; top: 0; z-index: 6; padding: calc(8px + env(safe-area-inset-top)) 16px 8px;
+      background: color-mix(in srgb, var(--noche) 94%, transparent); border-bottom: 1px solid transparent; }
     .fila-saludo .saludo { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .accesos { display: flex; gap: 8px; flex: none; }
     .accesos .boton { min-height: 44px; padding: 8px 12px; font-size: 0.88rem; }
@@ -111,7 +115,7 @@
     .reto .reloj { font-variant-numeric: tabular-nums; font-size: 1.3rem; color: var(--amarillo); }
     .reto .boton { min-height: 44px; padding: 8px 14px; font-size: 0.92rem; flex: none; }
 
-    .accion { position: sticky; bottom: 12px; margin-top: 26px; z-index: 5; }
+    .accion { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom)); margin-top: 26px; z-index: 5; }
     #estado-estudio { margin-top: 4px; }
 
     /* Espera */
@@ -159,7 +163,7 @@
     .botones .boton-secundario { font-size: 0.98rem; padding: 12px 10px; white-space: nowrap; }
 
     /* Galería personal */
-    .velo { position: fixed; inset: 0; z-index: 50; background: rgba(8, 3, 18, 0.88); backdrop-filter: blur(8px); overflow-y: auto; }
+    .velo { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--noche) 97%, black); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
     .velo .app { padding-top: 22px; }
     .rejilla { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
     @media (min-width: 520px) { .rejilla { grid-template-columns: repeat(3, 1fr); } }
@@ -169,7 +173,7 @@
     .pieza .autor { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 8px 8px; font-size: 0.8rem; font-weight: 800; pointer-events: none;
       background: linear-gradient(transparent, rgba(10, 4, 22, 0.9)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 70px; }
     .corazon { position: absolute; right: 6px; bottom: 6px; min-width: 56px; min-height: 36px; padding: 4px 10px; border-radius: 999px; border: 0; cursor: pointer;
-      background: rgba(10, 4, 22, 0.75); color: var(--texto); font-weight: 900; font-size: 0.92rem; backdrop-filter: blur(4px); }
+      background: rgba(10, 4, 22, 0.82); color: var(--texto); font-weight: 900; font-size: 0.92rem; }
     .corazon[aria-pressed="true"] { background: var(--magenta); }
     .corazon:disabled { cursor: default; opacity: 0.85; }
     .corazon.late { animation: latido 0.4s ease; }
@@ -187,6 +191,7 @@
     .aviso-revision.rechazada { background: var(--capa-2); border-color: var(--borde); color: var(--suave); }
     .insignia.revision { background: rgba(10, 4, 22, 0.8); color: var(--texto); }
     .mas-clase { text-align: center; margin-top: 16px; }
+    .consejo-ios { grid-column: 1 / -1; margin: 2px 0 0; color: var(--suave); font-size: 0.88rem; font-weight: 700; text-align: center; }
 
     /* Votar de una en una */
     .boton-votar { box-shadow: 0 8px 24px -10px var(--magenta); }
@@ -233,7 +238,7 @@
       <form class="tarjeta" id="form-entrada">
         <div>
           <label class="etiqueta" for="alias">¿Cómo te llamamos?</label>
-          <input class="campo" id="alias" maxlength="24" autocomplete="nickname" placeholder="Tu alias" required>
+          <input class="campo" id="alias" maxlength="24" autocomplete="nickname" autocapitalize="words" enterkeyhint="go" placeholder="Tu alias" required>
         </div>
         <div id="bloque-codigo" hidden>
           <label class="etiqueta" for="codigo">Código del aula</label>
@@ -276,7 +281,7 @@
           <div><b>📷 Tu foto</b><span id="foto-texto">La transformaremos según tu idea</span></div>
           <button class="boton boton-secundario" id="quitar-foto" type="button" aria-label="Quitar la foto" title="Quitar la foto">✕</button>
         </div>
-        <textarea class="campo" id="prompt" placeholder="Describe tu imagen…"></textarea>
+        <textarea class="campo" id="prompt" autocapitalize="sentences" enterkeyhint="done" placeholder="Describe tu imagen…"></textarea>
         <div class="fila-texto">
           <div class="botones-idea">
             <button class="boton boton-secundario inspirame" id="inspirame" type="button">🎲 Inspírame</button>
@@ -353,6 +358,7 @@
       <p class="aviso-revision" id="resultado-revision" hidden></p>
       <div class="botones">
         <a class="boton boton-principal boton-grande" id="descargar" download>⬇️ Descargar</a>
+        <p class="consejo-ios" data-ios hidden>📲 Para guardarla en Fotos, mantén el dedo sobre la imagen y elige «Guardar en Fotos».</p>
         <button class="boton boton-secundario" id="otra" type="button">🔁 Otra versión</button>
         <button class="boton boton-secundario" id="editar" type="button">✏️ Cambiar idea</button>
         <button class="boton boton-secundario boton-ancho" id="resultado-votar" type="button">❤️ Vota las de los demás</button>
@@ -428,6 +434,7 @@
       <div class="botones">
         <button class="boton boton-secundario boton-grande voto-grande" id="visor-voto" type="button" hidden></button>
         <a class="boton boton-principal boton-grande" id="visor-descargar" download>⬇️ Descargar</a>
+        <p class="consejo-ios" data-ios hidden>📲 Para guardarla en Fotos, mantén el dedo sobre la imagen y elige «Guardar en Fotos».</p>
         <button class="boton boton-secundario" id="visor-usar" type="button" style="grid-column: 1 / -1">✏️ Usar esta idea</button>
       </div>
     </div>

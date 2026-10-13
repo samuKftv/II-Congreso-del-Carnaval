@@ -451,7 +451,7 @@ function pintarImagenes() {
 
 function ampliar(t) {
   const visor = el('div', { class: 'visor', onclick: () => visor.remove() },
-    el('div', {}, el('img', { src: t.imagen, alt: t.prompt }), el('p', {}, `${t.alias}: ${t.prompt}`),
+    el('div', {}, el('img', { src: t.vista || t.imagen, alt: t.prompt }), el('p', {}, `${t.alias}: ${t.prompt}`),
       t.prompt_ia ? el('p', { class: 'ia' }, `🧠 Lo que entendió el intérprete: ${t.prompt_ia}`) : null));
   document.body.append(visor);
 }

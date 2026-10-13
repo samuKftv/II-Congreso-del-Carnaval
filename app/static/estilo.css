@@ -2,7 +2,8 @@
 
 @font-face {
   font-family: "Righteous";
-  src: url("/static/fuentes/Righteous-Regular.ttf") format("truetype");
+  src: url("/static/fuentes/Righteous-Regular.woff2") format("woff2"),
+       url("/static/fuentes/Righteous-Regular.ttf") format("truetype");
   font-display: swap;
 }
 
@@ -75,6 +76,8 @@ body::after {
 }
 
 button, input, textarea { font: inherit; color: inherit; }
+/* En el móvil: sin retraso ni zoom al tocar dos veces, y sin el recuadro gris al pulsar */
+button, a, summary, label, .carta { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 img { display: block; max-width: 100%; }
 [hidden] { display: none !important; }
 
@@ -120,7 +123,6 @@ img { display: block; max-width: 100%; }
   border-radius: var(--radio);
   padding: 20px;
   box-shadow: var(--sombra);
-  backdrop-filter: blur(6px);
 }
 
 /* Botones */
@@ -209,7 +211,7 @@ textarea.campo { resize: none; min-height: 120px; line-height: 1.45; }
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
   transform: translate(-50%, 30px);
   opacity: 0;
   visibility: hidden;

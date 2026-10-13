@@ -122,6 +122,17 @@ def preparar(wf: dict, nodos: Nodos, prompt: str, ancho: int, alto: int, semilla
     return wf
 
 
+def aligerar(wf: dict) -> dict:
+    """Carga el modelo de difusión en fp8: ocupa la mitad de memoria. Z-Image Turbo en bf16 (12 GB) no cabe
+    entero en una gráfica de 12 GB y ComfyUI tiene que ir pasando trozos; en fp8 cabe y va más rápido."""
+    wf = copy.deepcopy(wf)
+    for n in wf.values():
+        entradas = n.get("inputs", {})
+        if n.get("class_type") == "UNETLoader" and entradas.get("weight_dtype") == "default":
+            entradas["weight_dtype"] = "fp8_e4m3fn"
+    return wf
+
+
 def con_foto(wf: dict, nodos: Nodos, imagen: str, fuerza: float) -> dict:
     """Cambia el lienzo vacío por la foto subida a ComfyUI (img2img). `wf` ya viene preparado."""
     if not nodos.admite_fotos:

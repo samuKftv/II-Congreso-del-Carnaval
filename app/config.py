@@ -78,6 +78,7 @@ class Ajustes:
     detalles: list[dict]
     datos: Path = field(default_factory=lambda: RAIZ / "datos")
     revisar_antes: bool = True  # el profesor aprueba cada imagen antes de que sea pública
+    ligero: bool = True  # modelo de difusión en fp8 (cabe entero en 12 GB de VRAM)
     interprete_activado: bool = False  # IA de texto (Ollama) que convierte la idea en una descripción en inglés
     interprete_url: str = "http://127.0.0.1:11434"
     interprete_modelo: str = "qwen2.5:3b"
@@ -174,6 +175,7 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         detalles=list(e.get("detalles", [])),
         datos=datos,
         revisar_antes=bool(moderacion.get("revisar_antes", True)),
+        ligero=bool(comfy.get("ligero", True)),
         interprete_activado=bool(interprete.get("activado", False)),
         interprete_url=str(interprete.get("url", "http://127.0.0.1:11434")).rstrip("/"),
         interprete_modelo=str(interprete.get("modelo", "qwen2.5:3b")).strip(),

@@ -136,4 +136,13 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
      encima. Va en el procesador (`num_gpu = 0`) y trabaja por adelantado sobre la cola: elige la
      primera idea que le dé tiempo a terminar antes de que llegue su turno, y si no llega, se pinta la
      idea tal cual. Lo que devuelve pasa también por el filtro de palabras.
-5. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+5. **Quinta versión** ✅ (100 móviles en una WiFi):
+   - Gzip para HTML, JS, CSS y JSON; cartel y logo reducidos a WebP; fuente en WOFF2. La primera carga
+     baja de unos 320 KB a unos 90 KB.
+   - Vista WebP de 1280 px para ver la imagen en el móvil (el PNG queda solo para descargar).
+   - Barra superior fija con ❤️ Votar y Mías; zonas seguras (`env(safe-area-inset-*)`);
+     `touch-action: manipulation`; sin `backdrop-filter`; puesta al día al volver a la pestaña;
+     consejo de guardado en iPhone.
+   - Modelo de difusión en fp8 (`ligero = true`): Z-Image Turbo en bf16 (12 GB) no cabe entero en
+     12 GB de VRAM.
+6. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

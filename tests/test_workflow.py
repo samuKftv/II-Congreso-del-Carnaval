@@ -52,3 +52,14 @@ def test_avisos_si_falta_tamano_o_guardado():
     nodos = workflow.localizar(wf)
     avisos = workflow.avisos(wf, nodos)
     assert len(avisos) == 3
+
+
+def test_aligerar_carga_el_modelo_en_fp8():
+    from app.workflow import aligerar
+
+    wf = json.loads((RAIZ / "config" / "workflow_api.json").read_text(encoding="utf-8"))
+    ligero = aligerar(wf)
+    assert ligero["16"]["inputs"]["weight_dtype"] == "fp8_e4m3fn"
+    assert wf["16"]["inputs"]["weight_dtype"] == "default"  # no toca el original
+    wf["16"]["inputs"]["weight_dtype"] = "fp8_e5m2"  # si alguien eligió otro, se respeta
+    assert aligerar(wf)["16"]["inputs"]["weight_dtype"] == "fp8_e5m2"

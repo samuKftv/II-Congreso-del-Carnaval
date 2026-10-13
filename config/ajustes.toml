@@ -49,6 +49,11 @@ clave_profesor = "cambia-esta-clave"
 url = "auto"
 # Workflow exportado desde ComfyUI con "Exportar (API)".
 workflow = "config/workflow_api.json"
+# true = carga el modelo en fp8, que ocupa la mitad de memoria. Z-Image Turbo normal (bf16) ocupa 12 GB
+# y no cabe entero en una gráfica de 12 GB, así que ComfyUI va pasando trozos y tarda más. En fp8 cabe
+# entero y va bastante más rápido, con una diferencia de calidad casi imperceptible.
+# Compruébalo con el simulacro: prueba true y false y mira los "s por imagen".
+ligero = true
 # Segundos máximos por imagen antes de darla por fallida.
 tiempo_maximo = 180
 # Solo si la app no encuentra sola el nodo del prompt o del tamaño: pon aquí su número de nodo.

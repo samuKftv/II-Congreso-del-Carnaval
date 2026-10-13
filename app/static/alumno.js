@@ -35,6 +35,21 @@ function mostrar(pantalla) {
   window.scrollTo({ top: 0 });
 }
 
+// En el iPhone, "Descargar" la guarda en Archivos: explicamos cómo llevarla a Fotos
+const ES_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+document.querySelectorAll('[data-ios]').forEach((p) => (p.hidden = !ES_IOS));
+
+// Al volver al navegador (tras bloquear el móvil o cambiar de app) se pone al día al momento
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !estado.info) return;
+  refrescarInfo();
+  if (estado.trabajo) {
+    clearTimeout(estado.sondeo);
+    sondear();
+  }
+  if (estado.enRevision.size) comprobarRevision();
+});
+
 // --- Arranque ---
 
 async function iniciar() {
@@ -82,11 +97,11 @@ function pintarMarca() {
   document.querySelectorAll('[data-congreso]').forEach((n) => { n.textContent = congreso; n.hidden = !congreso; });
   for (const id of ['logo-entrada', 'logo-cabecera']) {
     $(id).hidden = !logo;
-    if (logo) { $(id).src = logo; $(id).alt = centro || evento; }
+    if (logo) { $(id).src = `${logo}&alto=120`; $(id).alt = centro || evento; }  // versión ligera para el móvil
   }
   $('pie-centro').hidden = !logo;
   $('cartel-entrada').hidden = !cartel;
-  if (cartel) { $('cartel-entrada').src = cartel; $('cartel-entrada').alt = `Cartel de ${evento}`; }
+  if (cartel) { $('cartel-entrada').src = `${cartel}&ancho=480`; $('cartel-entrada').alt = `Cartel de ${evento}`; }
   $('mascara').hidden = !!cartel;
 }
 
@@ -570,7 +585,7 @@ function terminar(t) {
     if (navigator.vibrate) navigator.vibrate(80);
   };
   img.onerror = () => fallo('La imagen se ha creado pero no se ha podido descargar. Mírala en "Mías".');
-  img.src = t.imagen;
+  img.src = t.vista || t.imagen;  // WebP ligero para verla; el PNG original es para descargar
 }
 
 const TEXTOS_REVISION = {
@@ -965,7 +980,7 @@ $('resultado-votar').addEventListener('click', () => abrirVotar());
 
 // Visor
 function abrirVisor(t) {
-  $('visor-img').src = t.imagen;
+  $('visor-img').src = t.vista || t.imagen;
   $('visor-img').alt = t.prompt;
   $('visor-idea').textContent = t.prompt;
   $('visor-autor').textContent = t.mia ? '' : `🎨 ${t.alias}`;

@@ -17,12 +17,13 @@ from urllib.parse import quote, unquote
 import segno
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pydantic import BaseModel, Field
 
 from . import VERSION, config, fotos
-from .cola import Estudio, guardar_tesela
+from .cola import Estudio, guardar_tesela, guardar_vista
 from .comfy import ComfyUI
 from .db import BaseDatos
 from .interprete import Interprete
@@ -37,6 +38,35 @@ FASES_RETO = ("creando", "votando", "podio", "cerrado")
 VISTAS_PROYECTOR = ("mosaico", "galeria", "podio")  # podio = ganadoras del concurso (cierra la votación)
 MAX_MOSAICO = 3000
 LOCALES = {"127.0.0.1", "::1", "localhost"}
+SIN_COMPRIMIR = ("/img/", "/estilos/", "/cartel", "/logo", "/static/fuentes/")  # ya van comprimidas (PNG, WebP, JPG)
+ANCHOS_CARTEL = (480, 720, 960)
+ALTOS_LOGO = (80, 120, 160)
+
+
+class ComprimirTexto:
+    """Gzip para HTML, JS, CSS y JSON (pesan 4-5 veces menos por la WiFi); las imágenes, tal cual."""
+
+    def __init__(self, app):
+        self.app = app
+        self.gzip = GZipMiddleware(app, minimum_size=800)
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and not scope["path"].startswith(SIN_COMPRIMIR):
+            return await self.gzip(scope, receive, send)
+        return await self.app(scope, receive, send)
+
+
+def reducida(ruta: Path, ancho: int | None = None, alto: int | None = None) -> bytes:
+    """Versión WebP más pequeña del cartel o del logo, para que el móvil no baje el original."""
+    with Image.open(ruta) as im:
+        im.load()
+        if ancho and im.width > ancho:
+            im = im.resize((ancho, round(im.height * ancho / im.width)), Image.LANCZOS)
+        elif alto and im.height > alto:
+            im = im.resize((round(im.width * alto / im.height), alto), Image.LANCZOS)
+        buffer = io.BytesIO()
+        im.save(buffer, "WEBP", quality=85)
+        return buffer.getvalue()
 
 
 class Entrada(BaseModel):
@@ -164,6 +194,14 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             await interprete.cerrar()
 
     app = FastAPI(lifespan=vida, docs_url=None, redoc_url=None, openapi_url=None)
+    app.add_middleware(ComprimirTexto)
+    reducidas: dict[tuple, bytes] = {}
+
+    def servir_reducida(ruta: Path, ancho: int | None = None, alto: int | None = None) -> Response:
+        clave = (str(ruta), ruta.stat().st_mtime, ancho, alto)
+        if clave not in reducidas:
+            reducidas[clave] = reducida(ruta, ancho, alto)
+        return Response(reducidas[clave], media_type="image/webp", headers={"Cache-Control": "public, max-age=86400"})
     app.state.estudio = estudio
     app.state.url = url
     app.state.direcciones = direcciones
@@ -217,6 +255,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             d["votado"] = bool(t.get("votado"))
         if t["estado"] == "hecho":
             d["imagen"] = f"/img/{t['id']}.png"
+            d["vista"] = f"/img/{t['id']}/vista.webp"
             d["mini"] = f"/img/{t['id']}/mini.webp"
         if publico:
             return d
@@ -287,6 +326,18 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             raise HTTPException(404, "No existe")
         return FileResponse(ruta, media_type="image/webp", headers={"Cache-Control": "public, max-age=86400"})
 
+    @app.get("/img/{id_}/vista.webp")
+    def vista_ligera(id_: str = Depends(id_valido)):
+        ruta = aj.datos / "vistas" / f"{id_}.webp"
+        if not ruta.exists():  # imágenes de antes: se hace la primera vez que se pide
+            png = aj.datos / "imagenes" / f"{id_}.png"
+            if not png.exists():
+                raise HTTPException(404, "No existe")
+            ruta.parent.mkdir(parents=True, exist_ok=True)
+            with Image.open(png) as im:
+                guardar_vista(im, ruta)
+        return FileResponse(ruta, media_type="image/webp", headers={"Cache-Control": "public, max-age=86400"})
+
     @app.get("/img/{id_}/tesela.webp")
     def tesela(id_: str = Depends(id_valido)):
         ruta = aj.datos / "teselas" / f"{id_}.webp"
@@ -320,15 +371,19 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         return f"/{nombre}?v={int(ruta.stat().st_mtime)}" if ruta and ruta.exists() else None
 
     @app.get("/logo")
-    def logo():
+    def logo(alto: int = 0):
         if not aj.logo or not aj.logo.exists():
             raise HTTPException(404, "Sin logo")
+        if alto in ALTOS_LOGO and aj.logo.suffix.lower() != ".svg":
+            return servir_reducida(aj.logo, alto=alto)
         return FileResponse(aj.logo)
 
     @app.get("/cartel")
-    def cartel():
+    def cartel(ancho: int = 0):
         if not aj.cartel or not aj.cartel.exists():
             raise HTTPException(404, "Sin cartel")
+        if ancho in ANCHOS_CARTEL:
+            return servir_reducida(aj.cartel, ancho=ancho)
         return FileResponse(aj.cartel)
 
     @app.get("/tema.css")
@@ -528,7 +583,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         return {
             "piezas": [{"id": t["id"], "alias": t["alias"], "prompt": t["prompt"], "votos": t["votos"],
                         "tesela": f"/img/{t['id']}/tesela.webp", "mini": f"/img/{t['id']}/mini.webp",
-                        "imagen": f"/img/{t['id']}.png"}
+                        "imagen": f"/img/{t['id']}/vista.webp"}
                        for t in db.mosaico(MAX_MOSAICO)],
             "en_revision": db.cuantas_por_revisar(),
         }

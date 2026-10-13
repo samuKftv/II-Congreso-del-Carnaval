@@ -432,7 +432,7 @@
           ? el('div', { class: 'podio' }, orden.map(([t, clase, medalla, numero]) => t
               ? el('div', { class: `puesto ${clase}` },
                   el('div', { class: 'medalla' }, medalla),
-                  el('div', { class: 'marco' }, el('img', { src: t.imagen, alt: t.prompt })),
+                  el('div', { class: 'marco' }, el('img', { src: t.vista || t.imagen, alt: t.prompt })),
                   el('div', { class: 'nombre' }, t.alias),
                   el('span', { class: 'votos-chip' }, `❤️ ${t.votos} ${t.votos === 1 ? 'voto' : 'votos'}`),
                   el('div', { class: 'peana' }, numero))
@@ -786,7 +786,7 @@
         const autor = `🎨 ${img.alias}${img.votos ? ` · ❤️ ${img.votos}` : ''}`;
         caja.replaceChildren(...[
           el('img', { class: 'difuso', src: img.mini, alt: '' }),
-          el('img', { class: 'nitida', src: img.imagen, alt: img.prompt }),
+          el('img', { class: 'nitida', src: img.vista || img.imagen, alt: img.prompt }),
           esNueva ? el('div', { class: 'nueva' }, '✨ ¡Recién salida!') : null,
           el('div', { class: 'pie' }, el('div', { class: 'autor' }, autor), el('div', { class: 'texto' }, img.prompt)),
         ].filter(Boolean));
@@ -796,7 +796,7 @@
         if (esNueva) confeti(70);
         pintarTira();
       };
-      precarga.src = img.imagen;
+      precarga.src = img.vista || img.imagen;
     }
 
     function vaciar() {
