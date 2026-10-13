@@ -18,6 +18,8 @@ const estado = {
   sondeo: null,
   pestana: 'recientes',
   finReto: null,
+  enRevision: new Set(),   // mis imágenes que esperan al jurado
+  resultadoId: null,       // la que se ve en la pantalla de resultado
 };
 
 function leerUltimoPedido() {
@@ -59,6 +61,9 @@ async function iniciar() {
     try {
       const yo = await api('/api/yo', { cabeceras: cabeceras() });
       entrarCon(yo.alias);
+      api('/api/mis-creaciones', { cabeceras: cabeceras() })
+        .then((mias) => mias.filter((t) => t.publico && t.revision === 'pendiente').forEach((t) => vigilarRevision(t.id)))
+        .catch(() => {});
       if (yo.activos.length) esperar(yo.activos[0]);
       return;
     } catch (e) {
@@ -319,7 +324,7 @@ function pintarReto() {
   $('clase').querySelector('[data-pestana="reto"]').hidden = !r;
   if (!r) {
     estado.finReto = null;
-    $('reto').replaceChildren();
+    $('reto').replaceChildren(...bandaConcurso());
     return;
   }
   let contenido;
@@ -346,6 +351,22 @@ function pintarReto() {
     ];
   }
   $('reto').replaceChildren(el('div', { class: 'reto' }, contenido));
+}
+
+function bandaConcurso() {
+  const c = estado.info.concurso;
+  if (!c || c.vista === 'galeria') return [];
+  if (c.vista === 'podio') {
+    return [el('div', { class: 'reto' }, el('span', { class: 'icono' }, '🏆'),
+      el('div', {}, '¡Ya tenemos ganadoras!', el('small', {}, 'Mira la pantalla del aula')),
+      el('button', { class: 'boton boton-secundario', type: 'button', onclick: () => abrirClase('votos') }, 'Ver'))];
+  }
+  return [el('div', { class: 'reto' }, el('span', { class: 'icono' }, '🧩'),
+    el('div', {}, 'Concurso CarnaLab',
+      el('small', {}, c.revisar_antes
+        ? 'Si el jurado la aprueba, tu imagen entra en el mosaico de la pantalla.'
+        : 'Tus imágenes entran en el mosaico de la pantalla.')),
+    el('button', { class: 'boton boton-principal', type: 'button', onclick: () => abrirClase('recientes') }, '❤️ Votar'))];
 }
 
 function relojReto() {
@@ -539,6 +560,9 @@ function terminar(t) {
     $('obra').alt = t.prompt;
     $('resultado-idea').textContent = t.prompt;
     $('resultado-privada').hidden = t.publico;
+    estado.resultadoId = t.id;
+    pintarRevision(t);
+    if (t.publico && t.revision === 'pendiente') vigilarRevision(t.id);
     $('descargar').href = `${t.imagen}?descargar=1`;
     mostrar('resultado');
     confeti();
@@ -546,6 +570,47 @@ function terminar(t) {
   };
   img.onerror = () => fallo('La imagen se ha creado pero no se ha podido descargar. Mírala en "Mías".');
   img.src = t.imagen;
+}
+
+const TEXTOS_REVISION = {
+  pendiente: '⏳ El jurado está revisando tu imagen. Cuando la apruebe, entrará en el mosaico gigante de la pantalla.',
+  aprobada: '✅ ¡Aprobada! Ya está en el mosaico de la pantalla y se puede votar.',
+  rechazada: '🙈 Esta imagen no saldrá en la pantalla. ¡Prueba con otra idea!',
+};
+
+function pintarRevision(t) {
+  const aviso = $('resultado-revision');
+  const c = estado.info.concurso;
+  const mostrar = t.publico && (t.revision !== 'aprobada' || (c && c.revisar_antes));
+  aviso.hidden = !mostrar;
+  if (!mostrar) return;
+  aviso.className = `aviso-revision ${t.revision}`;
+  aviso.textContent = TEXTOS_REVISION[t.revision] || '';
+}
+
+// Avisa cuando el jurado decide sobre mis imágenes, aunque esté creando otra
+function vigilarRevision(id) {
+  estado.enRevision.add(id);
+  if (estado.enRevision.size === 1) setTimeout(comprobarRevision, 5000);
+}
+
+async function comprobarRevision() {
+  if (!estado.enRevision.size) return;
+  try {
+    const mias = await api('/api/mis-creaciones', { cabeceras: cabeceras() });
+    for (const t of mias) {
+      if (!estado.enRevision.has(t.id) || t.revision === 'pendiente') continue;
+      estado.enRevision.delete(t.id);
+      if (estado.resultadoId === t.id && !$('resultado').hidden) pintarRevision(t);
+      if (t.revision === 'aprobada') {
+        aviso('🎉 ¡Tu imagen ya está en el mosaico de la pantalla!');
+        if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+      }
+    }
+  } catch (e) {
+    if (e.estado === 401) { estado.enRevision.clear(); return; }
+  }
+  if (estado.enRevision.size) setTimeout(comprobarRevision, 5000);
 }
 
 function fallo(mensaje) {
@@ -572,6 +637,8 @@ function pieza(t, { votar = false } = {}) {
     hijos.push(botonCorazon(t));
   } else {
     if (!t.publico) hijos.push(el('span', { class: 'insignia' }, '🔒 Privada'));
+    else if (t.revision === 'pendiente') hijos.push(el('span', { class: 'insignia revision' }, '⏳ En revisión'));
+    else if (t.revision === 'rechazada') hijos.push(el('span', { class: 'insignia revision' }, '🙈 No publicada'));
     if (t.votos) hijos.push(el('span', { class: 'corazon', 'aria-label': `${t.votos} votos` }, `❤️ ${t.votos}`));
   }
   return el('div', { class: 'pieza' }, hijos);
@@ -651,6 +718,7 @@ document.querySelectorAll('[data-pestana]').forEach((b) =>
   b.addEventListener('click', () => abrirClase(b.dataset.pestana)));
 
 function abrirClase(pestana = estado.pestana) {
+  if (pestana !== estado.pestana) listaClase = [];
   estado.pestana = pestana;
   document.querySelectorAll('[data-pestana]').forEach((b) =>
     b.setAttribute('aria-selected', String(b.dataset.pestana === pestana)));
@@ -661,23 +729,55 @@ function abrirClase(pestana = estado.pestana) {
   sondeoClase = setInterval(cargarClase, 8000);
 }
 
+const PAGINA_CLASE = 60;
+let listaClase = [];
+
+function consultaClase(pestana) {
+  return pestana === 'reto' ? 'ambito=reto&orden=votos' : pestana === 'votos' ? 'orden=votos' : 'orden=recientes';
+}
+
 async function cargarClase() {
   const pestana = estado.pestana;
-  const consulta = pestana === 'reto' ? 'ambito=reto&orden=votos' : pestana === 'votos' ? 'orden=votos' : 'orden=recientes';
   try {
-    const g = await api(`/api/galeria?limite=60&${consulta}`, { cabeceras: cabeceras() });
+    const g = await api(`/api/galeria?limite=${PAGINA_CLASE}&${consultaClase(pestana)}`, { cabeceras: cabeceras() });
     if (pestana !== estado.pestana || $('clase').hidden) return;
-    if (!g.imagenes.length) {
-      $('rejilla-clase').replaceChildren(el('div', { class: 'vacio', style: { gridColumn: '1 / -1' } },
-        el('div', {}, pestana === 'reto' ? '🏁' : '🌟'),
-        pestana === 'reto' ? 'Todavía no hay imágenes en este reto.' : 'Todavía no hay imágenes compartidas.'));
-      return;
+    $('nota-clase').textContent = g.concurso && !g.concurso.votacion_abierta
+      ? '🔒 La votación está cerrada: ¡mira las ganadoras en la pantalla!'
+      : 'Dale ❤️ a tus favoritas. Las más votadas salen en la pantalla.';
+    let lista = g.imagenes;
+    if (pestana === 'recientes' && listaClase.length > lista.length && lista.length) {
+      // Conserva las que ya se habían cargado con "Ver más"
+      const ultima = lista[lista.length - 1].fin;
+      const ids = new Set(lista.map((t) => t.id));
+      lista = lista.concat(listaClase.filter((t) => !ids.has(t.id) && t.fin < ultima));
     }
-    $('rejilla-clase').replaceChildren(...g.imagenes.map((t) => pieza(t, { votar: true })));
+    pintarClase(lista, pestana, g.imagenes.length === PAGINA_CLASE);
   } catch (e) {
     if (e.estado === 401) return salir(e.message);
   }
 }
+
+function pintarClase(lista, pestana, hayMas) {
+  listaClase = lista;
+  $('mas-clase').hidden = !(pestana === 'recientes' && hayMas);
+  if (!lista.length) {
+    $('rejilla-clase').replaceChildren(el('div', { class: 'vacio', style: { gridColumn: '1 / -1' } },
+      el('div', {}, pestana === 'reto' ? '🏁' : '🌟'),
+      pestana === 'reto' ? 'Todavía no hay imágenes en este reto.' : 'Todavía no hay imágenes en la galería.'));
+    return;
+  }
+  $('rejilla-clase').replaceChildren(...lista.map((t) => pieza(t, { votar: true })));
+}
+
+$('mas-clase').addEventListener('click', async () => {
+  const ultima = listaClase[listaClase.length - 1];
+  if (!ultima) return;
+  try {
+    const g = await api(`/api/galeria?limite=${PAGINA_CLASE}&orden=recientes&antes=${ultima.fin}`, { cabeceras: cabeceras() });
+    if (estado.pestana !== 'recientes') return;
+    pintarClase(listaClase.concat(g.imagenes), 'recientes', g.imagenes.length === PAGINA_CLASE);
+  } catch (e) { aviso(e.message, true); }
+});
 
 // Visor
 function abrirVisor(t) {
@@ -687,7 +787,7 @@ function abrirVisor(t) {
   $('visor-autor').textContent = t.mia ? '' : `🎨 ${t.alias}`;
   $('visor-descargar').href = `${t.imagen}?descargar=1`;
   const voto = $('visor-voto');
-  voto.hidden = !t.publico;  // las privadas no se votan
+  voto.hidden = !t.publico || t.revision !== 'aprobada';  // solo se votan las que están en la galería
   if (!voto.hidden) {
     const nuevo = botonCorazon(t, 'boton boton-secundario boton-grande voto-grande');
     nuevo.id = 'visor-voto';

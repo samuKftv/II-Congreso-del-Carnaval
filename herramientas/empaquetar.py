@@ -84,6 +84,11 @@ CADA VEZ
  3. El alumnado escanea el QR del panel o del proyector.
  4. La primera vez, pulsa "Generar miniaturas" en el panel.
 
+CONCURSO
+ Cada imagen nueva espera en "Por revisar" del panel hasta que pulsas
+ "Publicar". Entonces entra en el mosaico gigante del proyector y se puede
+ votar. Al final: Proyector > Ganadoras (cierra la votación y enseña el podio).
+
 Para parar el estudio, cierra la ventana negra.
 Las imágenes se guardan en la carpeta "datos".
 En la carpeta "comfyui" hay workflows para probar en ComfyUI (imágenes de referencia).

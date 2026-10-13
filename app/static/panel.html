@@ -80,6 +80,42 @@
     .acciones-reto .boton { min-height: 48px; font-size: 0.98rem; }
     .etiqueta-privada { position: absolute; top: 8px; right: 8px; padding: 4px 10px; border-radius: 99px; background: rgba(10, 4, 22, 0.8); font-size: 0.75rem; font-weight: 900; }
     .acceso-profe { max-width: 420px; margin: 12vh auto 0; display: grid; gap: 14px; }
+    /* Revisión antes de publicar */
+    .revision { border: 2px solid color-mix(in srgb, var(--amarillo) 55%, transparent); }
+    .revision.vacia { border-color: var(--borde); }
+    .cabeza-revision { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 6px; }
+    .cabeza-revision h2 { margin: 0; font-size: 1.3rem; }
+    .contador { min-width: 34px; padding: 2px 12px; border-radius: 999px; background: var(--amarillo); color: var(--tinta); font-weight: 900; text-align: center; }
+    .revision.vacia .contador { background: var(--capa-2); color: var(--suave); }
+    .cabeza-revision .boton { min-height: 44px; padding: 8px 16px; font-size: 0.92rem; }
+    .cabeza-revision .empuje { margin-left: auto; }
+    .conmutador { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 800; font-size: 0.92rem; user-select: none; }
+    .conmutador input { appearance: none; width: 48px; height: 28px; border-radius: 99px; background: var(--capa-2); border: 1px solid var(--borde); position: relative; cursor: pointer; transition: background 0.2s; margin: 0; }
+    .conmutador input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform 0.2s; }
+    .conmutador input:checked { background: var(--verde); }
+    .conmutador input:checked::after { transform: translateX(20px); }
+    .rejilla-revision { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; }
+    .candidata { border-radius: 18px; overflow: hidden; background: var(--capa-2); display: flex; flex-direction: column; animation: llegar 0.4s ease; }
+    @keyframes llegar { from { transform: scale(0.94); opacity: 0; } }
+    .candidata img { width: 100%; aspect-ratio: 1; object-fit: cover; cursor: zoom-in; background: rgba(0, 0, 0, 0.25); }
+    .candidata .info { padding: 10px 12px 6px; font-size: 0.85rem; flex: 1; }
+    .candidata .info b { display: block; font-size: 0.95rem; }
+    .candidata .info span { color: var(--suave); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .decidir { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 6px 10px 6px; }
+    .decidir .boton { min-height: 50px; min-width: 0; padding: 6px 4px; font-size: 0.9rem; white-space: nowrap; }
+    .boton-si { background: linear-gradient(100deg, #1f9d5c, var(--verde)); color: #08210f; }
+    .pausar { display: block; width: calc(100% - 20px); margin: 0 10px 10px; border: 0; background: none; color: var(--suave); font: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; padding: 6px; border-radius: 10px; }
+    .pausar:hover { color: #ffc2cc; background: rgba(255, 84, 112, 0.1); }
+    .todo-revisado { display: flex; align-items: center; gap: 12px; padding: 14px 4px 4px; color: var(--suave); font-weight: 700; }
+    .todo-revisado span:first-child { font-size: 1.8rem; }
+
+    /* Proyector */
+    .vistas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .vistas button { min-height: 64px; padding: 6px 4px; border-radius: 14px; border: 1px solid var(--borde); background: var(--capa-2); color: var(--texto); font: inherit; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: grid; place-items: center; gap: 2px; line-height: 1.15; }
+    .vistas button span { font-size: 1.5rem; }
+    .vistas button[aria-pressed="true"] { background: var(--amarillo); color: var(--tinta); border-color: var(--amarillo); }
+
+    .etiqueta-pendiente { position: absolute; top: 8px; left: 8px; padding: 4px 10px; border-radius: 99px; background: var(--amarillo); color: var(--tinta); font-size: 0.75rem; font-weight: 900; }
     .visor { position: fixed; inset: 0; z-index: 60; background: rgba(8, 3, 18, 0.92); display: grid; place-items: center; padding: 20px; cursor: zoom-out; }
     .visor img { max-width: 100%; max-height: 80vh; border-radius: 16px; }
     .visor p { max-width: 70ch; text-align: center; color: var(--suave); font-weight: 700; }
@@ -152,9 +188,31 @@
             </ol>
           </details>
         </section>
+        <section class="tarjeta">
+          <h2>📺 Proyector</h2>
+          <div class="vistas" id="vistas">
+            <button type="button" data-vista="mosaico"><span>🧩</span>Mosaico</button>
+            <button type="button" data-vista="galeria"><span>🖼️</span>Galería</button>
+            <button type="button" data-vista="podio"><span>🏆</span>Ganadoras</button>
+          </div>
+          <p class="nota" id="nota-vista"></p>
+        </section>
       </div>
 
       <div id="avisos"></div>
+
+      <section class="tarjeta seccion revision vacia" id="seccion-revision">
+        <div class="cabeza-revision">
+          <h2>🛂 Por revisar</h2>
+          <span class="contador" id="n-revision">0</span>
+          <label class="conmutador" title="Si lo apagas, las imágenes nuevas se publican solas">
+            <input type="checkbox" id="revisar-antes"> <span id="texto-revisar">Revisar antes de publicar</span>
+          </label>
+          <button class="boton boton-secundario empuje" id="publicar-todas" type="button" hidden>✅ Publicar todas las que ves</button>
+        </div>
+        <p class="nota" id="nota-revision" style="margin:0"></p>
+        <div class="rejilla-revision" id="revision"></div>
+      </section>
 
       <section class="tarjeta seccion">
         <h2>Cola</h2>
@@ -191,7 +249,7 @@
 
       <section class="tarjeta seccion">
         <h2>Imágenes creadas</h2>
-        <p class="nota" style="margin:-4px 0 14px">🙈 quita o devuelve una imagen al proyector · 🚫 pausa el acceso de esa persona · 🔒 privada: hecha con foto y sin compartir (solo la ve su autor y tú).</p>
+        <p class="nota" style="margin:-4px 0 14px">❌ Retirar quita una imagen de la pantalla, el mosaico y la galería · ✅ Publicar la devuelve · 🚫 pausa el acceso de esa persona · 🔒 privada: hecha con foto y sin compartir (solo la ven su autor y tú).</p>
         <div class="rejilla" id="imagenes"></div>
         <div style="text-align:center;margin-top:14px">
           <button class="boton boton-secundario" id="mas" type="button" hidden>Cargar más</button>

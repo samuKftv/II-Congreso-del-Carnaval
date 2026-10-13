@@ -55,10 +55,12 @@ async function iniciar() {
   }
   $('contenido').hidden = false;
   cargarImagenes(true);
+  cargarRevision();
   if (arrancado) return;
   arrancado = true;
   setInterval(() => refrescarEstado().catch(() => {}), 1500);
   setInterval(() => cargarImagenes(false), 5000);
+  setInterval(cargarRevision, 2000);
 }
 
 // --- Estado ---
@@ -103,7 +105,121 @@ async function refrescarEstado() {
   pintarCola(e.cola);
   pintarBloqueados(e.bloqueados);
   pintarReto(e.reto);
+  pintarConcurso(e.concurso);
+  document.title = e.por_revisar ? `(${e.por_revisar}) 🛂 Panel del profesor` : 'Panel del profesor';
 }
+
+// --- Revisión antes de publicar ---
+
+let candidatas = [];
+let concurso = null;
+
+async function cargarRevision() {
+  let r;
+  try { r = await apiProfe('/api/panel/revision?limite=40'); } catch { return; }
+  const firma = r.imagenes.map((t) => t.id).join('|');
+  $('n-revision').textContent = r.total;
+  $('seccion-revision').classList.toggle('vacia', !r.total);
+  if (firma === $('revision').dataset.firma) return;
+  $('revision').dataset.firma = firma;
+  candidatas = r.imagenes;
+  pintarRevision();
+}
+
+function pintarRevision() {
+  $('publicar-todas').hidden = candidatas.length < 2;
+  $('publicar-todas').textContent = `✅ Publicar las ${candidatas.length} que ves`;
+  if (!candidatas.length) {
+    $('revision').replaceChildren(el('div', { class: 'todo-revisado', style: { gridColumn: '1 / -1' } },
+      el('span', {}, '✨'), el('span', {}, concurso && !concurso.revisar_antes
+        ? 'Las imágenes nuevas se publican solas. Puedes retirarlas abajo, en «Imágenes creadas».'
+        : 'Todo revisado. Las imágenes nuevas aparecerán aquí antes de salir en la pantalla.')));
+    return;
+  }
+  $('revision').replaceChildren(...candidatas.map((t) =>
+    el('div', { class: 'candidata' },
+      el('img', { src: t.mini, alt: t.prompt, onclick: () => ampliar(t) }),
+      el('div', { class: 'info' }, el('b', {}, t.alias),
+        el('span', { title: t.prompt }, `${emojiTema(t.tema)}${emojiEstilo(t.estilo)} ${t.prompt}`)),
+      el('div', { class: 'decidir' },
+        el('button', { class: 'boton boton-si', type: 'button', onclick: () => revisar([t.id], 'aprobada') }, '✅ Publicar'),
+        el('button', { class: 'boton boton-peligro', type: 'button', onclick: () => revisar([t.id], 'rechazada') }, '❌ Rechazar')),
+      el('button', { class: 'pausar', type: 'button', onclick: () => rechazarYPausar(t) }, `🚫 Rechazar y pausar a ${t.alias}`))));
+}
+
+async function revisar(ids, decision) {
+  candidatas = candidatas.filter((t) => !ids.includes(t.id));  // fuera de la bandeja al momento
+  $('revision').dataset.firma = candidatas.map((t) => t.id).join('|');
+  pintarRevision();
+  imagenes.forEach((t) => { if (ids.includes(t.id)) t.revision = decision; });
+  pintarImagenes();
+  try {
+    const r = await apiProfe('/api/panel/revisar', { metodo: 'POST', datos: { ids, decision } });
+    $('n-revision').textContent = r.por_revisar;
+    if (ids.length > 1) aviso(`✅ ${r.cambiadas} imágenes publicadas`);
+  } catch (e) { aviso(e.message, true); }
+  cargarRevision();
+}
+
+async function rechazarYPausar(t) {
+  if (!confirm(`¿Rechazar esta imagen y pausar el acceso de "${t.alias}"? Se cancelarán sus imágenes en cola.`)) return;
+  await revisar([t.id], 'rechazada');
+  try {
+    await apiProfe('/api/panel/bloquear', { metodo: 'POST', datos: { token: t.token, valor: true } });
+    aviso(`${t.alias} está en pausa`);
+    refrescarEstado();
+  } catch (e) { aviso(e.message, true); }
+}
+
+$('publicar-todas').addEventListener('click', () => {
+  if (!candidatas.length) return;
+  if (!confirm(`¿Publicar las ${candidatas.length} imágenes de la bandeja? Comprueba antes que todas están bien.`)) return;
+  revisar(candidatas.map((t) => t.id), 'aprobada');
+});
+
+$('revisar-antes').addEventListener('change', async (ev) => {
+  const valor = ev.target.checked;
+  if (!valor && !confirm('Sin revisión, las imágenes nuevas saldrán en la pantalla nada más crearse. ¿Seguro?')) {
+    ev.target.checked = true;
+    return;
+  }
+  try {
+    pintarConcurso(await apiProfe('/api/panel/moderacion', { metodo: 'POST', datos: { valor } }));
+    aviso(valor ? '🛂 Las imágenes nuevas esperarán tu aprobación' : 'Las imágenes nuevas se publicarán solas');
+  } catch (e) { aviso(e.message, true); }
+});
+
+// --- Proyector ---
+
+const NOTAS_VISTA = {
+  mosaico: 'Las imágenes aprobadas van completando un mosaico gigante con forma de cartel. Se vota desde el móvil.',
+  galeria: 'La última imagen en grande y las anteriores debajo. De vez en cuando, las más votadas.',
+  podio: '🔒 Votación cerrada. Se ven las 3 más votadas. Vuelve al mosaico para reabrirla.',
+};
+
+function pintarConcurso(c) {
+  const antes = concurso;
+  concurso = c;
+  document.querySelectorAll('[data-vista]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vista === c.vista)));
+  $('nota-vista').textContent = NOTAS_VISTA[c.vista] || '';
+  if (document.activeElement !== $('revisar-antes')) $('revisar-antes').checked = c.revisar_antes;
+  $('texto-revisar').textContent = c.revisar_antes ? 'Revisión antes de publicar: sí' : 'Revisión antes de publicar: no';
+  $('nota-revision').textContent = c.revisar_antes
+    ? 'Las imágenes nuevas esperan aquí. Solo salen en la pantalla, el mosaico y la galería cuando pulsas ✅ Publicar. Quien la crea la ve en su móvil.'
+    : '⚠️ Sin revisión: las imágenes nuevas salen en la pantalla nada más crearse.';
+  if (!antes || antes.revisar_antes !== c.revisar_antes) pintarRevision();
+}
+
+document.querySelectorAll('[data-vista]').forEach((b) => b.addEventListener('click', async () => {
+  const vista = b.dataset.vista;
+  if (concurso && vista === concurso.vista) return;
+  if (vista === 'podio' && !confirm('¿Cerrar la votación y mostrar las ganadoras en el proyector?')) return;
+  try {
+    pintarConcurso(await apiProfe('/api/panel/proyector', { metodo: 'POST', datos: { vista } }));
+    if (vista === 'podio') aviso('🏆 ¡Ganadoras en pantalla! La votación está cerrada.');
+    else if (concurso && vista === 'mosaico') aviso('🧩 Mosaico en pantalla. La votación está abierta.');
+  } catch (e) { aviso(e.message, true); }
+}));
 
 // --- Retos ---
 
@@ -252,14 +368,6 @@ async function bloquear(token, valor, alias) {
   } catch (e) { aviso(e.message, true); }
 }
 
-async function ocultar(t) {
-  try {
-    await apiProfe(`/api/panel/ocultar/${t.id}`, { metodo: 'POST', datos: { valor: !t.oculto } });
-    t.oculto = !t.oculto;
-    pintarImagenes();
-  } catch (e) { aviso(e.message, true); }
-}
-
 $('copiar').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(ultimoEstado.url_alumnado);
@@ -312,18 +420,24 @@ function pintarImagenes() {
     $('imagenes').replaceChildren(el('p', { class: 'vacio' }, 'Todavía no hay imágenes.'));
     return;
   }
-  $('imagenes').replaceChildren(...imagenes.map((t) =>
-    el('div', { class: `obra ${t.oculto ? 'oculta' : ''}` },
-      t.oculto ? el('span', { class: 'etiqueta-oculta' }, 'Fuera del proyector') : null,
+  $('imagenes').replaceChildren(...imagenes.map((t) => {
+    const publicada = t.revision === 'aprobada';
+    const botones = t.revision === 'pendiente'
+      ? [['✅ Publicar', 'aprobada', 'boton-si'], ['❌ Rechazar', 'rechazada', 'boton-peligro']]
+      : publicada ? [['❌ Retirar', 'rechazada', 'boton-secundario']] : [['✅ Publicar', 'aprobada', 'boton-secundario']];
+    return el('div', { class: `obra ${t.revision === 'rechazada' ? 'oculta' : ''}` },
+      t.revision === 'rechazada' ? el('span', { class: 'etiqueta-oculta' }, '❌ Retirada') : null,
+      t.revision === 'pendiente' && t.publico ? el('span', { class: 'etiqueta-pendiente' }, '⏳ Por revisar') : null,
       t.publico ? null : el('span', { class: 'etiqueta-privada' }, '🔒 Privada'),
       el('img', { src: t.mini, alt: t.prompt, loading: 'lazy', onclick: () => ampliar(t) }),
       el('div', { class: 'info' }, el('b', {}, `${t.alias}${t.votos ? ` · ❤️ ${t.votos}` : ''}`),
         el('span', { title: t.prompt }, `${emojiTema(t.tema)}${emojiEstilo(t.estilo)} ${t.prompt}`)),
       el('div', { class: 'acciones' },
-        el('button', { class: 'boton boton-secundario', type: 'button', onclick: () => ocultar(t) },
-          t.oculto ? '👁️ Mostrar' : '🙈 Ocultar'),
-        el('button', { class: 'boton boton-peligro', type: 'button', onclick: () => bloquear(t.token, true, t.alias) },
-          '🚫 Pausar')))));
+        t.publico ? botones.map(([texto, decision, clase]) =>
+          el('button', { class: `boton ${clase}`, type: 'button', onclick: () => revisar([t.id], decision) }, texto)) : null,
+        t.revision === 'pendiente' && t.publico ? null
+          : el('button', { class: 'boton boton-peligro', type: 'button', onclick: () => bloquear(t.token, true, t.alias) }, '🚫 Pausar')));
+  }));
 }
 
 function ampliar(t) {

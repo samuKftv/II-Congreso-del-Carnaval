@@ -1,4 +1,7 @@
-"""Historial en SQLite: personas, trabajos, votos, retos y estado del estudio."""
+"""Historial en SQLite: personas, trabajos, votos, retos y estado del estudio.
+
+Revisión de cada imagen: 'pendiente' (espera al profesor), 'aprobada' (pública) o 'rechazada'.
+"""
 
 from __future__ import annotations
 
@@ -60,6 +63,8 @@ COLUMNAS_NUEVAS = {
         "ancho": "INTEGER",
         "alto": "INTEGER",
         "reto": "INTEGER",
+        "revision": "TEXT NOT NULL DEFAULT 'aprobada'",
+        "revisado": "REAL",
     },
 }
 
@@ -68,10 +73,16 @@ CREATE INDEX IF NOT EXISTS trabajos_token ON trabajos (token, creado);
 CREATE INDEX IF NOT EXISTS trabajos_estado ON trabajos (estado, fin);
 CREATE INDEX IF NOT EXISTS trabajos_reto ON trabajos (reto);
 CREATE INDEX IF NOT EXISTS votos_token ON votos (token);
+CREATE INDEX IF NOT EXISTS trabajos_revision ON trabajos (revision, fin);
 """
 
-# Imágenes que se ven en la galería de la clase y en el proyector
-VISIBLES = "t.estado = 'hecho' AND t.miniatura_estilo IS NULL AND t.oculto = 0 AND t.publico = 1"
+# Imágenes del alumnado (no las miniaturas de estilos del panel)
+CREADAS = "t.estado = 'hecho' AND t.miniatura_estilo IS NULL"
+# Imágenes que se ven en la galería de la clase, en el proyector y en el mosaico
+VISIBLES = f"{CREADAS} AND t.revision = 'aprobada' AND t.publico = 1"
+POR_REVISAR = f"{CREADAS} AND t.revision = 'pendiente' AND t.publico = 1"
+DECISIONES = ("aprobada", "rechazada")
+VOTOS = "(SELECT COUNT(*) FROM votos v WHERE v.trabajo = t.id) AS votos"
 
 
 class BaseDatos:
@@ -86,6 +97,8 @@ class BaseDatos:
             for columna, tipo in columnas.items():
                 if columna not in existentes:
                     self.con.execute(f"ALTER TABLE {tabla} ADD COLUMN {columna} {tipo}")
+                    if columna == "revision":  # las que se ocultaban antes pasan a rechazadas
+                        self.con.execute("UPDATE trabajos SET revision = 'rechazada' WHERE oculto = 1")
         self.con.executescript(INDICES)
         self.lock = threading.Lock()
 
@@ -130,7 +143,7 @@ class BaseDatos:
 
     def trabajo(self, id_: str) -> dict | None:
         return self._una(
-            "SELECT t.*, (SELECT COUNT(*) FROM votos v WHERE v.trabajo = t.id) AS votos FROM trabajos t WHERE t.id = ?",
+            f"SELECT t.*, {VOTOS} FROM trabajos t WHERE t.id = ?",
             id_,
         )
 
@@ -143,21 +156,20 @@ class BaseDatos:
 
     def de_persona(self, token: str, limite: int = 60) -> list[dict]:
         return self._todas(
-            "SELECT t.*, (SELECT COUNT(*) FROM votos v WHERE v.trabajo = t.id) AS votos FROM trabajos t "
-            "WHERE t.token = ? AND t.estado = 'hecho' AND t.miniatura_estilo IS NULL ORDER BY t.fin DESC LIMIT ?",
+            f"SELECT t.*, {VOTOS} FROM trabajos t WHERE t.token = ? AND {CREADAS} ORDER BY t.fin DESC LIMIT ?",
             token, limite,
         )
 
     def galeria(self, limite: int, *, panel: bool = False, antes: float | None = None,
                 reto: int | None = None, por_votos: bool = False, token: str = "") -> list[dict]:
-        """Imágenes terminadas con sus votos. El panel ve también las ocultas y las privadas."""
+        """Imágenes terminadas con sus votos. El panel ve también las pendientes, rechazadas y privadas."""
         sql = (
-            "SELECT t.*, (SELECT COUNT(*) FROM votos v WHERE v.trabajo = t.id) AS votos, "
+            f"SELECT t.*, {VOTOS}, "
             "EXISTS (SELECT 1 FROM votos v WHERE v.trabajo = t.id AND v.token = ?) AS votado "
             "FROM trabajos t WHERE "
         )
         args: list = [token]
-        sql += "t.estado = 'hecho' AND t.miniatura_estilo IS NULL" if panel else VISIBLES
+        sql += CREADAS if panel else VISIBLES
         if antes is not None:
             sql += " AND t.fin < ?"
             args.append(antes)
@@ -168,6 +180,32 @@ class BaseDatos:
         sql += " LIMIT ?"
         args.append(limite)
         return self._todas(sql, *args)
+
+    def mosaico(self, limite: int) -> list[dict]:
+        """Las imágenes públicas en el orden en que se aprobaron (las últimas `limite`)."""
+        filas = self._todas(
+            f"SELECT t.id, t.alias, t.prompt, {VOTOS} FROM trabajos t WHERE {VISIBLES} "
+            "ORDER BY COALESCE(t.revisado, t.fin) DESC, t.id LIMIT ?",
+            limite,
+        )
+        return filas[::-1]
+
+    # Revisión del profesor
+    def por_revisar(self, limite: int) -> list[dict]:
+        return self._todas(f"SELECT t.* FROM trabajos t WHERE {POR_REVISAR} ORDER BY t.fin LIMIT ?", limite)
+
+    def cuantas_por_revisar(self) -> int:
+        return self._una(f"SELECT COUNT(*) AS n FROM trabajos t WHERE {POR_REVISAR}")["n"]
+
+    def revisar(self, ids: list[str], decision: str) -> int:
+        if decision not in DECISIONES or not ids:
+            return 0
+        huecos = ", ".join("?" for _ in ids)
+        with self.lock:
+            return self.con.execute(
+                f"UPDATE trabajos SET revision = ?, revisado = ? WHERE id IN ({huecos}) AND estado = 'hecho'",
+                (decision, time.time(), *ids),
+            ).rowcount
 
     def estadisticas(self) -> dict:
         return self._una(

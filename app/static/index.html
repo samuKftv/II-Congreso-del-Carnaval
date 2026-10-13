@@ -181,6 +181,12 @@
     .voto-grande { grid-column: 1 / -1; }
     .voto-grande[aria-pressed="true"] { background: var(--magenta); color: #fff; border-color: var(--magenta); }
     .privada { color: var(--suave); font-weight: 700; font-size: 0.92rem; margin: 10px 0 0; }
+    .aviso-revision { margin: 14px auto 0; max-width: 46ch; padding: 12px 16px; border-radius: 16px; font-weight: 800; font-size: 0.95rem; line-height: 1.35;
+      background: color-mix(in srgb, var(--amarillo) 14%, transparent); border: 1px solid color-mix(in srgb, var(--amarillo) 45%, transparent); }
+    .aviso-revision.aprobada { background: color-mix(in srgb, var(--verde) 16%, transparent); border-color: color-mix(in srgb, var(--verde) 50%, transparent); }
+    .aviso-revision.rechazada { background: var(--capa-2); border-color: var(--borde); color: var(--suave); }
+    .insignia.revision { background: rgba(10, 4, 22, 0.8); color: var(--texto); }
+    .mas-clase { text-align: center; margin-top: 16px; }
     .vacio { text-align: center; color: var(--suave); padding: 50px 10px; font-weight: 700; }
     .vacio div { font-size: 3rem; margin-bottom: 8px; }
   </style>
@@ -311,6 +317,7 @@
       <div class="obra"><img id="obra" alt=""></div>
       <p class="idea" id="resultado-idea"></p>
       <p class="privada" id="resultado-privada" hidden>🔒 Imagen privada: solo la ves tú.</p>
+      <p class="aviso-revision" id="resultado-revision" hidden></p>
       <div class="botones">
         <a class="boton boton-principal boton-grande" id="descargar" download>⬇️ Descargar</a>
         <button class="boton boton-secundario" id="otra" type="button">🔁 Otra versión</button>
@@ -353,8 +360,9 @@
         <button type="button" role="tab" data-pestana="votos" aria-selected="false">❤️ Más votadas</button>
         <button type="button" role="tab" data-pestana="reto" aria-selected="false" hidden>🏁 Reto</button>
       </div>
-      <p class="texto-suave" style="margin-top:12px">Dale ❤️ a tus favoritas. Las más votadas salen en la pantalla.</p>
+      <p class="texto-suave" id="nota-clase" style="margin-top:12px">Dale ❤️ a tus favoritas. Las más votadas salen en la pantalla.</p>
       <div class="rejilla" id="rejilla-clase"></div>
+      <div class="mas-clase"><button class="boton boton-secundario" id="mas-clase" type="button" hidden>Ver más</button></div>
     </div>
   </div>
 

@@ -34,12 +34,19 @@ class Actual:
     version: int = 0
 
 
+TESELA = 160  # lado de la pieza del mosaico: pequeña para que el proyector aguante cientos
+
+
+def guardar_tesela(imagen: Image.Image, ruta) -> None:
+    ImageOps.fit(imagen.convert("RGB"), (TESELA, TESELA)).save(ruta, "WEBP", quality=80)
+
+
 class Estudio:
     def __init__(self, aj: Ajustes, db: BaseDatos, comfy: ComfyUI):
         self.aj, self.db, self.comfy = aj, db, comfy
         self.nodos = workflow.localizar(aj.workflow, aj.nodo_prompt, aj.nodo_tamano)
         self.avisos = workflow.avisos(aj.workflow, self.nodos)
-        for carpeta in ("imagenes", "miniaturas", "estilos", "fotos"):
+        for carpeta in ("imagenes", "miniaturas", "teselas", "estilos", "fotos"):
             (aj.datos / carpeta).mkdir(parents=True, exist_ok=True)
 
         self.abierto = db.leer_estado("abierto", "1") == "1"
@@ -85,8 +92,11 @@ class Estudio:
 
     def encolar(self, token: str, alias: str, prompt: str, estilo: Estilo, formato: Formato | None, *,
                 tema: Estilo | None = None, foto: tuple[str, int, int] | None = None, fuerza: float | None = None,
-                publico: bool = True, reto: int | None = None, miniatura_estilo: str | None = None) -> str:
-        """Añade un trabajo a la cola. Con `foto` (id, ancho, alto) se usa la foto como base."""
+                publico: bool = True, reto: int | None = None, miniatura_estilo: str | None = None,
+                revision: str = "aprobada") -> str:
+        """Añade un trabajo a la cola. Con `foto` (id, ancho, alto) se usa la foto como base.
+
+        `revision` = "pendiente" si el profesor tiene que aprobar la imagen antes de que sea pública."""
         id_ = uuid.uuid4().hex
         formato = formato or next(iter(self.aj.formatos.values()))
         ancho, alto = (foto[1], foto[2]) if foto else (formato.ancho, formato.alto)
@@ -98,6 +108,7 @@ class Estudio:
             "semilla": random.randint(1, 2**50), "estado": "cola", "creado": time.time(),
             "foto": foto[0] if foto else None, "fuerza": fuerza, "publico": int(publico),
             "ancho": ancho, "alto": alto, "reto": reto, "miniatura_estilo": miniatura_estilo,
+            "revision": revision,
         })
         self.cola.append(id_)
         self.duenos[id_] = token
@@ -217,5 +228,6 @@ class Estudio:
         mini = rgb.copy()
         mini.thumbnail((512, 512))
         mini.save(carpeta / "miniaturas" / f"{id_}.webp", "WEBP", quality=82)
+        guardar_tesela(rgb, carpeta / "teselas" / f"{id_}.webp")
         if miniatura_estilo:
             ImageOps.fit(rgb, (320, 320)).save(carpeta / "estilos" / f"{miniatura_estilo}.webp", "WEBP", quality=85)

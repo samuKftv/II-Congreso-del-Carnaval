@@ -63,10 +63,11 @@ def test_flujo_completo(ajustes, comfy_falso):
         assert estado["comfy"]["ok"] and estado["comfy"]["gpu"]["nombre"] == "cuda:0 NVIDIA GeForce RTX 5070"
         assert estado["estadisticas"]["hechas"] == 1
 
-        # Ocultar del proyector
-        assert c.post(f"/api/panel/ocultar/{id_}", json={"valor": True}, headers=PROFE).status_code == 200
+        # Retirar del proyector
+        r = c.post("/api/panel/revisar", json={"ids": [id_], "decision": "rechazada"}, headers=PROFE)
+        assert r.json()["cambiadas"] == 1
         assert c.get("/api/galeria").json()["imagenes"] == []
-        assert c.get("/api/panel/imagenes", headers=PROFE).json()[0]["oculto"] is True
+        assert c.get("/api/panel/imagenes", headers=PROFE).json()[0]["revision"] == "rechazada"
 
 
 def test_validaciones_y_moderacion(ajustes):
@@ -225,8 +226,8 @@ def test_votos(ajustes):
         assert g["ranking"][0]["id"] == id_
         assert c.get("/api/galeria", headers=ana).json()["imagenes"][0]["mia"] is True
         assert c.post(f"/api/trabajos/{id_}/voto", json={"valor": False}, headers=luis).json()["votos"] == 0
-        # Imagen oculta: no se puede votar
-        c.post(f"/api/panel/ocultar/{id_}", json={"valor": True}, headers=PROFE)
+        # Imagen retirada: no se puede votar
+        c.post("/api/panel/revisar", json={"ids": [id_], "decision": "rechazada"}, headers=PROFE)
         assert c.post(f"/api/trabajos/{id_}/voto", json={"valor": True}, headers=luis).status_code == 404
 
 
@@ -327,3 +328,95 @@ def test_puerto_ocupado_avisa_de_otro_estudio(ajustes):
         otro.bind(("0.0.0.0", otro_puerto))
         otro.listen()
         assert "otro programa" in puerto_ocupado(otro_puerto)
+
+
+def crear_y_esperar(c, h, prompt="Una máscara de plumas"):
+    r = c.post("/api/crear", json={"prompt": prompt, "estilo": "foto", "formato": "cuadrado"}, headers=h)
+    assert r.status_code == 200, r.text
+    return esperar_fin(c, r.json()["id"], h)
+
+
+def test_concurso_con_revision_previa(tmp_path, monkeypatch, comfy_falso):
+    ajustes = preparar_ajustes(tmp_path, monkeypatch, comfy_falso[0], revisar_antes=True)
+    with TestClient(crear_app(ajustes)) as c:
+        assert c.get("/api/info").json()["concurso"] == {"vista": "mosaico", "votacion_abierta": True, "revisar_antes": True}
+        ana, luis = entrar(c, "Ana"), entrar(c, "Luis")
+        a1 = crear_y_esperar(c, ana, "Una reina del Teide")
+        a2 = crear_y_esperar(c, ana, "Una murga de robots")
+        l1 = crear_y_esperar(c, luis, "Un pulpo pirata")
+
+        # Nada es público hasta que el profesor lo aprueba; su autor sí la ve
+        assert a1["revision"] == "pendiente"
+        assert [x["revision"] for x in c.get("/api/mis-creaciones", headers=ana).json()] == ["pendiente", "pendiente"]
+        assert c.get("/api/galeria").json()["imagenes"] == [] and c.get("/api/galeria").json()["en_revision"] == 3
+        assert c.get("/api/mosaico").json() == {"piezas": [], "en_revision": 3}
+        assert c.post(f"/api/trabajos/{a1['id']}/voto", json={"valor": True}, headers=luis).status_code == 404
+
+        # Bandeja del panel: de la más antigua a la más nueva
+        rev = c.get("/api/panel/revision", headers=PROFE).json()
+        assert rev["total"] == 3 and [x["id"] for x in rev["imagenes"]] == [a1["id"], a2["id"], l1["id"]]
+        assert c.get("/api/panel/revision").status_code == 401
+        assert c.get("/api/panel/estado", headers=PROFE).json()["por_revisar"] == 3
+
+        # Aprobar en orden distinto al de creación: el mosaico sigue el orden de aprobación
+        c.post("/api/panel/revisar", json={"ids": [l1["id"]], "decision": "aprobada"}, headers=PROFE)
+        r = c.post("/api/panel/revisar", json={"ids": [a1["id"], "../x"], "decision": "aprobada"}, headers=PROFE).json()
+        assert r == {"cambiadas": 1, "por_revisar": 1}
+        c.post("/api/panel/revisar", json={"ids": [a2["id"]], "decision": "rechazada"}, headers=PROFE)
+        assert c.post("/api/panel/revisar", json={"ids": [a2["id"]], "decision": "quizas"}, headers=PROFE).status_code == 422
+        piezas = c.get("/api/mosaico").json()["piezas"]
+        assert [p["id"] for p in piezas] == [l1["id"], a1["id"]]
+        assert piezas[0]["alias"] == "Luis" and piezas[0]["mini"].endswith("/mini.webp")
+        tesela = Image.open(io.BytesIO(c.get(piezas[0]["tesela"]).content))
+        assert tesela.size == (160, 160)
+        (ajustes.datos / "teselas" / f"{l1['id']}.webp").unlink()  # imagen antigua: se hace al pedirla
+        assert c.get(piezas[0]["tesela"]).status_code == 200
+        assert {x["id"] for x in c.get("/api/galeria").json()["imagenes"]} == {l1["id"], a1["id"]}
+        assert c.get(f"/api/trabajos/{a2['id']}", headers=ana).json()["revision"] == "rechazada"
+
+        # Votar; con las ganadoras en pantalla la votación se cierra
+        assert c.post(f"/api/trabajos/{a1['id']}/voto", json={"valor": True}, headers=luis).json()["votos"] == 1
+        assert c.post("/api/panel/proyector", json={"vista": "podio"}, headers=PROFE).json()["votacion_abierta"] is False
+        r = c.post(f"/api/trabajos/{l1['id']}/voto", json={"valor": True}, headers=ana)
+        assert r.status_code == 423 and "cerrada" in r.json()["detail"]
+        g = c.get("/api/galeria?ranking=true").json()
+        assert g["concurso"]["vista"] == "podio" and g["ranking"][0]["id"] == a1["id"]
+        c.post("/api/panel/proyector", json={"vista": "mosaico"}, headers=PROFE)
+        assert c.post(f"/api/trabajos/{l1['id']}/voto", json={"valor": True}, headers=ana).status_code == 200
+        assert c.post("/api/panel/proyector", json={"vista": "otra"}, headers=PROFE).status_code == 422
+
+        # Sin revisión previa, lo nuevo se publica solo
+        assert c.post("/api/panel/moderacion", json={"valor": False}, headers=PROFE).json()["revisar_antes"] is False
+        libre = crear_y_esperar(c, luis, "Un dragón de confeti")
+        assert libre["revision"] == "aprobada" and c.get("/api/mosaico").json()["piezas"][-1]["id"] == libre["id"]
+
+
+def test_galeria_por_paginas(ajustes):
+    with TestClient(crear_app(ajustes)) as c:
+        h = entrar(c)
+        ids = [crear_y_esperar(c, h, f"Imagen número {i}")["id"] for i in range(3)]
+        primera = c.get("/api/galeria?limite=2").json()["imagenes"]
+        assert [x["id"] for x in primera] == ids[:0:-1]
+        resto = c.get(f"/api/galeria?limite=2&antes={primera[-1]['fin']}").json()["imagenes"]
+        assert [x["id"] for x in resto] == [ids[0]]
+
+
+def test_migracion_de_imagenes_ocultas(tmp_path):
+    import sqlite3
+
+    from app.db import BaseDatos
+
+    ruta = tmp_path / "vieja.db"
+    con = sqlite3.connect(ruta)
+    con.executescript("""
+        CREATE TABLE trabajos (id TEXT PRIMARY KEY, token TEXT NOT NULL, alias TEXT NOT NULL, prompt TEXT NOT NULL,
+            estilo TEXT NOT NULL, formato TEXT NOT NULL, prompt_final TEXT NOT NULL, semilla INTEGER NOT NULL,
+            estado TEXT NOT NULL, creado REAL NOT NULL, inicio REAL, fin REAL, error TEXT,
+            oculto INTEGER NOT NULL DEFAULT 0, miniatura_estilo TEXT);
+        INSERT INTO trabajos VALUES ('a', 't', 'Ana', 'x', 'foto', 'cuadrado', 'x', 1, 'hecho', 1, 1, 2, NULL, 0, NULL);
+        INSERT INTO trabajos VALUES ('b', 't', 'Ana', 'y', 'foto', 'cuadrado', 'y', 1, 'hecho', 1, 1, 3, NULL, 1, NULL);
+    """)
+    con.close()
+    db = BaseDatos(ruta)
+    assert {t["id"]: t["revision"] for t in db.galeria(10, panel=True)} == {"a": "aprobada", "b": "rechazada"}
+    assert [t["id"] for t in db.galeria(10)] == ["a"]

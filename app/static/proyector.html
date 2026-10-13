@@ -94,7 +94,66 @@
     .puesto.p1 .peana { height: 9vh; color: var(--amarillo); } .puesto.p2 .peana { height: 6vh; } .puesto.p3 .peana { height: 4vh; }
     .podio-vacio { flex: 1; display: grid; place-content: center; text-align: center; font-size: clamp(1.4rem, 2.4vw, 2.8rem); font-weight: 900; color: var(--suave); }
 
+    /* Mosaico gigante con forma de cartel */
+    .vista-mosaico { grid-row: 2 / 4; position: relative; display: flex; gap: 2vw; min-height: 0; min-width: 0; }
+    .lienzo { position: relative; flex: none; border-radius: 18px; overflow: hidden; background: #050b18; box-shadow: var(--sombra); }
+    .rejilla-mosaico { position: absolute; inset: 0; z-index: 0; transition: filter 0.6s; }
+    .lienzo.con-foco .rejilla-mosaico { filter: brightness(0.35) blur(2px); }
+    .celda {
+      position: absolute; overflow: hidden; border-radius: 2px;
+      background-color: var(--noche-2); background-image: var(--cartel, none); background-repeat: no-repeat;
+      background-size: var(--ancho) var(--alto);
+    }
+    .celda.libre { filter: brightness(0.42) saturate(0.7); }
+    .celda img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 0.4s; }
+    .celda img.espera { opacity: 0; }
+    .celda.llega { animation: brillo 1.6s ease-out; z-index: 2; }
+    @keyframes brillo { 0% { box-shadow: 0 0 0 3px var(--amarillo), 0 0 30px 10px var(--amarillo); } 100% { box-shadow: 0 0 0 0 transparent; } }
+    .celda.m1, .celda.m2, .celda.m3 { z-index: 1; overflow: visible; outline: max(2px, calc(var(--celda) * 0.06)) solid var(--amarillo); }
+    .celda.m2 { outline-color: #d9dee8; } .celda.m3 { outline-color: #e2a36b; }
+    .celda.m1::after, .celda.m2::after, .celda.m3::after { position: absolute; top: -0.35em; right: -0.3em; font-size: max(16px, calc(var(--celda) * 0.55)); line-height: 1; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6)); }
+    .celda.m1::after { content: "🥇"; } .celda.m2::after { content: "🥈"; } .celda.m3::after { content: "🥉"; }
+    .velo { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: fill; opacity: 0; transition: opacity 2.5s ease-in-out; pointer-events: none; }
+    .lienzo.cartel .velo { opacity: 0.62; }
+    .rotulo {
+      position: absolute; z-index: 2; left: 50%; bottom: 4%; transform: translateX(-50%); width: max-content; max-width: 92%;
+      padding: 0.7vw 1.4vw; border-radius: 999px; background: rgba(5, 11, 24, 0.82); text-align: center;
+      font-weight: 900; font-size: clamp(0.9rem, 1.35vw, 1.6rem); opacity: 0; transition: opacity 1.2s; pointer-events: none;
+    }
+    .lienzo.cartel .rotulo-cartel, .rotulo.visible { opacity: 1; }
+    .rotulo-vacio { top: 50%; bottom: auto; transform: translate(-50%, -50%); font-size: clamp(1.1rem, 1.8vw, 2.2rem); line-height: 1.3; border-radius: 24px; white-space: normal; }
+    .rotulo-nivel { top: 6%; bottom: auto; background: var(--amarillo); color: var(--tinta); }
+
+    .lado-mosaico { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1.4vw; overflow: hidden; }
+    .lado-mosaico .tarjeta { padding: 1.3vw 1.5vw; }
+    .lado-mosaico h2 { margin: 0 0 0.8vw; font-size: clamp(1.1rem, 1.6vw, 2rem); font-weight: 900; line-height: 1.15; }
+    .cifra { font-weight: 900; font-size: clamp(1rem, 1.4vw, 1.7rem); color: var(--suave); }
+    .cifra b { font-size: 2.2em; color: var(--amarillo); line-height: 1; font-variant-numeric: tabular-nums; }
+    .barra { height: clamp(10px, 1vw, 16px); margin-top: 0.8vw; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+    .barra div { height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--magenta), var(--amarillo)); transition: width 1s ease; }
+    .lado-mosaico .sub { margin: 0.8vw 0 0; color: var(--suave); font-weight: 800; font-size: clamp(0.85rem, 1.1vw, 1.3rem); }
+    .lado-mosaico .sub:empty { display: none; }
+    .top { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.8vw; }
+    .top li { display: grid; grid-template-columns: auto clamp(48px, 4.6vw, 84px) 1fr auto; align-items: center; gap: 0.9vw; font-weight: 900; font-size: clamp(1rem, 1.35vw, 1.6rem); }
+    .top li.cambia { animation: subir 0.7s ease; }
+    .top .medalla { font-size: 1.5em; }
+    .top img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; }
+    .top .quien { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .top .sin-votos { grid-template-columns: 1fr; color: var(--suave); font-size: clamp(0.9rem, 1.2vw, 1.4rem); }
+    .ultimas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7vw; }
+    .ultimas img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--capa-2); }
+
+    .foco { position: fixed; z-index: 30; pointer-events: none; }
+    .foco-marco { position: fixed; border-radius: 22px; overflow: hidden; box-shadow: 0 0 0 4px var(--amarillo), 0 30px 80px -10px rgba(0, 0, 0, 0.9); animation: entrar 0.9s cubic-bezier(.2, .9, .3, 1.15); background: var(--noche-2); }
+    .foco-marco img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .foco-pie { position: fixed; text-align: center; transition: opacity 0.3s; display: grid; gap: 0.4vw; justify-items: center; }
+    .foco-pie .nueva { position: static; }
+    .foco-pie b { font-size: clamp(1.3rem, 2.2vw, 2.6rem); font-weight: 900; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8); }
+    .foco-pie span:last-child { max-width: 100%; color: var(--texto); font-weight: 700; font-size: clamp(0.95rem, 1.3vw, 1.5rem); text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .foco.vuela .foco-pie { opacity: 0; }
+
     @media (max-aspect-ratio: 1/1) {
+      .vista-mosaico { height: 80vh; flex-direction: column; }
       body { overflow: auto; }
       .escena { grid-template-columns: 1fr; height: auto; }
       .destacada { aspect-ratio: 1; }
@@ -138,6 +197,32 @@
       </div>
       <div class="tira" id="tira"></div>
       <section class="especial" id="especial" hidden></section>
+      <section class="vista-mosaico" id="vista-mosaico" hidden>
+        <div class="lienzo" id="lienzo">
+          <div class="rejilla-mosaico" id="rejilla-mosaico"></div>
+          <img class="velo" id="velo" alt="" hidden>
+          <div class="rotulo rotulo-cartel">🧩 ¡Entre todos estamos formando el cartel de CarnaLab!</div>
+          <div class="rotulo rotulo-vacio" id="rotulo-vacio">📱 Escanea el QR<br>y crea la primera pieza del mosaico</div>
+          <div class="rotulo rotulo-nivel" id="rotulo-nivel"></div>
+        </div>
+        <aside class="lado-mosaico" id="lado-mosaico">
+          <div class="tarjeta">
+            <h2>🧩 El mosaico de CarnaLab</h2>
+            <div class="cifra"><b id="m-piezas">0</b> de <span id="m-huecos">0</span> piezas</div>
+            <div class="barra"><div id="m-barra"></div></div>
+            <p class="sub" id="m-revision"></p>
+          </div>
+          <div class="tarjeta">
+            <h2>🏆 Las más votadas</h2>
+            <ol class="top" id="m-top"></ol>
+            <p class="sub">📱 Vota en el móvil: 🌟 Galería → ❤️</p>
+          </div>
+          <div class="tarjeta">
+            <h2>✨ Últimas piezas</h2>
+            <div class="ultimas" id="m-ultimas"></div>
+          </div>
+        </aside>
+      </section>
     </main>
   </div>
 
@@ -154,7 +239,7 @@
     let ultimaNueva = 0;
     let indicePase = 0;
     let vistas = null;
-    let modo = 'normal';           // normal | votacion | podio | ranking
+    let modo = 'normal';           // normal | votacion | podio | ranking | ganadoras | mosaico
     let finRanking = 0;
     let proximoRanking = Date.now() + RANKING_CADA;
     let firmaEspecial = '';
@@ -178,6 +263,7 @@
           $(campo).textContent = info[campo];
           $(campo).hidden = !info[campo];
         }
+        prepararCartel(info.cartel);
         if (info.cartel) {
           nodoVacio.replaceChildren(
             el('img', { class: 'cartel-vacio', src: info.cartel, alt: `Cartel de ${info.evento}` }),
@@ -192,6 +278,8 @@
       setInterval(refrescar, 3000);
       setInterval(pase, CAMBIO_CADA);
       setInterval(pintarReloj, 1000);
+      setInterval(fasesCartel, CARTEL_CADA);
+      new ResizeObserver(() => maquetar()).observe($('vista-mosaico'));
     }
 
     let urlQr = '';
@@ -222,6 +310,9 @@
 
       if (r && r.fase === 'votando') return mostrarVotacion(r);
       if (r && r.fase === 'podio') return mostrarPodio(r.podio, `🏆 Podio del reto «${r.titulo}»`, `reto-${r.id}`, 'podio');
+      const vista = g.concurso ? g.concurso.vista : 'galeria';
+      if (vista === 'podio') return mostrarPodio(g.ranking || [], '🏆 ¡Ganadoras del concurso!', 'concurso', 'ganadoras');
+      if (vista === 'mosaico') return mostrarMosaico(g);
       if (modo === 'ranking' && Date.now() < finRanking && !nueva) return;
       if (modo !== 'normal') volverNormal();
 
@@ -287,19 +378,25 @@
 
     // --- Modos especiales ---
 
+    // Enseña una sola de las zonas: 'normal' (destacada y tira), 'especial' (votación y podios) o 'mosaico'
+    function pantalla(nombre) {
+      $('destacada').hidden = $('tira').hidden = nombre !== 'normal';
+      $('especial').hidden = nombre !== 'especial';
+      $('vista-mosaico').hidden = nombre !== 'mosaico';
+      if (nombre !== 'mosaico') cancelarFocos();
+    }
+
     function mostrarEspecial(nuevoModo) {
+      if (modo !== nuevoModo) firmaEspecial = '';
       modo = nuevoModo;
-      $('destacada').hidden = true;
-      $('tira').hidden = true;
-      $('especial').hidden = false;
+      pantalla('especial');
     }
 
     function volverNormal() {
       modo = 'normal';
       firmaEspecial = '';
-      $('especial').hidden = true;
-      $('destacada').hidden = false;
-      $('tira').hidden = false;
+      celebrado = null;
+      pantalla('normal');
     }
 
     async function mostrarVotacion(r) {
@@ -345,6 +442,331 @@
         celebrado = clave;
         setTimeout(() => confeti(clave ? 160 : 70), 1200);
       }
+    }
+
+    // --- Mosaico ---
+    // Cada imagen aprobada es una pieza. Las piezas van rellenando, en orden aleatorio, una rejilla con la forma
+    // del cartel; los huecos enseñan el cartel en oscuro. Cada cierto tiempo el cartel aparece encima de todas.
+
+    const LADOS = [12, 15, 18, 21, 24, 27, 30, 36, 42, 48];  // columnas de cada tamaño del mosaico
+    const CARTEL_CADA = 30000;   // ms entre apariciones del cartel
+    const CARTEL_DURA = 8000;    // ms que se queda el cartel
+    const MAX_FOCOS = 3;         // si llegan muchas de golpe, solo las últimas salen en grande
+
+    const mosaico = {
+      proporcion: null,          // alto / ancho del cartel
+      piezas: [],                // en orden de aprobación
+      conocidas: null,           // ids ya vistos (null = aún no se ha cargado)
+      porAterrizar: new Set(),   // piezas que están en grande y todavía no tienen su hueco a la vista
+      colaFoco: [],
+      enFoco: false,
+      pausaHasta: 0,             // sin piezas en grande mientras se anuncia un mosaico más grande
+      temporizadores: [],
+      columnas: 0,
+      filas: 0,
+      orden: [],                 // celda de cada pieza
+      podio: [],
+      vista: false,
+    };
+
+    function prepararCartel(url) {
+      if (!url) return;
+      const img = new Image();
+      img.onload = () => {
+        mosaico.proporcion = img.naturalHeight / img.naturalWidth;
+        $('rejilla-mosaico').style.setProperty('--cartel', `url("${url}")`);
+        $('velo').src = url;
+        $('velo').hidden = false;
+        if (mosaico.columnas) {
+          construir(true);
+          asignar();
+        }
+      };
+      img.src = url;
+    }
+
+    function proporcion() {
+      if (mosaico.proporcion) return mosaico.proporcion;
+      const caja = $('vista-mosaico').getBoundingClientRect();
+      return caja.width ? (caja.height / (caja.width * 0.62)) : 1;
+    }
+
+    function medidas(n) {
+      const p = proporcion();
+      let medida = null;
+      for (const columnas of LADOS) {
+        medida = [columnas, Math.max(1, Math.round(columnas * p))];
+        if (medida[0] * medida[1] >= n) break;
+      }
+      return medida;
+    }
+
+    // Orden aleatorio pero siempre el mismo para cada tamaño: cada pieza conserva su hueco
+    function barajar(n, semilla) {
+      const orden = [...Array(n).keys()];
+      let s = semilla >>> 0;
+      const azar = () => {
+        s = (s + 0x6D2B79F5) >>> 0;
+        let x = Math.imul(s ^ (s >>> 15), 1 | s);
+        x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+      };
+      for (let i = n - 1; i > 0; i--) {
+        const j = Math.floor(azar() * (i + 1));
+        [orden[i], orden[j]] = [orden[j], orden[i]];
+      }
+      return orden;
+    }
+
+    function construir(forzar = false) {
+      const [columnas, filas] = medidas(mosaico.piezas.length);
+      if (!forzar && columnas === mosaico.columnas && filas === mosaico.filas) return false;
+      const crece = mosaico.columnas > 0 && columnas * filas > mosaico.columnas * mosaico.filas;
+      mosaico.columnas = columnas;
+      mosaico.filas = filas;
+      mosaico.orden = barajar(columnas * filas, columnas * 1000 + filas);
+      $('rejilla-mosaico').replaceChildren(...Array.from({ length: columnas * filas }, () => el('div', { class: 'celda libre' })));
+      maquetar();
+      return crece;
+    }
+
+    function maquetar() {
+      const zona = $('vista-mosaico');
+      if (zona.hidden || !mosaico.columnas) return;
+      const caja = zona.getBoundingClientRect();
+      if (!caja.width || !caja.height) return;
+      const p = proporcion();
+      const vertical = getComputedStyle(zona).flexDirection === 'column';
+      let alto = vertical ? caja.height * 0.7 : caja.height;
+      let ancho = alto / p;
+      const conLado = vertical || caja.width - ancho > 260;
+      const maximo = conLado && !vertical ? caja.width * 0.64 : caja.width;
+      if (ancho > maximo) { ancho = maximo; alto = ancho * p; }
+      $('lado-mosaico').hidden = !conLado;
+      const lienzo = $('lienzo');
+      lienzo.style.width = `${ancho}px`;
+      lienzo.style.height = `${alto}px`;
+
+      const { columnas, filas } = mosaico;
+      const hueco = columnas >= 30 ? 1 : 2;
+      const w = (ancho - (columnas - 1) * hueco) / columnas;
+      const h = (alto - (filas - 1) * hueco) / filas;
+      const rejilla = $('rejilla-mosaico');
+      rejilla.style.setProperty('--ancho', `${ancho}px`);
+      rejilla.style.setProperty('--alto', `${alto}px`);
+      rejilla.style.setProperty('--celda', `${Math.min(w, h)}px`);
+      [...rejilla.children].forEach((celda, i) => {
+        const x = (i % columnas) * (w + hueco);
+        const y = Math.floor(i / columnas) * (h + hueco);
+        Object.assign(celda.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px`, backgroundPosition: `${-x}px ${-y}px` });
+      });
+    }
+
+    function celdaDe(indice) {
+      return $('rejilla-mosaico').children[mosaico.orden[indice]];
+    }
+
+    // Pone cada pieza en su celda (solo cambia lo que hace falta)
+    function asignar() {
+      const celdas = $('rejilla-mosaico').children;
+      const deCelda = new Map();
+      mosaico.piezas.forEach((pieza, i) => { if (i < mosaico.orden.length) deCelda.set(mosaico.orden[i], pieza); });
+      for (let c = 0; c < celdas.length; c++) {
+        const celda = celdas[c];
+        const pieza = deCelda.get(c);
+        celda.classList.remove('m1', 'm2', 'm3');
+        if (!pieza) {
+          if (celda.dataset.id) { celda.replaceChildren(); delete celda.dataset.id; }
+          celda.classList.add('libre');
+          continue;
+        }
+        if (celda.dataset.id !== pieza.id) {
+          celda.dataset.id = pieza.id;
+          celda.replaceChildren(el('img', { src: pieza.tesela, alt: '', decoding: 'async' }));
+        }
+        const espera = mosaico.porAterrizar.has(pieza.id);
+        celda.firstChild.classList.toggle('espera', espera);
+        celda.classList.toggle('libre', espera);
+        const puesto = mosaico.podio.indexOf(pieza.id);
+        if (puesto >= 0 && !espera) celda.classList.add(`m${puesto + 1}`);
+      }
+    }
+
+    async function mostrarMosaico(g) {
+      if (modo !== 'mosaico') {
+        modo = 'mosaico';
+        firmaEspecial = '';
+        celebrado = null;
+        pantalla('mosaico');
+        requestAnimationFrame(maquetar);
+      }
+      let m;
+      try { m = await api('/api/mosaico'); } catch { return; }
+      if (modo !== 'mosaico') return;
+      const primeraVez = mosaico.conocidas === null;
+      const nuevas = primeraVez ? [] : m.piezas.filter((p) => !mosaico.conocidas.has(p.id));
+      mosaico.conocidas = new Set(m.piezas.map((p) => p.id));
+      mosaico.piezas = m.piezas;
+      mosaico.podio = (g.ranking || []).map((t) => t.id);
+
+      const crece = construir(primeraVez);
+      if (crece) anunciarNivel();
+      const conFoco = nuevas.slice(-MAX_FOCOS);
+      conFoco.forEach((p) => mosaico.porAterrizar.add(p.id));
+      mosaico.colaFoco.push(...conFoco);
+      asignar();
+      nuevas.filter((p) => !conFoco.includes(p)).forEach((p) => destellar(p.id));
+      pintarLado(m, g.ranking || []);
+      siguienteFoco();
+    }
+
+    function anunciarNivel() {
+      const rotulo = $('rotulo-nivel');
+      rotulo.textContent = `🎉 ¡Mosaico completo! Ahora, a por ${mosaico.columnas * mosaico.filas} piezas`;
+      rotulo.classList.add('visible');
+      confeti(160);
+      mosaico.pausaHasta = Date.now() + 6000;
+      programar(() => rotulo.classList.remove('visible'), 6000);
+    }
+
+    function pintarLado(m, ranking) {
+      const huecos = mosaico.columnas * mosaico.filas;
+      const n = m.piezas.length;
+      $('m-piezas').textContent = n;
+      $('m-huecos').textContent = huecos;
+      $('m-barra').style.width = `${Math.min(100, (100 * n) / huecos)}%`;
+      $('m-revision').textContent = n === huecos
+        ? '🎉 ¡Mosaico completo! La próxima pieza lo hará más grande.'
+        : m.en_revision ? `⏳ ${m.en_revision} ${m.en_revision === 1 ? 'imagen espera' : 'imágenes esperan'} el visto bueno del jurado` : '';
+      $('rotulo-vacio').classList.toggle('visible', n === 0);
+
+      const firma = JSON.stringify(ranking.map((t) => [t.id, t.votos]));
+      if ($('m-top').dataset.firma !== firma) {
+        const antes = JSON.parse($('m-top').dataset.firma || '[]');
+        $('m-top').dataset.firma = firma;
+        $('m-top').replaceChildren(...(ranking.length
+          ? ranking.map((t, i) => el('li', { class: antes[i] && antes[i][0] === t.id && antes[i][1] === t.votos ? '' : 'cambia' },
+              el('span', { class: 'medalla' }, ['🥇', '🥈', '🥉'][i]),
+              el('img', { src: t.mini, alt: '' }),
+              el('span', { class: 'quien' }, t.alias),
+              el('span', { class: 'votos-chip' }, `❤️ ${t.votos}`)))
+          : [el('li', { class: 'sin-votos' }, 'Aún no hay votos. ¡Dale ❤️ a tus favoritas!')]));
+      }
+      pintarUltimas();
+    }
+
+    function pintarUltimas() {
+      const ultimas = mosaico.piezas.filter((p) => !mosaico.porAterrizar.has(p.id)).slice(-4).reverse();
+      const firma = ultimas.map((p) => p.id).join('|');
+      if ($('m-ultimas').dataset.firma === firma) return;
+      $('m-ultimas').dataset.firma = firma;
+      $('m-ultimas').closest('.tarjeta').hidden = !ultimas.length;
+      $('m-ultimas').replaceChildren(...ultimas.map((p) => el('img', { src: p.mini, alt: p.prompt })));
+    }
+
+    function programar(funcion, ms) {
+      mosaico.temporizadores.push(setTimeout(funcion, ms));
+    }
+
+    function destellar(id) {
+      const i = mosaico.piezas.findIndex((p) => p.id === id);
+      const celda = i >= 0 && celdaDe(i);
+      if (!celda) return;
+      celda.classList.remove('llega');
+      void celda.offsetWidth;
+      celda.classList.add('llega');
+      celda.addEventListener('animationend', () => celda.classList.remove('llega'), { once: true });
+    }
+
+    function aterrizar(id) {
+      mosaico.porAterrizar.delete(id);
+      asignar();
+      destellar(id);
+      pintarUltimas();
+    }
+
+    // La pieza nueva sale en grande con su autor y luego vuela a su hueco
+    function siguienteFoco() {
+      if (mosaico.enFoco || modo !== 'mosaico') return;
+      if (Date.now() < mosaico.pausaHasta) {
+        mosaico.enFoco = true;
+        programar(() => { mosaico.enFoco = false; siguienteFoco(); }, mosaico.pausaHasta - Date.now());
+        return;
+      }
+      const pieza = mosaico.colaFoco.shift();
+      if (!pieza) return;
+      if (!mosaico.conocidas.has(pieza.id)) {  // la han retirado mientras esperaba
+        mosaico.porAterrizar.delete(pieza.id);
+        return siguienteFoco();
+      }
+      mosaico.enFoco = true;
+      const precarga = new Image();
+      precarga.onload = () => enseñarFoco(pieza, precarga.src);
+      precarga.onerror = () => { mosaico.enFoco = false; aterrizar(pieza.id); siguienteFoco(); };
+      precarga.src = pieza.imagen;
+    }
+
+    function enseñarFoco(pieza, src) {
+      if (modo !== 'mosaico') return;
+      const lienzo = $('lienzo').getBoundingClientRect();
+      const lado = Math.min(lienzo.width * 0.8, lienzo.height * 0.6);
+      const izquierda = lienzo.left + (lienzo.width - lado) / 2;
+      const arriba = lienzo.top + lienzo.height * 0.07;
+      const marco = el('div', { class: 'foco-marco', style: { left: `${izquierda}px`, top: `${arriba}px`, width: `${lado}px`, height: `${lado}px` } },
+        el('img', { src, alt: pieza.prompt }));
+      const pie = el('div', { class: 'foco-pie', style: { left: `${lienzo.left + lienzo.width * 0.05}px`, width: `${lienzo.width * 0.9}px`, top: `${arriba + lado + lienzo.height * 0.03}px` } },
+        el('span', { class: 'nueva' }, '✨ ¡Nueva pieza del mosaico!'),
+        el('b', {}, `🎨 ${pieza.alias}`),
+        el('span', {}, pieza.prompt));
+      const foco = el('div', { class: 'foco' }, marco, pie);
+      document.body.append(foco);
+      $('lienzo').classList.remove('cartel');
+      $('lienzo').classList.add('con-foco');
+      confeti(50);
+      const espera = mosaico.colaFoco.length ? 3000 : 5500;
+      programar(() => volar(pieza, foco, marco), espera);
+    }
+
+    function volar(pieza, foco, marco) {
+      const i = mosaico.piezas.findIndex((p) => p.id === pieza.id);
+      const celda = i >= 0 && celdaDe(i);
+      $('lienzo').classList.remove('con-foco');
+      const terminar = () => {
+        foco.remove();
+        mosaico.enFoco = false;
+        aterrizar(pieza.id);
+        programar(siguienteFoco, 500);
+      };
+      if (!celda) return terminar();
+      foco.classList.add('vuela');
+      const a = marco.getBoundingClientRect();
+      const b = celda.getBoundingClientRect();
+      const dx = b.left + b.width / 2 - (a.left + a.width / 2);
+      const dy = b.top + b.height / 2 - (a.top + a.height / 2);
+      const escala = Math.max(b.width, b.height) / a.width;
+      const vuelo = marco.animate(
+        [{ transform: 'none', borderRadius: '22px' },
+          { transform: `translate(${dx}px, ${dy}px) scale(${escala})`, borderRadius: `${2 / escala}px`, boxShadow: 'none' }],
+        { duration: 1100, easing: 'cubic-bezier(.55, 0, .25, 1)', fill: 'forwards' });
+      vuelo.onfinish = terminar;
+    }
+
+    function cancelarFocos() {
+      mosaico.temporizadores.forEach(clearTimeout);
+      mosaico.temporizadores = [];
+      document.querySelectorAll('.foco').forEach((f) => f.remove());
+      $('lienzo').classList.remove('con-foco', 'cartel');
+      mosaico.colaFoco = [];
+      mosaico.porAterrizar.clear();
+      mosaico.enFoco = false;
+      if (mosaico.columnas) asignar();
+    }
+
+    function fasesCartel() {
+      const lienzo = $('lienzo');
+      if (modo !== 'mosaico' || !mosaico.proporcion || !mosaico.piezas.length || mosaico.enFoco) return;
+      lienzo.classList.add('cartel');
+      programar(() => lienzo.classList.remove('cartel'), CARTEL_DURA);
     }
 
     // --- Modo normal ---

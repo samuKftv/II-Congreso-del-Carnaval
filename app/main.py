@@ -22,7 +22,7 @@ from PIL import Image
 from pydantic import BaseModel, Field
 
 from . import VERSION, config, fotos
-from .cola import Estudio
+from .cola import Estudio, guardar_tesela
 from .comfy import ComfyUI
 from .db import BaseDatos
 from .moderacion import Filtro, normalizar
@@ -33,6 +33,8 @@ ESTATICOS = Path(__file__).parent / "static"
 ID_VALIDO = re.compile(r"^[0-9a-f]{32}$")
 CLAVE_POR_DEFECTO = "cambia-esta-clave"
 FASES_RETO = ("creando", "votando", "podio", "cerrado")
+VISTAS_PROYECTOR = ("mosaico", "galeria", "podio")  # podio = ganadoras del concurso (cierra la votación)
+MAX_MOSAICO = 3000
 LOCALES = {"127.0.0.1", "::1", "localhost"}
 
 
@@ -75,6 +77,15 @@ class Bloqueo(BaseModel):
 
 class Direccion(BaseModel):
     direccion: str
+
+
+class Revision(BaseModel):
+    ids: list[str] = Field(max_length=200)
+    decision: str
+
+
+class Vista(BaseModel):
+    vista: str
 
 
 def direcciones_locales() -> list[str]:
@@ -128,6 +139,16 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         return url_alumnado(aj, direccion_actual())
 
     panel_remoto = bool(aj.clave_profesor) and aj.clave_profesor != CLAVE_POR_DEFECTO
+
+    def revisar_antes() -> bool:
+        return db.leer_estado("revisar_antes", "1" if aj.revisar_antes else "0") == "1"
+
+    def vista() -> str:
+        return db.leer_estado("vista_proyector", "mosaico")
+
+    def concurso() -> dict:
+        v = vista()
+        return {"vista": v, "votacion_abierta": v != "podio", "revisar_antes": revisar_antes()}
 
     @asynccontextmanager
     async def vida(_app):
@@ -184,7 +205,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "ancho": t.get("ancho") or (formato.ancho if formato else None),
             "alto": t.get("alto") or (formato.alto if formato else None),
             "con_foto": bool(t.get("foto")), "publico": bool(t.get("publico", 1)),
-            "votos": t.get("votos", 0),
+            "revision": t.get("revision") or "aprobada", "votos": t.get("votos", 0),
         }
         if token:
             d["mia"] = t["token"] == token
@@ -259,6 +280,18 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         ruta = aj.datos / "miniaturas" / f"{id_}.webp"
         if not ruta.exists():
             raise HTTPException(404, "No existe")
+        return FileResponse(ruta, media_type="image/webp", headers={"Cache-Control": "public, max-age=86400"})
+
+    @app.get("/img/{id_}/tesela.webp")
+    def tesela(id_: str = Depends(id_valido)):
+        ruta = aj.datos / "teselas" / f"{id_}.webp"
+        if not ruta.exists():  # imágenes de antes del mosaico: se hace la primera vez que se pide
+            mini = aj.datos / "miniaturas" / f"{id_}.webp"
+            if not mini.exists():
+                raise HTTPException(404, "No existe")
+            ruta.parent.mkdir(parents=True, exist_ok=True)
+            with Image.open(mini) as im:
+                guardar_tesela(im, ruta)
         return FileResponse(ruta, media_type="image/webp", headers={"Cache-Control": "public, max-age=86400"})
 
     @app.get("/img/{id_}/preview")
@@ -338,6 +371,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "ideas": aj.ideas,
             "detalles": aj.detalles,
             "reto": reto_json(reto_actual()),
+            "concurso": concurso(),
         }
 
     @app.post("/api/entrar")
@@ -394,7 +428,8 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             return JSONResponse({"detail": "Ya tienes una imagen en marcha.", "id": activos[0]}, status_code=409)
         r = reto_actual()
         id_ = estudio.encolar(p["token"], p["alias"], prompt, estilo, formato, tema=tema, foto=foto, fuerza=fuerza,
-                              publico=publico, reto=r["id"] if r and r["fase"] == "creando" else None)
+                              publico=publico, reto=r["id"] if r and r["fase"] == "creando" else None,
+                              revision="pendiente" if publico and revisar_antes() else "aprobada")
         log.info("%s pide: %s [%s%s%s]", p["alias"], prompt, estilo.id,
                  f" · {tema.id}" if tema else "", " · con foto" if foto else "")
         return trabajo_json(db.trabajo(id_))
@@ -416,12 +451,14 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
     @app.post("/api/trabajos/{id_}/voto")
     def votar(v: Interruptor, id_: str = Depends(id_valido), p: dict = Depends(persona)):
         t = db.trabajo(id_)
-        if not t or t["estado"] != "hecho" or t["oculto"] or not t["publico"] or t["miniatura_estilo"]:
+        if not t or t["estado"] != "hecho" or t["revision"] != "aprobada" or not t["publico"] or t["miniatura_estilo"]:
             raise HTTPException(404, "Esa imagen no está en la galería.")
         if t["token"] == p["token"]:
             raise HTTPException(422, "No puedes votar tu propia imagen 😉")
         if p["bloqueado"]:
             raise HTTPException(403, "Tu acceso al estudio está en pausa.")
+        if vista() == "podio":
+            raise HTTPException(423, "La votación está cerrada: ¡mira las ganadoras en la pantalla! 🏆")
         return {"votos": db.votar(id_, p["token"], v.valor), "votado": v.valor}
 
     @app.get("/api/trabajos/{id_}")
@@ -447,8 +484,8 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
 
     @app.get("/api/galeria")
     def galeria(limite: int = 30, ambito: str = "todo", orden: str = "recientes", ranking: bool = False,
-                x_token: str | None = Header(None)):
-        """Galería de la clase (alumnado) y datos del proyector. Solo imágenes públicas y no ocultas."""
+                antes: float | None = None, x_token: str | None = Header(None)):
+        """Galería de la clase (alumnado) y datos del proyector. Solo imágenes públicas y aprobadas."""
         p = db.persona(x_token) if x_token else None
         token = p["token"] if p else ""
         r = reto_actual()
@@ -456,18 +493,32 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         if ambito == "reto":
             filas = db.galeria(limite, reto=r["id"], por_votos=orden == "votos", token=token) if r else []
         else:
-            filas = db.galeria(limite, por_votos=orden == "votos", token=token)
+            filas = db.galeria(limite, por_votos=orden == "votos", token=token,
+                               antes=antes if orden != "votos" else None)
         respuesta = {
             "abierto": estudio.abierto,
             "en_cola": len(estudio.cola),
             "url": url(),
             "total": db.estadisticas()["hechas"],
             "reto": reto_json(r),
+            "concurso": concurso(),
+            "en_revision": db.cuantas_por_revisar(),
             "imagenes": [trabajo_json(t, publico=True, token=token) for t in filas],
         }
         if ranking:
             respuesta["ranking"] = [trabajo_json(t, publico=True) for t in db.galeria(3, por_votos=True) if t["votos"]]
         return respuesta
+
+    @app.get("/api/mosaico")
+    def mosaico():
+        """Todas las imágenes públicas, en el orden en que se aprobaron: cada una es una pieza del mosaico."""
+        return {
+            "piezas": [{"id": t["id"], "alias": t["alias"], "prompt": t["prompt"], "votos": t["votos"],
+                        "tesela": f"/img/{t['id']}/tesela.webp", "mini": f"/img/{t['id']}/mini.webp",
+                        "imagen": f"/img/{t['id']}.png"}
+                       for t in db.mosaico(MAX_MOSAICO)],
+            "en_revision": db.cuantas_por_revisar(),
+        }
 
     # --- Panel del profesor ---
 
@@ -504,6 +555,8 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "local": bool(request.client and request.client.host in LOCALES),
             "panel_remoto": panel_remoto,
             "reto": reto_json(reto_actual()),
+            "concurso": concurso(),
+            "por_revisar": db.cuantas_por_revisar(),
         }
 
     @app.post("/api/panel/reto", dependencies=[Depends(profesor)])
@@ -548,12 +601,38 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
     @app.get("/api/panel/imagenes", dependencies=[Depends(profesor)])
     def imagenes(antes: float | None = None, limite: int = 60):
         filas = db.galeria(min(max(limite, 1), 200), panel=True, antes=antes)
-        return [trabajo_json(t, publico=True) | {"token": t["token"], "oculto": bool(t["oculto"])} for t in filas]
+        return [trabajo_json(t, publico=True) | {"token": t["token"]} for t in filas]
 
-    @app.post("/api/panel/ocultar/{id_}", dependencies=[Depends(profesor)])
-    def ocultar(i: Interruptor, id_: str = Depends(id_valido)):
-        db.actualizar(id_, oculto=int(i.valor))
-        return {"ok": True}
+    @app.get("/api/panel/revision", dependencies=[Depends(profesor)])
+    def revision(limite: int = 40):
+        """Imágenes que esperan la aprobación del profesor, de la más antigua a la más nueva."""
+        filas = db.por_revisar(min(max(limite, 1), 200))
+        return {"total": db.cuantas_por_revisar(),
+                "imagenes": [trabajo_json(t, publico=True) | {"token": t["token"]} for t in filas]}
+
+    @app.post("/api/panel/revisar", dependencies=[Depends(profesor)])
+    def revisar(r: Revision):
+        if r.decision not in ("aprobada", "rechazada"):
+            raise HTTPException(422, "Decisión desconocida.")
+        ids = [i for i in r.ids if ID_VALIDO.match(i)]
+        cambiadas = db.revisar(ids, r.decision)
+        log.info("%s %d %s", "Publica" if r.decision == "aprobada" else "Rechaza", cambiadas,
+                 "imagen" if cambiadas == 1 else "imágenes")
+        return {"cambiadas": cambiadas, "por_revisar": db.cuantas_por_revisar()}
+
+    @app.post("/api/panel/moderacion", dependencies=[Depends(profesor)])
+    def moderacion(i: Interruptor):
+        db.guardar_estado("revisar_antes", "1" if i.valor else "0")
+        log.info("Revisión antes de publicar: %s", "sí" if i.valor else "no")
+        return concurso()
+
+    @app.post("/api/panel/proyector", dependencies=[Depends(profesor)])
+    def elegir_vista(v: Vista):
+        if v.vista not in VISTAS_PROYECTOR:
+            raise HTTPException(422, "Vista desconocida.")
+        db.guardar_estado("vista_proyector", v.vista)
+        log.info("Proyector: %s", v.vista)
+        return concurso()
 
     @app.post("/api/panel/bloquear", dependencies=[Depends(profesor)])
     async def bloquear(b: Bloqueo):

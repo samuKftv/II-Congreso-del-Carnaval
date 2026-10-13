@@ -71,6 +71,11 @@ vertical = [832, 1216]
 horizontal = [1216, 832]
 
 [moderacion]
+# true = cada imagen espera a que la apruebes en el panel antes de salir en el proyector,
+# el mosaico y la galería de la clase. Quien la crea la ve siempre en su móvil.
+# También se cambia desde el panel.
+revisar_antes = true
+
 # Palabras que bloquean el prompt (sin importar mayúsculas ni tildes).
 # Termina en * para bloquear todo lo que empiece así: "desnud*" bloquea desnudo, desnuda...
 palabras_prohibidas = [

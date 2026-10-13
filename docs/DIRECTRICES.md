@@ -47,20 +47,25 @@ Pasos, CFG, sampler y semilla los fija el workflow. El alumnado no los ve.
   - abrir y cerrar el estudio;
   - ver la cola y cancelar trabajos;
   - ver todas las imágenes con su alias y prompt;
-  - ocultar imágenes del proyector y bloquear un alias;
+  - **revisar cada imagen antes de que sea pública** (✅ Publicar / ❌ Rechazar), retirarla después
+    y pausar un alias;
   - consultar el estado de ComfyUI.
 - Desde el **propio PC** (`localhost`) el panel entra sin contraseña. Desde otro
   dispositivo pide la clave de `config/ajustes.toml`.
-- **Modo proyector** (`/proyector`): galería en directo para la pantalla del aula,
-  con el QR de acceso siempre visible.
+- **Modo proyector** (`/proyector`): pantalla del aula con el QR de acceso siempre visible. El panel
+  elige qué enseña: **mosaico** (por defecto), **galería** o **ganadoras** del concurso.
 
 ## 5. Seguridad y privacidad (adultos, evento público)
 
 - Acceso con **código del aula y alias**. El QR ya lleva el código dentro. No se piden
   emails ni nombres reales.
-- **Filtro de palabras** configurable (`config/ajustes.toml`) antes de encolar.
-  Con CFG 1, Z-Image Turbo **ignora el prompt negativo**, así que el filtro y el panel
-  son las herramientas de moderación.
+- **Dos barreras**:
+  1. **Filtro de palabras** configurable (`config/ajustes.toml`) antes de encolar.
+  2. **Revisión del profesor**: con `revisar_antes = true` (por defecto) ninguna imagen sale en el
+     proyector, el mosaico ni la galería hasta que el profesor la aprueba en el panel. Su autor sí la ve
+     en su móvil, con el aviso de que está en revisión.
+- Con CFG 1, Z-Image Turbo **ignora el prompt negativo**, así que el filtro y la revisión son las
+  herramientas de moderación.
 - Las imágenes se guardan **solo en el PC del profesor** (`datos/`).
 
 ## 6. Idioma
@@ -111,4 +116,14 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
    - **Identidad**: colores, cartel y técnica "Cartel CarnaLab" sacados del cartel del congreso;
      logo del CIFP Las Indias en versión clara; Canarias como primer carnaval y ideas sobre los
      oficios del carnaval (#CarnavalEmplea).
-3. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+3. **Tercera versión** ✅ (concurso de toda la sesión):
+   - **Revisión antes de publicar**: cada imagen nace `pendiente`; el profesor la pasa a `aprobada` o
+     `rechazada` desde la bandeja del panel. Las imágenes que antes se "ocultaban" pasan a `rechazada`.
+   - **Mosaico gigante**: cada imagen aprobada es una pieza de una rejilla con la forma del cartel, en un
+     hueco aleatorio pero fijo. Los huecos vacíos enseñan el cartel en oscuro y cada 30 s el cartel
+     aparece encima de todas las piezas. La pieza nueva sale primero en grande con su autor y luego vuela
+     a su hueco. Al completarse, el mosaico crece (192 → 300 → 432… piezas). Las piezas usan teselas de
+     160 px para que el proyector aguante miles.
+   - **Ganadoras**: al mostrar el podio del concurso se **cierra la votación**; al volver al mosaico se
+     reabre.
+4. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

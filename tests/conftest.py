@@ -38,7 +38,7 @@ def comfy_falso():
     hilo.join(5)
 
 
-def preparar_ajustes(tmp_path, monkeypatch, url_comfy: str) -> config.Ajustes:
+def preparar_ajustes(tmp_path, monkeypatch, url_comfy: str, revisar_antes: bool = False) -> config.Ajustes:
     carpeta = tmp_path / "config"
     carpeta.mkdir()
     shutil.copy(RAIZ / "config" / "estilos.json", carpeta)
@@ -48,6 +48,7 @@ def preparar_ajustes(tmp_path, monkeypatch, url_comfy: str) -> config.Ajustes:
         .replace('clave_profesor = "cambia-esta-clave"', 'clave_profesor = "secreta"')
         .replace('workflow = "config/workflow_api.json"',
                  f'workflow = "{(RAIZ / "config" / "workflow_api.json").as_posix()}"')
+        .replace("revisar_antes = true", f"revisar_antes = {str(revisar_antes).lower()}")
     )
     (carpeta / "ajustes.toml").write_text(toml, encoding="utf-8")
     monkeypatch.setenv("ESTUDIO_DATOS", str(tmp_path / "datos"))

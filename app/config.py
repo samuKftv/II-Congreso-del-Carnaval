@@ -76,6 +76,7 @@ class Ajustes:
     ideas: list[str]
     detalles: list[dict]
     datos: Path = field(default_factory=lambda: RAIZ / "datos")
+    revisar_antes: bool = True  # el profesor aprueba cada imagen antes de que sea pública
 
 
 def _ruta(valor: str) -> Path:
@@ -167,4 +168,5 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         ideas=list(e.get("ideas", [])),
         detalles=list(e.get("detalles", [])),
         datos=datos,
+        revisar_antes=bool(moderacion.get("revisar_antes", True)),
     )

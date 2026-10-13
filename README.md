@@ -11,9 +11,10 @@ en el PC del profesor. Todo funciona dentro de la WiFi del aula.
   - **Botones de detalles** (lugar, luz, plano, ambiente) que enriquecen la idea.
   - **Foto como base**: transforma una foto propia. Es **privada** salvo que la persona marque compartirla.
   - **Galería de la clase** con votos ❤️ (nadie puede votarse a sí mismo).
-- 🎛️ **Panel del profesor**: abre y cierra el estudio, controla la cola, modera, y lanza **retos con cuenta atrás**.
-- 📺 **Proyector**: galería en directo con el QR siempre visible, cuenta atrás del reto, votación en vivo,
-  **podio** de ganadoras y, de vez en cuando, las más votadas.
+- 🎛️ **Panel del profesor**: abre y cierra el estudio, controla la cola, **aprueba cada imagen antes de que
+  salga en público** y lanza **retos con cuenta atrás**.
+- 📺 **Proyector**: un **mosaico gigante con la forma del cartel** que se completa con las imágenes aprobadas,
+  con el QR siempre visible, las más votadas en directo y el **podio** de ganadoras.
 
 Las decisiones de diseño están en [`docs/DIRECTRICES.md`](docs/DIRECTRICES.md).
 
@@ -54,10 +55,36 @@ La versión en marcha aparece en la ventana negra y en la cabecera del panel.
 4. Pulsa **"Abrir proyector"** y llévalo a la pantalla del aula.
 5. El alumnado escanea el QR. **Deja abierta la ventana negra** mientras dure la sesión.
 
+## Concurso: el mosaico de CarnaLab
+
+El estudio funciona como un concurso durante toda la sesión:
+
+1. **El alumnado crea** desde el móvil. Su imagen le llega al momento, con el aviso
+   *"El jurado está revisando tu imagen"*.
+2. **Tú decides qué sale**: en el panel, la bandeja **🛂 Por revisar** enseña cada imagen nueva con su
+   autor y su idea. **✅ Publicar** la manda al mosaico; **❌ Rechazar** la deja fuera;
+   **🚫 Rechazar y pausar** además corta el acceso de esa persona. La pestaña del navegador muestra
+   cuántas esperan, por ejemplo *(3) Panel del profesor*.
+3. **El mosaico crece en el proyector**: la imagen aprobada sale en grande con su autor y vuela a su hueco.
+   Los huecos libres enseñan el cartel en oscuro y, cada medio minuto, el cartel aparece entero encima de
+   todas las piezas. Cuando se llena, se hace más grande.
+4. **Todo el mundo vota** desde el móvil (🌟 Galería → ❤️). Las tres más votadas llevan medalla en el
+   mosaico y salen en el lateral del proyector.
+5. **Al final**, en el panel, **📺 Proyector → 🏆 Ganadoras**: se cierra la votación y el proyector
+   enseña el podio con confeti. **🧩 Mosaico** vuelve atrás y reabre la votación.
+
+> Si quieres que las imágenes se publiquen solas, apaga **Revisión antes de publicar** en el panel o pon
+> `revisar_antes = false` en `[moderacion]` de `ajustes.toml`. Puedes retirar cualquier imagen después,
+> en *Imágenes creadas*.
+>
+> Para moderar desde el móvil mientras das la charla, pon una `clave_profesor` propia en `ajustes.toml`
+> y abre `http://<IP del PC>:8080/panel` en tu teléfono.
+
 ## Retos
 
 1. En el panel, escribe el tema (o pulsa una de las ideas), elige la duración y pulsa **🏁 Lanzar reto**.
-2. Móviles y proyector muestran el reto y la cuenta atrás. Todo lo que se cree mientras tanto participa.
+2. Móviles y proyector muestran el reto y la cuenta atrás. Todo lo que se cree mientras tanto participa
+   (con la revisión activada, cuando lo apruebas).
 3. Al acabar el tiempo (o con **⏹ Terminar y votar**), los móviles pasan a votar y el proyector enseña
    las candidatas con sus votos en directo.
 4. **🏆 Mostrar podio** lleva las tres más votadas al proyector, con confeti.
@@ -92,7 +119,7 @@ antes de llevarlos a la app:
 
 | Archivo | Para qué |
 |---|---|
-| `ajustes.toml` | Nombre del evento, puerto, código del aula, clave del profesor, dirección de ComfyUI, formatos, palabras bloqueadas |
+| `ajustes.toml` | Nombre del evento, puerto, código del aula, clave del profesor, dirección de ComfyUI, formatos, revisión antes de publicar, palabras bloqueadas |
 | `estilos.json` | Técnicas (`estilos`), carnavales del mundo (`temas`), ideas de *Inspírame* y botones de detalles. Cada uno con nombre, emoji, colores y la "receta" que se añade al prompt |
 | `workflow_api.json` | El workflow de ComfyUI en formato API |
 
@@ -120,6 +147,7 @@ Todo se guarda en `datos/`, solo en este PC:
 - `estudio.db`: historial;
 - `imagenes/`: los PNG originales;
 - `miniaturas/`: las versiones ligeras para galerías;
+- `teselas/`: las piezas pequeñas del mosaico;
 - `estilos/`: las tarjetas de técnicas y carnavales;
 - `fotos/`: las fotos que sube el alumnado para transformarlas.
 
