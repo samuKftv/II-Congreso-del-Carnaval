@@ -104,6 +104,15 @@ async function refrescarEstado() {
     $('qr').src = `/qr.svg?v=${encodeURIComponent(urlQr)}`;
   }
   pintarDirecciones(e);
+  const red = e.internet || { activado: false };
+  $('internet').hidden = !red.activado;
+  if (red.activado) {
+    $('internet').replaceChildren(el('span', { class: `punto ${red.listo ? 'ok' : 'mal'}` }),
+      el('b', {}, '🌍 Por internet: '), red.listo
+        ? 'listo. El público entra con sus datos móviles o con cualquier WiFi.'
+        : `${red.detalle}. Mientras tanto, el QR usa la WiFi.`);
+    if (red.listo) $('bloque-direccion').hidden = true;
+  }
   $('codigo').textContent = e.codigo ? `Código del aula: ${e.codigo}` : 'Sin código de acceso';
 
   $('avisos').replaceChildren(...e.avisos.map((a) =>

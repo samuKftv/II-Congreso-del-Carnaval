@@ -117,6 +117,14 @@ INTERPRETE DE IDEAS (recomendado)
  procesador y no le quita memoria a la gráfica. En el panel, junto a ComfyUI,
  verás "Intérprete de ideas: listo". Si no está, las ideas se pintan tal cual.
 
+SI LA WIFI DEL RECINTO NO DEJA (modo internet)
+ Muchas WiFi abiertas aíslan los móviles y no pueden llegar a este PC.
+ Entonces usa "2-INICIAR-ESTUDIO-POR-INTERNET.bat" en vez del normal: el
+ estudio recibe una dirección pública https (un túnel gratuito de Cloudflare)
+ y el público entra con sus datos móviles o con cualquier WiFi. Este PC solo
+ necesita internet: la WiFi del recinto o los datos de tu móvil.
+ Ábrelo una vez ANTES del evento, con internet, para que descargue cloudflared.
+
 CONCURSO
  Cada imagen nueva espera en "Por revisar" del panel hasta que pulsas
  "Publicar". Entonces entra en el mosaico gigante del proyector y se puede
@@ -193,6 +201,9 @@ def main():
     # 4. Lanzadores e instrucciones
     escribir_windows(obra / "2-INICIAR-ESTUDIO.bat", INICIAR)
     escribir_windows(obra / "1-PERMITIR-FIREWALL.bat", FIREWALL)
+    internet = (RAIZ / "iniciar_por_internet.bat").read_text(encoding="ascii")
+    escribir_windows(obra / "2-INICIAR-ESTUDIO-POR-INTERNET.bat",
+                     internet.replace('".venv\\Scripts\\python.exe"', '"%~dp0python\\python.exe"'))
     escribir_windows(obra / "3-PROBAR-CON-100-PERSONAS.bat", SIMULACRO)
     escribir_windows(obra / "4-INSTALAR-INTERPRETE.bat", (RAIZ / "instalar_interprete.bat").read_text(encoding="ascii"))
     escribir_windows(obra / "LEEME.txt", LEEME)

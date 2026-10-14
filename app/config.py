@@ -79,6 +79,7 @@ class Ajustes:
     datos: Path = field(default_factory=lambda: RAIZ / "datos")
     revisar_antes: bool = True  # el profesor aprueba cada imagen antes de que sea pública
     ligero: bool = True  # modelo de difusión en fp8 (cabe entero en 12 GB de VRAM)
+    internet: bool = False  # modo internet: túnel de Cloudflare con dirección pública https
     interprete_activado: bool = False  # IA de texto (Ollama) que convierte la idea en una descripción en inglés
     interprete_url: str = "http://127.0.0.1:11434"
     interprete_modelo: str = "qwen2.5:3b"
@@ -176,6 +177,7 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         datos=datos,
         revisar_antes=bool(moderacion.get("revisar_antes", True)),
         ligero=bool(comfy.get("ligero", True)),
+        internet=bool(t.get("internet", {}).get("activado", False)) or os.environ.get("ESTUDIO_INTERNET") == "1",
         interprete_activado=bool(interprete.get("activado", False)),
         interprete_url=str(interprete.get("url", "http://127.0.0.1:11434")).rstrip("/"),
         interprete_modelo=str(interprete.get("modelo", "qwen2.5:3b")).strip(),

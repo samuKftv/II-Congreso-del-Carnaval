@@ -290,7 +290,7 @@
       const codigo = url.searchParams.get('c');
       url.search = '';
       $('qr').src = `/qr.svg?v=${encodeURIComponent(direccion)}`;
-      $('url').textContent = url.href.replace(/^http:\/\//, '').replace(/\/$/, '');
+      $('url').textContent = url.href.replace(/^https?:\/\//, '').replace(/\/$/, '');
       $('codigo').textContent = codigo ? `Código del aula: ${codigo}` : '';
     }
 

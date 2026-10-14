@@ -43,6 +43,13 @@ codigo = "carnaval"
 # Clave del panel cuando lo abres desde OTRO dispositivo. Desde este PC no se pide.
 clave_profesor = "cambia-esta-clave"
 
+[internet]
+# Modo internet: el estudio recibe una dirección pública https (un túnel gratuito de Cloudflare) y el
+# público entra con sus datos móviles o con cualquier WiFi, aunque la red del recinto aísle los
+# dispositivos. Solo hace falta que este PC tenga internet. Lo más fácil es no tocar esto y arrancar
+# con 2-INICIAR-ESTUDIO-POR-INTERNET.bat, que además descarga cloudflared la primera vez.
+activado = false
+
 [comfyui]
 # "auto" busca ComfyUI en el puerto 8188 (portable o manual) y en el 8000 (ComfyUI Desktop).
 # Si lo tienes en otro sitio, escribe la dirección, p. ej. "http://127.0.0.1:8188".

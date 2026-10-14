@@ -145,4 +145,10 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
      consejo de guardado en iPhone.
    - Modelo de difusión en fp8 (`ligero = true`): Z-Image Turbo en bf16 (12 GB) no cabe entero en
      12 GB de VRAM.
-6. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+6. **Sexta versión** ✅ (modo internet):
+   - Túnel rápido de Cloudflare (`cloudflared tunnel --url`), lanzado y vigilado por la app. El QR usa la
+     dirección https pública y, si el túnel se corta, se reabre solo con una dirección nueva.
+   - **Seguridad**: una petición solo cuenta como "este PC" si llega de 127.0.0.1 **y no trae cabeceras
+     de intermediario** (`Cf-Connecting-Ip`, `X-Forwarded-For`…). Así el panel no queda abierto a internet.
+   - Por https, los móviles preguntan por su imagen cada 2 s en vez de cada 1 s.
+7. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

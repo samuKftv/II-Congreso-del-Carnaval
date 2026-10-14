@@ -62,6 +62,8 @@ def main():
     if otras and not aj.direccion:
         print(f"  Otras IP de este PC: {', '.join(otras)}")
         print("  (Si el movil no abre la pagina, elige otra en el panel, junto al QR.)")
+    if aj.internet:
+        print("  Internet:   abriendo el túnel… La dirección pública sale en el panel y en el QR.")
     if not app.state.panel_remoto:
         print("  (El panel solo se abre desde este PC: pon una clave_profesor en config/ajustes.toml")
         print("   si quieres abrirlo desde otro dispositivo.)")

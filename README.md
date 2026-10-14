@@ -48,6 +48,29 @@ La versión en marcha aparece en la ventana negra y en la cabecera del panel.
    > `z_image_turbo_bf16.safetensors`, `qwen_3_4b.safetensors` y `ae.safetensors`.
    > Si los tuyos se llaman igual, puedes saltarte este paso.
 
+## Si la WiFi del recinto no deja: modo internet
+
+Muchas WiFi abiertas (sin contraseña) **aíslan los dispositivos**: cada móvil sale a internet, pero no
+puede llegar a tu PC. Para comprobarlo, conecta el PC y un móvil (sin datos móviles) a esa WiFi y escanea
+el QR: si no carga, la red aísla.
+
+En ese caso, arranca con **`2-INICIAR-ESTUDIO-POR-INTERNET.bat`** (o `iniciar_por_internet.bat`) en vez
+del normal:
+
+- El estudio recibe una **dirección pública https** (`https://…trycloudflare.com`) gracias a un túnel
+  gratuito de Cloudflare, sin cuenta. El QR del proyector la usa sola.
+- El público entra **con sus datos móviles o con cualquier WiFi**: ya no importa el aislamiento.
+- **Tu PC solo necesita internet**: la WiFi del recinto (aceptando la página de bienvenida si la hay) o,
+  si esa falla, **los datos de tu móvil compartidos solo con el PC**. Con 100 personas, la sesión gasta
+  unos cientos de MB.
+- **Ábrelo una vez antes del evento, con internet**: la primera vez descarga cloudflared (unos 60 MB).
+- El panel lo indica: **🌍 Por internet: listo**. Panel y proyector siguen en tu PC, como siempre.
+- **El panel no queda abierto a internet**: lo que llega por el túnel se trata como "de fuera" y necesita
+  la clave del profesor.
+- Es un servicio gratuito de pruebas, sin garantía de funcionamiento. Si el túnel se corta, la app lo vuelve
+  a abrir sola, pero con **otra dirección**: el QR del proyector se actualiza solo y quien estuviera
+  dentro tiene que volver a escanearlo. Por eso, **no imprimas el QR**.
+
 ## Cada sesión
 
 1. Arranca **ComfyUI** como siempre.
@@ -216,7 +239,7 @@ En ese caso, indica los números de nodo en `nodo_prompt` y `nodo_tamano`.
 
 | Problema | Solución |
 |---|---|
-| Los móviles no cargan la página | El PC y los móviles deben estar en la **misma red**. Ejecuta `1-PERMITIR-FIREWALL.bat` (o `abrir_firewall.bat`) como administrador. Si sigue sin ir, la WiFi puede tener **aislamiento de clientes**: pide a informática que lo desactive. |
+| Los móviles no cargan la página | Si la WiFi es abierta o de invitados, usa el **modo internet** (`2-INICIAR-ESTUDIO-POR-INTERNET.bat`). Si no, el PC y los móviles deben estar en la **misma red**. Ejecuta `1-PERMITIR-FIREWALL.bat` (o `abrir_firewall.bat`) como administrador. Si sigue sin ir, la WiFi puede tener **aislamiento de clientes**: pide a informática que lo desactive. |
 | El QR muestra una IP rara | Escribe la IP correcta del PC en `direccion` (`ajustes.toml`). La ves con `ipconfig` en una terminal. |
 | El panel dice "ComfyUI: sin conexión" | Comprueba que ComfyUI está arrancado. La app lo busca sola en los puertos **8188** (portable) y **8000** (Desktop); si lo tienes en otro, escribe su dirección en `url` de `[comfyui]`. |
 | Las imágenes dan error | Mira la ventana de ComfyUI: suele ser un modelo que falta o un nombre de archivo distinto en el workflow. |

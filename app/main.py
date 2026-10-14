@@ -27,6 +27,7 @@ from .cola import Estudio, guardar_tesela, guardar_vista
 from .comfy import ComfyUI
 from .db import BaseDatos
 from .interprete import Interprete
+from .tunel import Tunel
 from .moderacion import Filtro, normalizar
 
 log = logging.getLogger("estudio")
@@ -38,6 +39,8 @@ FASES_RETO = ("creando", "votando", "podio", "cerrado")
 VISTAS_PROYECTOR = ("mosaico", "galeria", "podio")  # podio = ganadoras del concurso (cierra la votación)
 MAX_MOSAICO = 3000
 LOCALES = {"127.0.0.1", "::1", "localhost"}
+# Cabeceras que pone un intermediario (el túnel de Cloudflare): esa petición viene de internet, no de este PC
+DE_FUERA = ("cf-connecting-ip", "cf-ray", "x-forwarded-for", "x-forwarded-host", "forwarded")
 SIN_COMPRIMIR = ("/img/", "/estilos/", "/cartel", "/logo", "/static/fuentes/")  # ya van comprimidas (PNG, WebP, JPG)
 ANCHOS_CARTEL = (480, 720, 960)
 ALTOS_LOGO = (80, 120, 160)
@@ -167,8 +170,17 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         elegida = db.leer_estado("direccion", "")
         return elegida if elegida in direcciones() else direcciones()[0]
 
+    tunel = Tunel(aj.puerto) if aj.internet else None
+
     def url() -> str:
+        if tunel and tunel.url:
+            return f"{tunel.url}/" + (f"?c={quote(aj.codigo)}" if aj.codigo else "")
         return url_alumnado(aj, direccion_actual())
+
+    def es_local(request: Request) -> bool:
+        """Solo cuenta como "este PC" lo que llega directo de 127.0.0.1, no lo que trae el túnel."""
+        return bool(request.client and request.client.host in LOCALES
+                    and not any(c in request.headers for c in DE_FUERA))
 
     panel_remoto = bool(aj.clave_profesor) and aj.clave_profesor != CLAVE_POR_DEFECTO
 
@@ -186,7 +198,11 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
     async def vida(_app):
         tareas = [asyncio.create_task(estudio.bucle()), asyncio.create_task(estudio.vigilar_comfy()),
                   asyncio.create_task(estudio.bucle_interprete())]
+        if tunel:
+            tunel.arrancar()
         yield
+        if tunel:
+            tunel.parar()
         for t in tareas:
             t.cancel()
         await comfy.cerrar()
@@ -223,7 +239,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         return p
 
     def profesor(request: Request, x_clave: str | None = Header(None)) -> None:
-        if request.client and request.client.host in LOCALES:
+        if es_local(request):
             return
         if panel_remoto and x_clave and hmac.compare_digest(unquote(x_clave).encode(), aj.clave_profesor.encode()):
             return
@@ -620,7 +636,9 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "codigo": aj.codigo,
             "avisos": estudio.avisos,
             "bloqueados": db.bloqueados(),
-            "local": bool(request.client and request.client.host in LOCALES),
+            "local": es_local(request),
+            "internet": {"activado": True, "listo": tunel.listo, "url": tunel.url, "detalle": tunel.detalle}
+                        if tunel else {"activado": False},
             "panel_remoto": panel_remoto,
             "reto": reto_json(reto_actual()),
             "concurso": concurso(),

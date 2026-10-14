@@ -35,6 +35,9 @@ function mostrar(pantalla) {
   window.scrollTo({ top: 0 });
 }
 
+// Por el túnel de internet (https) se pregunta la mitad de veces: menos tráfico para 100 móviles
+const POR_INTERNET = location.protocol === 'https:';
+
 // En el iPhone, "Descargar" la guarda en Archivos: explicamos cómo llevarla a Fotos
 const ES_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 document.querySelectorAll('[data-ios]').forEach((p) => (p.hidden = !ES_IOS));
@@ -520,7 +523,7 @@ async function sondear() {
     if (e.estado === 404) { estado.trabajo = null; return mostrar('crear'); }
     // Sin conexión: seguimos intentándolo.
   }
-  estado.sondeo = setTimeout(sondear, 1000);
+  estado.sondeo = setTimeout(sondear, POR_INTERNET ? 2000 : 1000);
 }
 
 function pintarEspera(t) {
