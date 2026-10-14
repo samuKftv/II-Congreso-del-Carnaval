@@ -199,14 +199,13 @@ recinto con 3 o 4 móviles y comprueba que abren el QR.
 
 ## Identidad del congreso
 
-- **Logo del CIFP Las Indias con sus colores oficiales** (añil `#383089`, magenta `#c80e81` y turquesa
-  `#59bdb3`). Siempre va sobre una placa blanca, sin alterarlo, en el móvil y en el proyector.
-
 Ya viene configurada con el cartel de CarnaLab 2026 (en `[evento]` y `[colores]` de `ajustes.toml`):
 
 - **Cartel** (`config/cartel.jpg`): en la pantalla de entrada y en el proyector mientras no hay imágenes.
-- **Logo del CIFP Las Indias** (`config/logo-las-indias.png`): el original, sobre una placa blanca. Sale en
-  la entrada, en la cabecera y en el proyector.
+- **Logo del CIFP Las Indias** (`config/logo-las-indias.png`): en versión clara (crema), para que destaque
+  sobre el azul marino. Sale en la entrada, en la cabecera y en el proyector.
+- **Proyector**: el nombre del congreso va grande y en negro sobre una franja crema, y debajo la fecha,
+  el lugar y el hashtag **#LABCIFPLasIndias** (`lema` en `[evento]`).
 - **Colores** sacados del cartel: azul marino, coral, crema y aguamarina.
 - **Tipografía de los títulos**: Righteous (licencia libre SIL OFL, en `app/static/fuentes/`).
 - **Técnica "Cartel CarnaLab"**: imita el estilo del cartel (cubista, colores planos, máscaras y trompetas).

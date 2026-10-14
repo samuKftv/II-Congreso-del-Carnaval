@@ -6,7 +6,7 @@ nombre = "CarnaLab 2026"
 subtitulo = "Estudio de imágenes"
 # Nombre completo del congreso y una línea con fecha y lugar: salen en la entrada y en el proyector.
 congreso = "II Congreso Internacional de Profesionalización del Carnaval"
-lema = "15 OCT · Santa Cruz de Tenerife · TEA · #CarnavalEmplea"
+lema = "15 OCT · Santa Cruz de Tenerife · TEA · #LABCIFPLasIndias"
 # Centro que organiza el estudio (pie de la entrada y texto del logo).
 centro = "CIFP Las Indias"
 # Logo (PNG, JPG, WEBP o SVG). Vacío = sin logo.

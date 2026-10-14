@@ -15,13 +15,12 @@
     .cabecera .titulo-evento { font-size: clamp(1.3rem, 5.2vw, 1.75rem); }
     .chip-galeria { min-height: 44px; padding: 8px 14px; font-size: 0.95rem; white-space: nowrap; }
     .marca { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    /* El logo, con sus colores oficiales, sobre una placa blanca */
-    .logo-cabecera { height: 52px; width: auto; max-width: 140px; object-fit: contain; flex: none; background: #fff; padding: 6px 9px; border-radius: 12px; }
+    .logo-cabecera { height: 52px; width: auto; max-width: 96px; object-fit: contain; flex: none; }
     .cartel-entrada { width: min(58vw, 240px); margin: 0 auto 6px; border-radius: 16px; box-shadow: 0 28px 60px -22px rgba(0, 0, 0, 0.8); animation: balanceo 7s ease-in-out infinite; }
     @keyframes balanceo { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(2deg) translateY(-6px); } }
     .congreso { margin: 8px auto 0; max-width: 34ch; font-weight: 700; font-size: 0.95rem; color: var(--texto); opacity: 0.9; }
     .pie-centro { margin-top: 28px; display: grid; justify-items: center; gap: 8px; color: var(--suave); font-size: 0.82rem; font-weight: 700; }
-    .pie-centro img { height: 60px; width: auto; background: #fff; padding: 8px 12px; border-radius: 14px; }
+    .pie-centro img { height: 52px; width: auto; }
     /* Pestañas grandes Crear / Votar: se quedan arriba al bajar, siempre a mano */
     .pestanas-app { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin: 0 -16px 16px;
       position: sticky; top: 0; z-index: 6; padding: calc(8px + env(safe-area-inset-top)) 16px 10px;

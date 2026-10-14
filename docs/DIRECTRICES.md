@@ -115,7 +115,7 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
      en la fase *creando*. El paso a votación es automático al acabar el tiempo.
    - **Identidad**: colores, cartel y técnica "Cartel CarnaLab" sacados del cartel del congreso;
      logo del CIFP Las Indias en versión clara; Canarias como primer carnaval y ideas sobre los
-     oficios del carnaval (#CarnavalEmplea).
+     oficios del carnaval (#LABCIFPLasIndias).
 3. **Tercera versión** ✅ (concurso de toda la sesión):
    - **Revisión antes de publicar**: cada imagen nace `pendiente`; el profesor la pasa a `aprobada` o
      `rechazada` desde la bandeja del panel. Las imágenes que antes se "ocultaban" pasan a `rechazada`.
@@ -155,7 +155,9 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
      de intermediario** (`Cf-Connecting-Ip`, `X-Forwarded-For`…). Así el panel no queda abierto a internet.
    - Por https, los móviles preguntan por su imagen cada 2 s en vez de cada 1 s.
 7. **Séptima versión** ✅ (sencillez para el día del congreso):
-   - Logo original con sus colores oficiales, siempre sobre placa blanca (nunca recoloreado).
+   - Logo del CIFP Las Indias en su versión clara (crema), sin placa.
+   - Proyector sin el rótulo "Estudio de imágenes": el nombre del congreso va grande, en negro sobre una
+     franja crema, y el hashtag del evento es #LABCIFPLasIndias.
    - Proyector: solo el QR (sin enlace ni código); con el mosaico, el lateral y el cartel van juntos y
      centrados, sin chips de estado.
    - Entrada sin código de aula por defecto y nombre opcional (si se deja vacío, uno de carnaval).
