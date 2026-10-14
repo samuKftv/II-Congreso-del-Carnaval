@@ -13,6 +13,8 @@ import httpx
 from websockets.asyncio.client import connect
 from websockets.exceptions import WebSocketException
 
+from . import workflow
+
 log = logging.getLogger("estudio")
 
 # Con url = "auto" se prueban estas direcciones: ComfyUI portable/manual y ComfyUI Desktop.
@@ -64,6 +66,19 @@ def _mensaje_error(respuesta: httpx.Response) -> str:
     return texto or f"ComfyUI respondió {respuesta.status_code}"
 
 
+def opciones_de(definicion: dict, entrada: str) -> list[str] | None:
+    """Los valores que admite una entrada de lista (los archivos que ComfyUI tiene en su carpeta)."""
+    entradas = {**definicion.get("input", {}).get("required", {}), **definicion.get("input", {}).get("optional", {})}
+    tipo = entradas.get(entrada)
+    if not isinstance(tipo, list) or not tipo:
+        return None
+    if isinstance(tipo[0], list):  # formato clásico: [["a.safetensors", "b.safetensors"], {...}]
+        return [str(o) for o in tipo[0]]
+    if tipo[0] == "COMBO" and len(tipo) > 1 and isinstance(tipo[1], dict):  # formato nuevo
+        return [str(o) for o in tipo[1].get("options", [])]
+    return None
+
+
 class ComfyUI:
     def __init__(self, url: str):
         self.candidatas = list(CANDIDATAS) if url == "auto" else [url.rstrip("/")]
@@ -95,6 +110,35 @@ class ComfyUI:
                     self._usar(url)
                 return datos
         return None
+
+    async def comprobar(self, wf: dict) -> list[str] | None:
+        """¿Tiene ComfyUI los nodos y los archivos (modelo, LoRA, VAE…) que usa el workflow?
+
+        Corrige en `wf` los nombres que solo cambian en la subcarpeta, la barra o la extensión.
+        Devuelve lo que falta, explicado para el profesor, o None si ComfyUI no ha respondido."""
+        faltan, definiciones = [], {}
+        try:
+            for clase in sorted({n.get("class_type", "") for n in wf.values()}):
+                r = await self.http.get(f"{self.url}/object_info/{clase}", timeout=10)
+                r.raise_for_status()
+                definiciones[clase] = r.json().get(clase)
+                if definiciones[clase] is None:
+                    faltan.append(f"A ComfyUI le falta el nodo «{clase}». Instálalo con el ComfyUI Manager "
+                                  "o actualiza ComfyUI.")
+        except (httpx.HTTPError, ValueError, AttributeError):
+            return None
+        for nodo, entrada, valor in workflow.archivos(wf):
+            definicion = definiciones.get(wf[nodo].get("class_type", ""))
+            opciones = opciones_de(definicion, entrada) if definicion else None
+            if opciones is None or valor in opciones:
+                continue
+            if otro := workflow.parecido(valor, opciones):
+                log.info("Uso «%s» de ComfyUI para «%s»", otro, valor)
+                wf[nodo]["inputs"][entrada] = otro
+            else:
+                faltan.append(f"ComfyUI no tiene «{valor}». Cópialo en la carpeta ComfyUI/"
+                              f"{workflow.CARPETAS[entrada]} y vuelve a abrir ComfyUI.")
+        return faltan
 
     async def subir_imagen(self, datos: bytes, nombre: str) -> str:
         """Sube una imagen a la carpeta input de ComfyUI y devuelve el nombre para LoadImage."""

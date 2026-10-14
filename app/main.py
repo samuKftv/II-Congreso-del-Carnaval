@@ -647,7 +647,8 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "direcciones": direcciones(),
             "direccion_fija": bool(aj.direccion),
             "codigo": aj.codigo,
-            "avisos": estudio.avisos,
+            "avisos": estudio.avisos + estudio.faltan,
+            "modelo": estudio.modelo(),
             "bloqueados": db.bloqueados(),
             "local": es_local(request),
             "internet": {"activado": True, "listo": tunel.listo, "url": tunel.url, "detalle": tunel.detalle}

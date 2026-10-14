@@ -147,6 +147,42 @@ Recomendado para una RTX 5070 de 12 GB y 100 personas: **Z-Image Turbo**, el que
 
 Si aun así va justo, baja el tamaño en `[formatos]` (por ejemplo `cuadrado = [768, 768]`).
 
+## Tu propio modelo y tu LoRA
+
+Si has entrenado un modelo o un LoRA (por ejemplo con el estilo del carnaval de Tenerife), el estudio lo
+usa sin tocar el workflow:
+
+1. Copia **tu modelo** en `ComfyUI/models/diffusion_models` y **tu LoRA** en `ComfyUI/models/loras`.
+   Vuelve a abrir ComfyUI.
+2. En `config/ajustes.toml`, apartado `[mi_modelo]`, escribe sus nombres:
+
+   ```toml
+   [mi_modelo]
+   modelo = "mi_modelo.safetensors"   # vacío = el del workflow
+   lora = "mi_lora.safetensors"       # vacío = sin LoRA
+   fuerza_lora = 0.8                  # 1.0 = tal cual lo entrenaste
+   palabra_clave = "crnvl"            # la palabra de activación, si entrenaste con una
+   ```
+
+   Basta con el nombre del archivo: si está en una subcarpeta o te falta `.safetensors`, la app lo
+   encuentra igual.
+3. Doble clic en **`5-PROBAR-MI-MODELO.bat`** (o `probar_mi_modelo.bat`). Pinta 4 ideas de *Inspírame*
+   **sin LoRA y con fuerzas 0.6, 0.8 y 1**, con la misma semilla en cada fila, y abre una hoja para
+   comparar. Elige la fuerza que conserve la idea de la gente y tenga tu estilo, y ponla en
+   `fuerza_lora`. Al final dice los segundos por imagen. Si escribes ideas entre comillas detrás
+   del nombre del archivo (en una ventana de comandos), prueba esas.
+4. Abre el estudio. En el panel, junto a ComfyUI, sale **🎨 Modelo: … + LoRA …**. Si a ComfyUI le falta
+   algún archivo o nodo, el panel lo dice y explica en qué carpeta va.
+
+La app conecta tu modelo en el cargador del workflow y pone tu LoRA justo detrás, en el modelo y en el
+codificador de texto (si el LoRA no lo trae, no cambia nada). La palabra clave va delante de cada idea,
+también de las que reescribe el intérprete. Las ideas que ve la gente no la llevan.
+
+Si tu modelo **no sale de Z-Image Turbo** (SDXL, Flux…), monta en ComfyUI un workflow que funcione con él,
+expórtalo con *Exportar (API)* y guárdalo como `config/workflow_api.json`. Deja `modelo` vacío: el LoRA y
+la palabra clave se siguen poniendo en `[mi_modelo]`. Luego mide la velocidad con el simulacro: con más
+pasos que Z-Image Turbo, cada imagen tarda más y la gente espera más.
+
 ## Intérprete de ideas (recomendado)
 
 La gente escribe ideas cortas, raras o en español ("un pulpo pirata", "conviérteme en reina"). El modelo
@@ -228,7 +264,7 @@ antes de llevarlos a la app:
 
 | Archivo | Para qué |
 |---|---|
-| `ajustes.toml` | Nombre del evento, puerto, código de acceso (vacío por defecto), clave del profesor, modo sencillo del móvil, dirección de ComfyUI, modelo en fp8 (`ligero`), intérprete de ideas, formatos, revisión antes de publicar, palabras bloqueadas |
+| `ajustes.toml` | Nombre del evento, puerto, código de acceso (vacío por defecto), clave del profesor, modo sencillo del móvil, dirección de ComfyUI, modelo en fp8 (`ligero`), tu modelo y tu LoRA (`[mi_modelo]`), intérprete de ideas, formatos, revisión antes de publicar, palabras bloqueadas |
 | `estilos.json` | Técnicas (`estilos`), carnavales del mundo (`temas`), ideas de *Inspírame* y botones de detalles. Cada uno con nombre, emoji, colores y la "receta" que se añade al prompt |
 | `workflow_api.json` | El workflow de ComfyUI en formato API |
 
@@ -245,7 +281,8 @@ En ese caso, indica los números de nodo en `nodo_prompt` y `nodo_tamano`.
 | Los móviles no cargan la página | Si la WiFi es abierta o de invitados, usa el **modo internet** (`2-INICIAR-ESTUDIO-POR-INTERNET.bat`). Si no, el PC y los móviles deben estar en la **misma red**. Ejecuta `1-PERMITIR-FIREWALL.bat` (o `abrir_firewall.bat`) como administrador. Si sigue sin ir, la WiFi puede tener **aislamiento de clientes**: pide a informática que lo desactive. |
 | El QR muestra una IP rara | Escribe la IP correcta del PC en `direccion` (`ajustes.toml`). La ves con `ipconfig` en una terminal. |
 | El panel dice "ComfyUI: sin conexión" | Comprueba que ComfyUI está arrancado. La app lo busca sola en los puertos **8188** (portable) y **8000** (Desktop); si lo tienes en otro, escribe su dirección en `url` de `[comfyui]`. |
-| Las imágenes dan error | Mira la ventana de ComfyUI: suele ser un modelo que falta o un nombre de archivo distinto en el workflow. |
+| Las imágenes dan error | Mira los avisos del panel: si a ComfyUI le falta un modelo, un LoRA o un nodo, sale ahí con la carpeta donde va. Si no, mira la ventana de ComfyUI. |
+| Mi LoRA cambia demasiado las ideas | Baja `fuerza_lora` (0.6-0.8) y repite `5-PROBAR-MI-MODELO.bat` para comparar. |
 | El panel dice "Intérprete: Ollama no está abierto" | Abre Ollama desde el menú Inicio (icono de la llama junto al reloj). Si dice "falta el modelo", ejecuta `4-INSTALAR-INTERPRETE.bat`. Mientras tanto, las ideas se pintan tal cual. |
 | Quiero ver la imagen formándose | Arranca ComfyUI con `--preview-method auto`. Sin esa opción solo se ve la barra de progreso. |
 | Quiero empezar de cero | Cierra la app y borra la carpeta `datos/` (imágenes, fotos, votos e historial). |

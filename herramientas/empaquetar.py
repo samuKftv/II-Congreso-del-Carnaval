@@ -130,6 +130,23 @@ CONCURSO
  "Publicar". Entonces entra en el mosaico gigante del proyector y se puede
  votar. Al final: Proyector > Ganadoras (cierra la votación y enseña el podio).
 
+TU PROPIO MODELO Y TU LORA
+ 1. Copia tu modelo en ComfyUI\\models\\diffusion_models y tu LoRA en
+    ComfyUI\\models\\loras. Vuelve a abrir ComfyUI.
+ 2. Abre config\\ajustes.toml con el Bloc de notas y, en el apartado
+    [mi_modelo], escribe sus nombres (modelo = "...", lora = "...") y la
+    palabra clave del LoRA si entrenaste con una.
+ 3. Doble clic en "5-PROBAR-MI-MODELO.bat". Pinta 4 ideas sin LoRA y con
+    fuerzas 0.6, 0.8 y 1, con la misma semilla, y abre una hoja para
+    compararlas. Escribe la fuerza que más te guste en fuerza_lora.
+ 4. Abre el estudio como siempre. En el panel, junto a ComfyUI, verás
+    "Modelo: ... + LoRA ...". Si falta algún archivo, el panel te lo dice.
+ Si tu modelo no sale de Z-Image Turbo (por ejemplo, SDXL o Flux), monta en
+ ComfyUI un workflow que funcione con él, expórtalo con "Exportar (API)" y
+ guárdalo como config\\workflow_api.json. Deja "modelo" vacío: el LoRA y la
+ palabra clave se siguen poniendo en [mi_modelo].
+ Después, mide con el simulacro cuánto tarda por imagen.
+
 PROBAR CON 100 PERSONAS (SIMULACRO)
  Cierra el estudio, arranca ComfyUI y haz doble clic en "3-PROBAR-CON-100-PERSONAS.bat".
  100 personas virtuales usan el estudio durante 10 minutos con tu ComfyUI de
@@ -206,6 +223,9 @@ def main():
                      internet.replace('".venv\\Scripts\\python.exe"', '"%~dp0python\\python.exe"'))
     escribir_windows(obra / "3-PROBAR-CON-100-PERSONAS.bat", SIMULACRO)
     escribir_windows(obra / "4-INSTALAR-INTERPRETE.bat", (RAIZ / "instalar_interprete.bat").read_text(encoding="ascii"))
+    mi_modelo = (RAIZ / "probar_mi_modelo.bat").read_text(encoding="ascii")
+    escribir_windows(obra / "5-PROBAR-MI-MODELO.bat",
+                     mi_modelo.replace('".venv\\Scripts\\python.exe"', '"%~dp0python\\python.exe"'))
     escribir_windows(obra / "LEEME.txt", LEEME)
 
     # 5. ZIP con una carpeta dentro

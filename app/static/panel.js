@@ -87,6 +87,13 @@ async function refrescarEstado() {
       : `Arranca ComfyUI. La app lo busca en ${e.comfy.url} (config/ajustes.toml).`;
   }
 
+  const m = e.modelo || {};
+  const sinRuta = (nombre) => nombre.split(/[\\/]/).pop();
+  const linea = [el('b', {}, '🎨 Modelo: '), sinRuta(m.modelo || 'el del workflow')];
+  if (m.lora) linea.push(` + LoRA ${sinRuta(m.lora)} (fuerza ${m.fuerza})`);
+  if (m.palabra_clave) linea.push(` · palabra clave «${m.palabra_clave}»`);
+  $('modelo').replaceChildren(...linea);
+
   const ia = e.interprete || { activado: false };
   $('interprete').hidden = !ia.activado;
   if (ia.activado) {

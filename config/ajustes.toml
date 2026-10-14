@@ -82,6 +82,20 @@ tiempo_maximo = 180
 nodo_prompt = ""
 nodo_tamano = ""
 
+[mi_modelo]
+# Tu propio modelo y tu LoRA. Déjalo todo vacío ("") para usar el modelo del workflow tal cual.
+# Copia los archivos en las carpetas de ComfyUI y escribe aquí solo el nombre del archivo
+# (si están en una subcarpeta o te olvidas de ".safetensors", la app los encuentra igual).
+# Tu modelo, en ComfyUI/models/diffusion_models (si lo entrenaste a partir de Z-Image Turbo).
+modelo = ""
+# Tu LoRA, en ComfyUI/models/loras.
+lora = ""
+# Cuánto se nota el LoRA: 1.0 = tal cual lo entrenaste. Si "se come" las ideas de la gente, baja a 0.6-0.8.
+# Para elegirla: 5-PROBAR-MI-MODELO.bat hace una hoja con la misma idea sin LoRA y con varias fuerzas.
+fuerza_lora = 1.0
+# La palabra de activación con la que entrenaste el LoRA (si usaste una). Se pone delante de cada idea.
+palabra_clave = ""
+
 [interprete]
 # Una IA de texto (Ollama) convierte cada idea del alumnado, aunque sea corta, rara o en español,
 # en una descripción detallada en inglés antes de pintarla. Funciona sin internet, en el procesador

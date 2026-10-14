@@ -88,6 +88,10 @@ class Ajustes:
     interprete_activado: bool = False  # IA de texto (Ollama) que convierte la idea en una descripción en inglés
     interprete_url: str = "http://127.0.0.1:11434"
     interprete_modelo: str = "qwen2.5:3b"
+    modelo: str = ""  # tu modelo (sustituye al del workflow)
+    lora: str = ""  # tu LoRA (la app lo mete en el workflow)
+    fuerza_lora: float = 1.0
+    palabra_clave: str = ""  # palabra de activación del LoRA, delante de cada prompt
 
 
 def _ruta(valor: str) -> Path:
@@ -117,6 +121,7 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
     evento, servidor, acceso = t.get("evento", {}), t.get("servidor", {}), t.get("acceso", {})
     comfy, limites, moderacion = t.get("comfyui", {}), t.get("limites", {}), t.get("moderacion", {})
     interprete, alumnado = t.get("interprete", {}), t.get("alumnado", {})
+    mio = t.get("mi_modelo", {})
 
     with open(_ruta(comfy.get("workflow", "config/workflow_api.json")), encoding="utf-8") as f:
         workflow = json.load(f)
@@ -191,4 +196,8 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         interprete_activado=bool(interprete.get("activado", False)),
         interprete_url=str(interprete.get("url", "http://127.0.0.1:11434")).rstrip("/"),
         interprete_modelo=str(interprete.get("modelo", "qwen2.5:3b")).strip(),
+        modelo=str(mio.get("modelo", "")).strip(),
+        lora=str(mio.get("lora", "")).strip(),
+        fuerza_lora=min(max(float(mio.get("fuerza_lora", 1.0)), -3.0), 3.0),
+        palabra_clave=" ".join(str(mio.get("palabra_clave", "")).split()),
     )

@@ -1,6 +1,7 @@
 """ComfyUI simulado para probar el estudio sin GPU.
 
-Imita /prompt, /ws, /history, /view, /upload/image, /system_stats, /interrupt y /queue.
+Imita /prompt, /ws, /history, /view, /upload/image, /system_stats, /object_info, /interrupt y /queue.
+Como el de verdad, rechaza los workflows que piden archivos que no tiene (ARCHIVOS).
 Uso manual: python -m tests.comfy_falso  (escucha en 127.0.0.1:8188)
 """
 
@@ -19,6 +20,43 @@ from fastapi.responses import JSONResponse, Response
 from PIL import Image, ImageDraw, ImageFont
 
 PASOS = 9
+
+# Los archivos que "tiene" este ComfyUI, por nodo y entrada (como en sus carpetas models/...)
+ARCHIVOS = {
+    ("UNETLoader", "unet_name"): ["z_image_turbo_bf16.safetensors", "mi_modelo_carnaval.safetensors"],
+    ("CheckpointLoaderSimple", "ckpt_name"): ["sdxl_carnaval.safetensors"],
+    ("CLIPLoader", "clip_name"): ["qwen_3_4b.safetensors"],
+    ("VAELoader", "vae_name"): ["ae.safetensors"],
+    ("LoraLoader", "lora_name"): ["carnaval\\lora_carnaval.safetensors", "otro_lora.safetensors"],
+    ("LoraLoaderModelOnly", "lora_name"): ["carnaval\\lora_carnaval.safetensors", "otro_lora.safetensors"],
+}
+NODOS = {"KSampler", "KSamplerAdvanced", "CLIPTextEncode", "VAEDecode", "VAEEncode", "SaveImage", "LoadImage",
+         "EmptySD3LatentImage", "EmptyLatentImage", "CLIPSetLastLayer", "ModelSamplingAuraFlow",
+         *(clase for clase, _ in ARCHIVOS)}
+
+
+def definicion(clase: str) -> dict:
+    """Como /object_info/<clase>: el LoraLoader con el formato nuevo de listas y el resto con el clásico."""
+    entradas = {}
+    for (c, entrada), opciones in ARCHIVOS.items():
+        if c == clase:
+            entradas[entrada] = ["COMBO", {"options": opciones}] if clase == "LoraLoader" else [opciones, {}]
+    return {"input": {"required": entradas}, "name": clase}
+
+
+def errores_de(wf: dict) -> dict:
+    errores = {}
+    for k, n in wf.items():
+        clase = n.get("class_type")
+        if clase not in NODOS:
+            errores[k] = {"class_type": clase, "errors": [{"message": f"Cannot execute because node {clase} does not exist."}]}
+            continue
+        for entrada, valor in n.get("inputs", {}).items():
+            opciones = ARCHIVOS.get((clase, entrada))
+            if opciones is not None and valor not in opciones:
+                errores[k] = {"class_type": clase, "errors": [
+                    {"message": "Value not in list", "details": f"{entrada}: '{valor}' not in {opciones}"}]}
+    return errores
 
 
 def pintar(texto: str, ancho: int, alto: int, semilla: int, base: Image.Image | None = None) -> Image.Image:
@@ -94,6 +132,12 @@ def crear_comfy_falso(retardo_paso: float = 0.15, fallar_con: str | None = None)
                 await enviar(cid, {"type": "execution_error", "data": {"prompt_id": pid, "exception_message": "CUDA out of memory (simulado)"}})
                 continue
             im = pintar(texto, tam["width"], tam["height"], semilla, base)
+            lora = next((n["inputs"] for n in wf.values() if n["class_type"].startswith("LoraLoader")), None)
+            if lora:  # el "LoRA" tiñe la imagen de dorado, más cuanto más fuerza
+                fuerza = float(lora["strength_model"])
+                im = Image.blend(im, Image.new("RGB", im.size, (212, 160, 23)), min(max(fuerza, 0), 1.5) * 0.4)
+                ImageDraw.Draw(im).text((20, 20), f"LoRA {fuerza:g}", font=ImageFont.load_default(size=max(28, im.width // 18)),
+                                        fill="white", stroke_width=3, stroke_fill="black")
             interrumpido = False
             for paso in range(1, PASOS + 1):
                 await asyncio.sleep(retardo_paso)
@@ -128,10 +172,17 @@ def crear_comfy_falso(retardo_paso: float = 0.15, fallar_con: str | None = None)
         wf = cuerpo["prompt"]
         if not any(n.get("class_type") == "SaveImage" for n in wf.values()):
             return JSONResponse({"error": {"message": "Prompt has no outputs"}, "node_errors": {}}, status_code=400)
+        if errores := errores_de(wf):
+            return JSONResponse({"error": {"message": "Prompt outputs failed validation"}, "node_errors": errores},
+                                status_code=400)
         pid = str(uuid.uuid4())
         app.state.recibidos.append(wf)
         await cola.put((pid, wf, cuerpo.get("client_id", "")))
         return {"prompt_id": pid, "number": len(app.state.recibidos), "node_errors": {}}
+
+    @app.get("/object_info/{clase}")
+    async def object_info(clase: str):
+        return {clase: definicion(clase)} if clase in NODOS else {}
 
     @app.post("/upload/image")
     async def upload(request: Request):

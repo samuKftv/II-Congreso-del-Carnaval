@@ -133,6 +133,113 @@ def aligerar(wf: dict) -> dict:
     return wf
 
 
+LORA = "9100"  # número del nodo del LoRA que añade la app
+ARCHIVO_DEL_MODELO = ("unet_name", "ckpt_name")
+
+
+def _origen(wf: dict, enlace, entrada: str):
+    """Sube por la cadena de `entrada` (model o clip) hasta el nodo que la crea, el cargador.
+    Devuelve el enlace a su salida, p. ej. ["16", 0]."""
+    vistos = set()
+    while _es_enlace(enlace) and enlace[0] in wf and enlace[0] not in vistos:
+        vistos.add(enlace[0])
+        anterior = wf[enlace[0]].get("inputs", {}).get(entrada)
+        if not _es_enlace(anterior):
+            return enlace
+        enlace = anterior
+    return None
+
+
+def con_mi_modelo(wf: dict, modelo: str = "", lora: str = "", fuerza: float = 1.0) -> dict:
+    """Pone tu modelo en el cargador del workflow y mete tu LoRA justo detrás (también en el CLIP, por si
+    lo entrenaste con el codificador de texto: si no lo tiene, no cambia nada)."""
+    if not modelo and not lora:
+        return wf
+    wf = copy.deepcopy(wf)
+    samplers = [k for k, n in wf.items() if n.get("class_type") in SAMPLERS]
+    if not samplers:
+        raise ErrorWorkflow("El workflow no tiene KSampler: no sé dónde poner tu modelo y tu LoRA.")
+    entradas = wf[samplers[0]]["inputs"]
+    modelo_de = _origen(wf, entradas.get("model"), "model")
+    if modelo_de is None:
+        raise ErrorWorkflow("No encuentro el nodo que carga el modelo en el workflow.")
+
+    if modelo:
+        cargador = wf[modelo_de[0]]
+        clave = next((c for c in ARCHIVO_DEL_MODELO if c in cargador.get("inputs", {})), None)
+        if clave is None:
+            raise ErrorWorkflow(
+                f"No sé cambiar el modelo en el nodo {modelo_de[0]} ({cargador.get('class_type')}). "
+                "Deja «modelo» vacío y exporta tu propio workflow con tu modelo ya puesto.")
+        cargador["inputs"][clave] = modelo
+
+    if lora:
+        n_lora = LORA if LORA not in wf else str(max(int(k) for k in wf if k.isdigit()) + 1)
+        positivo = entradas.get("positive")
+        texto = _seguir(wf, positivo[0], _tiene_texto) if _es_enlace(positivo) else None
+        clip_de = _origen(wf, wf[texto]["inputs"].get("clip"), "clip") if texto else None
+        if clip_de:
+            wf[n_lora] = {"class_type": "LoraLoader", "_meta": {"title": "Tu LoRA"}, "inputs": {
+                "model": list(modelo_de), "clip": list(clip_de), "lora_name": lora,
+                "strength_model": fuerza, "strength_clip": fuerza}}
+        else:
+            wf[n_lora] = {"class_type": "LoraLoaderModelOnly", "_meta": {"title": "Tu LoRA"}, "inputs": {
+                "model": list(modelo_de), "lora_name": lora, "strength_model": fuerza}}
+        # Todo lo que tiraba del cargador ahora tira del LoRA
+        for k, n in wf.items():
+            if k == n_lora:
+                continue
+            for nombre, valor in n.get("inputs", {}).items():
+                if valor == modelo_de:
+                    n["inputs"][nombre] = [n_lora, 0]
+                elif clip_de and valor == clip_de:
+                    n["inputs"][nombre] = [n_lora, 1]
+    return wf
+
+
+def con_palabra_clave(prompt: str, palabra: str) -> str:
+    """La palabra de activación del LoRA, al principio del prompt."""
+    if not palabra or prompt.lower().startswith(palabra.lower()):
+        return prompt
+    return f"{palabra}, {prompt}"
+
+
+# Archivos que carga el workflow y la carpeta de ComfyUI donde van
+CARPETAS = {
+    "unet_name": "models/diffusion_models",
+    "ckpt_name": "models/checkpoints",
+    "lora_name": "models/loras",
+    "vae_name": "models/vae",
+    "clip_name": "models/text_encoders",
+    "clip_name1": "models/text_encoders",
+    "clip_name2": "models/text_encoders",
+}
+
+
+def archivos(wf: dict) -> list[tuple[str, str, str]]:
+    """(nodo, entrada, archivo) de todos los modelos, LoRA, VAE y codificadores que carga el workflow."""
+    return [(k, entrada, valor) for k, n in wf.items() for entrada, valor in n.get("inputs", {}).items()
+            if entrada in CARPETAS and isinstance(valor, str) and valor]
+
+
+def _normal(nombre: str) -> str:
+    return nombre.replace("\\", "/").lower()
+
+
+def parecido(nombre: str, opciones: list[str]) -> str | None:
+    """El archivo que ComfyUI tiene con ese nombre aunque esté en una subcarpeta, con la otra barra
+    o sin la extensión: «mi_lora» -> «carnaval\\mi_lora.safetensors»."""
+    buscado = _normal(nombre)
+    for o in opciones:
+        if _normal(o) == buscado:
+            return o
+    base = buscado.rsplit("/", 1)[-1]
+    candidatos = [o for o in opciones
+                  if _normal(o).rsplit("/", 1)[-1] in (base, f"{base}.safetensors")
+                  or _normal(o).rsplit("/", 1)[-1].rsplit(".", 1)[0] == base]
+    return candidatos[0] if len(candidatos) == 1 else None
+
+
 def con_foto(wf: dict, nodos: Nodos, imagen: str, fuerza: float) -> dict:
     """Cambia el lienzo vacío por la foto subida a ComfyUI (img2img). `wf` ya viene preparado."""
     if not nodos.admite_fotos:

@@ -163,4 +163,15 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
    - Entrada sin código de aula por defecto y nombre opcional (si se deja vacío, uno de carnaval).
    - Móvil en modo sencillo: pestañas grandes ✨ Crear / ❤️ Votar; Crear es solo la idea, Inspírame y el
      botón; técnica y formato fijos (`[alumnado]`); votar es una pestaña, no una ventana encima.
-8. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+8. **Octava versión** ✅ (modelo y LoRA propios):
+   - `[mi_modelo]` en `ajustes.toml`: `modelo` sustituye el archivo del cargador del workflow
+     (`unet_name` o `ckpt_name`); `lora` añade un `LoraLoader` (nodo 9100) justo detrás del cargador del
+     modelo y del CLIP, y todo lo que tiraba de ellos pasa a tirar del LoRA. Si el texto no viene de un
+     CLIP, se usa `LoraLoaderModelOnly`. `palabra_clave` se antepone al prompt al enviarlo (no se guarda
+     en la idea).
+   - Comprobación con `/object_info` de ComfyUI al conectar (y cada 20 s mientras falte algo): nodos que
+     no existen y archivos que no están, con la carpeta donde van. Los nombres que solo cambian en la
+     subcarpeta, la barra o la extensión se corrigen solos.
+   - `5-PROBAR-MI-MODELO.bat` (`python -m app.probar_modelo`): las mismas ideas y semillas sin LoRA y con
+     varias fuerzas (o modelo original frente al tuyo), en una hoja JPG, con los segundos por imagen.
+9. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

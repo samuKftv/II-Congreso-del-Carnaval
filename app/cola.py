@@ -53,9 +53,12 @@ def guardar_tesela(imagen: Image.Image, ruta) -> None:
 class Estudio:
     def __init__(self, aj: Ajustes, db: BaseDatos, comfy: ComfyUI, interprete: Interprete | None = None):
         self.aj, self.db, self.comfy, self.interprete = aj, db, comfy, interprete
-        self.workflow = workflow.aligerar(aj.workflow) if aj.ligero else aj.workflow
-        self.nodos = workflow.localizar(aj.workflow, aj.nodo_prompt, aj.nodo_tamano)
-        self.avisos = workflow.avisos(aj.workflow, self.nodos)
+        wf = workflow.con_mi_modelo(aj.workflow, aj.modelo, aj.lora, aj.fuerza_lora)
+        self.workflow = workflow.aligerar(wf) if aj.ligero else wf
+        self.nodos = workflow.localizar(wf, aj.nodo_prompt, aj.nodo_tamano)
+        self.avisos = workflow.avisos(wf, self.nodos)
+        self.faltan: list[str] = []  # nodos o archivos del workflow que ComfyUI no tiene
+        self._comprobado = 0.0
         for carpeta in ("imagenes", "vistas", "miniaturas", "teselas", "estilos", "fotos"):
             (aj.datos / carpeta).mkdir(parents=True, exist_ok=True)
 
@@ -87,6 +90,13 @@ class Estudio:
 
     def activos_de(self, token: str) -> list[str]:
         return [i for i in self.cola if self.duenos.get(i) == token]
+
+    def modelo(self) -> dict:
+        """Qué modelo y qué LoRA se están usando, para el panel."""
+        nombres = {entrada: valor for _, entrada, valor in workflow.archivos(self.workflow)}
+        return {"modelo": nombres.get("unet_name") or nombres.get("ckpt_name") or "", "propio": bool(self.aj.modelo),
+                "lora": nombres.get("lora_name", "") if self.aj.lora else "", "fuerza": self.aj.fuerza_lora,
+                "palabra_clave": self.aj.palabra_clave}
 
     def media(self) -> float:
         return sum(self.duraciones) / len(self.duraciones) if self.duraciones else ESPERA_INICIAL
@@ -153,6 +163,14 @@ class Estudio:
             fallos = 0 if info is not None else fallos + 1
             if info is not None or fallos >= 2:  # un fallo suelto (ComfyUI muy ocupado) no cuenta
                 self.comfy_info = info
+            if info is None and fallos >= 2:
+                self._comprobado = 0.0  # cuando vuelva ComfyUI (quizá con archivos nuevos), se comprueba otra vez
+            elif info is not None and (not self._comprobado or (self.faltan and time.time() - self._comprobado > 20)):
+                faltan = await self.comfy.comprobar(self.workflow)
+                if faltan is not None:
+                    self.faltan, self._comprobado = faltan, time.time()
+                    for f in faltan:
+                        log.warning("%s", f)
             if self.interprete:
                 await self.interprete.comprobar()
             await asyncio.sleep(5)
@@ -253,8 +271,9 @@ class Estudio:
                 if idea := await self._idea_interpretada(id_):
                     prompt_final = self._receta(t, idea)
                     self.db.actualizar(id_, prompt_final=prompt_final)
-            wf = workflow.preparar(self.workflow, self.nodos, prompt_final, ancho, alto,
-                                   t["semilla"], "congreso_carnaval/estudio")
+            wf = workflow.preparar(self.workflow, self.nodos,
+                                   workflow.con_palabra_clave(prompt_final, self.aj.palabra_clave),
+                                   ancho, alto, t["semilla"], "congreso_carnaval/estudio")
             if t["foto"]:
                 try:
                     datos = (self.aj.datos / "fotos" / f"{t['foto']}.jpg").read_bytes()
