@@ -16,8 +16,8 @@ en el PC del profesor. Todo funciona dentro de la WiFi del aula.
     y las convierte en una descripción detallada antes de pintarlas.
 - 🎛️ **Panel del profesor**: abre y cierra el estudio, controla la cola, **aprueba cada imagen antes de que
   salga en público** y lanza **retos con cuenta atrás**.
-- 📺 **Proyector**: un **mosaico gigante con la forma del cartel** que se completa con las imágenes aprobadas,
-  con el QR siempre visible, las más votadas en directo y el **podio** de ganadoras.
+- 📺 **Proyector**: un **mosaico gigante con la forma del cartel** (hasta 150 piezas) que se completa con las
+  imágenes aprobadas, con el QR siempre visible y el **podio** de ganadoras al final.
 
 Las decisiones de diseño están en [`docs/DIRECTRICES.md`](docs/DIRECTRICES.md).
 
@@ -93,11 +93,11 @@ El estudio funciona como un concurso durante toda la sesión:
    cuántas esperan, por ejemplo *(3) Panel del profesor*.
 3. **El mosaico crece en el proyector**: la imagen aprobada sale en grande con su autor y vuela a su hueco.
    Los huecos libres enseñan el cartel en oscuro y, cada medio minuto, el cartel aparece entero encima de
-   todas las piezas. Cuando se llena, se hace más grande.
+   todas las piezas. Tiene como mucho **150 piezas** (`piezas_mosaico` en `[proyector]` de `ajustes.toml`):
+   cuando se llena, **cada imagen nueva sustituye a la más antigua** en su mismo hueco.
 4. **Todo el mundo vota** desde el móvil con el botón **❤️ Votar**: las imágenes salen de una en una,
    deslizar a la derecha (o tocar dos veces) es *me gusta*, a la izquierda pasa a otra. También se vota
-   mientras se espera turno. Las tres más votadas llevan medalla en el
-   mosaico y salen en el lateral del proyector.
+   mientras se espera turno. Las tres más votadas llevan medalla 🥇🥈🥉 en el mosaico.
 5. **Al final**, en el panel, **📺 Proyector → 🏆 Ganadoras**: se cierra la votación y el proyector
    enseña el podio con confeti. **🧩 Mosaico** vuelve atrás y reabre la votación.
 

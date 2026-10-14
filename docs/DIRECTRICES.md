@@ -122,8 +122,11 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
    - **Mosaico gigante**: cada imagen aprobada es una pieza de una rejilla con la forma del cartel, en un
      hueco aleatorio pero fijo. Los huecos vacíos enseñan el cartel en oscuro y cada 30 s el cartel
      aparece encima de todas las piezas. La pieza nueva sale primero en grande con su autor y luego vuela
-     a su hueco. Al completarse, el mosaico crece (192 → 300 → 432… piezas). Las piezas usan teselas de
-     160 px para que el proyector aguante miles.
+     a su hueco. Las piezas usan teselas de 160 px.
+   - **Mosaico con tope** (desde la versión 3.5): como mucho `piezas_mosaico` (150) piezas, en la rejilla
+     con forma de cartel más grande que quepa con piezas casi cuadradas (con 150: 10 × 15). La pieza número n
+     va siempre al hueco n módulo huecos, así que, cuando se llena, cada nueva sustituye a la más antigua.
+     Sin panel lateral: el cartel ocupa todo el alto de la pantalla.
    - **Ganadoras**: al mostrar el podio del concurso se **cierra la votación**; al volver al mosaico se
      reabre.
 4. **Cuarta versión** ✅:

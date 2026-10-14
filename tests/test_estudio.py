@@ -349,7 +349,7 @@ def test_concurso_con_revision_previa(tmp_path, monkeypatch, comfy_falso):
         assert a1["revision"] == "pendiente"
         assert [x["revision"] for x in c.get("/api/mis-creaciones", headers=ana).json()] == ["pendiente", "pendiente"]
         assert c.get("/api/galeria").json()["imagenes"] == [] and c.get("/api/galeria").json()["en_revision"] == 3
-        assert c.get("/api/mosaico").json() == {"piezas": [], "en_revision": 3}
+        assert c.get("/api/mosaico").json() == {"maximo": 150, "total": 0, "primera": 0, "piezas": [], "en_revision": 3}
         assert c.post(f"/api/trabajos/{a1['id']}/voto", json={"valor": True}, headers=luis).status_code == 404
 
         # Bandeja del panel: de la más antigua a la más nueva
@@ -464,3 +464,14 @@ def test_ligero_para_el_movil(ajustes, comfy_falso):
         assert "content-encoding" not in c.get(t["imagen"], headers={"Accept-Encoding": "gzip"}).headers
         # El modelo se carga en fp8
         assert comfy_falso[1].state.recibidos[-1]["16"]["inputs"]["weight_dtype"] == "fp8_e4m3fn"
+
+
+def test_mosaico_con_maximo_de_piezas(ajustes):
+    ajustes.piezas_mosaico = 3
+    with TestClient(crear_app(ajustes)) as c:
+        h = entrar(c)
+        ids = [crear_y_esperar(c, h, f"Pieza {i}")["id"] for i in range(5)]
+        m = c.get("/api/mosaico").json()
+        # Solo las 3 últimas; la primera de ellas es la pieza número 2 (la 0 y la 1 ya se han sustituido)
+        assert m["maximo"] == 3 and m["total"] == 5 and m["primera"] == 2
+        assert [p["id"] for p in m["piezas"]] == ids[2:]

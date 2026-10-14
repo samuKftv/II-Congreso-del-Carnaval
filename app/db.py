@@ -191,6 +191,9 @@ class BaseDatos:
         )
         return filas[::-1]
 
+    def cuantas_visibles(self) -> int:
+        return self._una(f"SELECT COUNT(*) AS n FROM trabajos t WHERE {VISIBLES}")["n"]
+
     def para_votar(self, token: str, limite: int, reto: int | None = None) -> list[dict]:
         """Imágenes que esa persona puede votar todavía (ni suyas ni ya votadas), en orden aleatorio."""
         sql = (f"SELECT t.*, {VOTOS} FROM trabajos t WHERE {VISIBLES} AND t.token != ? "

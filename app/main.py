@@ -37,7 +37,6 @@ ID_VALIDO = re.compile(r"^[0-9a-f]{32}$")
 CLAVE_POR_DEFECTO = "cambia-esta-clave"
 FASES_RETO = ("creando", "votando", "podio", "cerrado")
 VISTAS_PROYECTOR = ("mosaico", "galeria", "podio")  # podio = ganadoras del concurso (cierra la votación)
-MAX_MOSAICO = 3000
 LOCALES = {"127.0.0.1", "::1", "localhost"}
 # Cabeceras que pone un intermediario (el túnel de Cloudflare): esa petición viene de internet, no de este PC
 DE_FUERA = ("cf-connecting-ip", "cf-ray", "x-forwarded-for", "x-forwarded-host", "forwarded")
@@ -595,12 +594,20 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
 
     @app.get("/api/mosaico")
     def mosaico():
-        """Todas las imágenes públicas, en el orden en que se aprobaron: cada una es una pieza del mosaico."""
+        """Las últimas imágenes públicas, en el orden en que se aprobaron: cada una es una pieza del mosaico.
+
+        `primera` es el número de orden de la primera pieza: la pieza n va siempre al mismo hueco
+        (n módulo huecos), así que cuando el mosaico se llena, cada nueva sustituye a la más antigua."""
+        filas = db.mosaico(aj.piezas_mosaico)
+        total = db.cuantas_visibles()
         return {
+            "maximo": aj.piezas_mosaico,
+            "total": total,
+            "primera": total - len(filas),
             "piezas": [{"id": t["id"], "alias": t["alias"], "prompt": t["prompt"], "votos": t["votos"],
                         "tesela": f"/img/{t['id']}/tesela.webp", "mini": f"/img/{t['id']}/mini.webp",
                         "imagen": f"/img/{t['id']}/vista.webp"}
-                       for t in db.mosaico(MAX_MOSAICO)],
+                       for t in filas],
             "en_revision": db.cuantas_por_revisar(),
         }
 

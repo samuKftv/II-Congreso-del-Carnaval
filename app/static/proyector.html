@@ -11,7 +11,7 @@
     body { overflow: hidden; }
     .escena {
       position: relative; z-index: 1; height: calc(100vh - 8px); height: calc(100dvh - 8px);
-      display: grid; grid-template-columns: minmax(280px, 26vw) 1fr; gap: 2.2vw; padding: 2.2vw;
+      display: grid; grid-template-columns: minmax(280px, 26vw) 1fr; gap: 2.2vw; padding: 1.4vw 2.2vw;
     }
     .lateral { display: flex; flex-direction: column; gap: 1.6vh; min-height: 0; }
     .logo-proyector { max-height: 8vh; max-width: 100%; object-fit: contain; align-self: flex-start; }
@@ -95,7 +95,8 @@
     .podio-vacio { flex: 1; display: grid; place-content: center; text-align: center; font-size: clamp(1.4rem, 2.4vw, 2.8rem); font-weight: 900; color: var(--suave); }
 
     /* Mosaico gigante con forma de cartel */
-    .vista-mosaico { grid-row: 2 / 4; position: relative; display: flex; gap: 2vw; min-height: 0; min-width: 0; }
+    .vista-mosaico { grid-row: 2 / 4; position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; min-width: 0; }
+    .banda-reto[hidden] ~ .vista-mosaico { grid-row: 1 / 4; }  /* sin reto, el cartel usa todo el alto */
     .lienzo { position: relative; flex: none; border-radius: 18px; overflow: hidden; background: #050b18; box-shadow: var(--sombra); }
     .rejilla-mosaico { position: absolute; inset: 0; z-index: 0; transition: filter 0.6s; }
     .lienzo.con-foco .rejilla-mosaico { filter: brightness(0.35) blur(2px); }
@@ -124,24 +125,6 @@
     .rotulo-vacio { top: 50%; bottom: auto; transform: translate(-50%, -50%); font-size: clamp(1.1rem, 1.8vw, 2.2rem); line-height: 1.3; border-radius: 24px; white-space: normal; }
     .rotulo-nivel { top: 6%; bottom: auto; background: var(--amarillo); color: var(--tinta); }
 
-    .lado-mosaico { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1.4vw; overflow: hidden; }
-    .lado-mosaico .tarjeta { padding: 1.3vw 1.5vw; }
-    .lado-mosaico h2 { margin: 0 0 0.8vw; font-size: clamp(1.1rem, 1.6vw, 2rem); font-weight: 900; line-height: 1.15; }
-    .cifra { font-weight: 900; font-size: clamp(1rem, 1.4vw, 1.7rem); color: var(--suave); }
-    .cifra b { font-size: 2.2em; color: var(--amarillo); line-height: 1; font-variant-numeric: tabular-nums; }
-    .barra { height: clamp(10px, 1vw, 16px); margin-top: 0.8vw; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
-    .barra div { height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--magenta), var(--amarillo)); transition: width 1s ease; }
-    .lado-mosaico .sub { margin: 0.8vw 0 0; color: var(--suave); font-weight: 800; font-size: clamp(0.85rem, 1.1vw, 1.3rem); }
-    .lado-mosaico .sub:empty { display: none; }
-    .top { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.8vw; }
-    .top li { display: grid; grid-template-columns: auto clamp(48px, 4.6vw, 84px) 1fr auto; align-items: center; gap: 0.9vw; font-weight: 900; font-size: clamp(1rem, 1.35vw, 1.6rem); }
-    .top li.cambia { animation: subir 0.7s ease; }
-    .top .medalla { font-size: 1.5em; }
-    .top img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; }
-    .top .quien { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .top .sin-votos { grid-template-columns: 1fr; color: var(--suave); font-size: clamp(0.9rem, 1.2vw, 1.4rem); }
-    .ultimas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7vw; }
-    .ultimas img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--capa-2); }
 
     .foco { position: fixed; z-index: 30; pointer-events: none; }
     .foco-marco { position: fixed; border-radius: 22px; overflow: hidden; box-shadow: 0 0 0 4px var(--amarillo), 0 30px 80px -10px rgba(0, 0, 0, 0.9); animation: entrar 0.9s cubic-bezier(.2, .9, .3, 1.15); background: var(--noche-2); }
@@ -153,7 +136,7 @@
     .foco.vuela .foco-pie { opacity: 0; }
 
     @media (max-aspect-ratio: 1/1) {
-      .vista-mosaico { height: 80vh; flex-direction: column; }
+      .vista-mosaico { height: 80vh; }
       body { overflow: auto; }
       .escena { grid-template-columns: 1fr; height: auto; }
       .destacada { aspect-ratio: 1; }
@@ -175,7 +158,7 @@
         <p class="lema" id="lema" hidden></p>
       </div>
       <div class="tarjeta acceso">
-        <h2>📱 ¡Crea tu imagen!</h2>
+        <h2>📱 ¡Crea y vota!</h2>
         <img id="qr" src="/qr.svg" alt="Código QR para entrar al estudio">
         <p class="url" id="url"></p>
         <p class="codigo" id="codigo"></p>
@@ -205,23 +188,6 @@
           <div class="rotulo rotulo-vacio" id="rotulo-vacio">📱 Escanea el QR<br>y crea la primera pieza del mosaico</div>
           <div class="rotulo rotulo-nivel" id="rotulo-nivel"></div>
         </div>
-        <aside class="lado-mosaico" id="lado-mosaico">
-          <div class="tarjeta">
-            <h2>🧩 El mosaico de CarnaLab</h2>
-            <div class="cifra"><b id="m-piezas">0</b> de <span id="m-huecos">0</span> piezas</div>
-            <div class="barra"><div id="m-barra"></div></div>
-            <p class="sub" id="m-revision"></p>
-          </div>
-          <div class="tarjeta">
-            <h2>🏆 Las más votadas</h2>
-            <ol class="top" id="m-top"></ol>
-            <p class="sub">📱 Vota en el móvil: botón ❤️ Votar</p>
-          </div>
-          <div class="tarjeta">
-            <h2>✨ Últimas piezas</h2>
-            <div class="ultimas" id="m-ultimas"></div>
-          </div>
-        </aside>
       </section>
     </main>
   </div>
@@ -447,8 +413,8 @@
     // --- Mosaico ---
     // Cada imagen aprobada es una pieza. Las piezas van rellenando, en orden aleatorio, una rejilla con la forma
     // del cartel; los huecos enseñan el cartel en oscuro. Cada cierto tiempo el cartel aparece encima de todas.
-
-    const LADOS = [12, 15, 18, 21, 24, 27, 30, 36, 42, 48];  // columnas de cada tamaño del mosaico
+    // La rejilla tiene un máximo de piezas (piezas_mosaico en ajustes.toml): la pieza número n va siempre al hueco
+    // n módulo huecos, así que, cuando se llena, cada imagen nueva sustituye a la más antigua.
     const CARTEL_CADA = 30000;   // ms entre apariciones del cartel
     const CARTEL_DURA = 8000;    // ms que se queda el cartel
     const MAX_FOCOS = 3;         // si llegan muchas de golpe, solo las últimas salen en grande
@@ -460,7 +426,9 @@
       porAterrizar: new Set(),   // piezas que están en grande y todavía no tienen su hueco a la vista
       colaFoco: [],
       enFoco: false,
-      pausaHasta: 0,             // sin piezas en grande mientras se anuncia un mosaico más grande
+      pausaHasta: 0,             // sin piezas en grande mientras se anuncia que el mosaico está completo
+      maximo: 150,               // piezas como mucho (lo dice el servidor)
+      total: null,               // imágenes aprobadas en total
       temporizadores: [],
       columnas: 0,
       filas: 0,
@@ -488,17 +456,22 @@
     function proporcion() {
       if (mosaico.proporcion) return mosaico.proporcion;
       const caja = $('vista-mosaico').getBoundingClientRect();
-      return caja.width ? (caja.height / (caja.width * 0.62)) : 1;
+      return caja.width ? caja.height / caja.width : 1;
     }
 
-    function medidas(n) {
+    // La rejilla con más piezas que quepa en el máximo, con piezas casi cuadradas (con 150: 10 × 15)
+    function medidas() {
       const p = proporcion();
-      let medida = null;
-      for (const columnas of LADOS) {
-        medida = [columnas, Math.max(1, Math.round(columnas * p))];
-        if (medida[0] * medida[1] >= n) break;
+      let mejor = [3, 3], puntos = -1;
+      for (let columnas = 3; columnas <= 60; columnas++) {
+        for (let filas = 3; columnas * filas <= mosaico.maximo; filas++) {
+          const forma = (p * columnas) / filas;  // alto / ancho de cada pieza
+          if (forma < 0.85 || forma > 1.18) continue;
+          const valor = columnas * filas - Math.abs(1 - forma);
+          if (valor > puntos) { puntos = valor; mejor = [columnas, filas]; }
+        }
       }
-      return medida;
+      return mejor;
     }
 
     // Orden aleatorio pero siempre el mismo para cada tamaño: cada pieza conserva su hueco
@@ -519,15 +492,13 @@
     }
 
     function construir(forzar = false) {
-      const [columnas, filas] = medidas(mosaico.piezas.length);
-      if (!forzar && columnas === mosaico.columnas && filas === mosaico.filas) return false;
-      const crece = mosaico.columnas > 0 && columnas * filas > mosaico.columnas * mosaico.filas;
+      const [columnas, filas] = medidas();
+      if (!forzar && columnas === mosaico.columnas && filas === mosaico.filas) return;
       mosaico.columnas = columnas;
       mosaico.filas = filas;
       mosaico.orden = barajar(columnas * filas, columnas * 1000 + filas);
       $('rejilla-mosaico').replaceChildren(...Array.from({ length: columnas * filas }, () => el('div', { class: 'celda libre' })));
       maquetar();
-      return crece;
     }
 
     function maquetar() {
@@ -536,13 +507,9 @@
       const caja = zona.getBoundingClientRect();
       if (!caja.width || !caja.height) return;
       const p = proporcion();
-      const vertical = getComputedStyle(zona).flexDirection === 'column';
-      let alto = vertical ? caja.height * 0.7 : caja.height;
+      let alto = caja.height;  // todo el alto disponible
       let ancho = alto / p;
-      const conLado = vertical || caja.width - ancho > 260;
-      const maximo = conLado && !vertical ? caja.width * 0.64 : caja.width;
-      if (ancho > maximo) { ancho = maximo; alto = ancho * p; }
-      $('lado-mosaico').hidden = !conLado;
+      if (ancho > caja.width) { ancho = caja.width; alto = ancho * p; }
       const lienzo = $('lienzo');
       lienzo.style.width = `${ancho}px`;
       lienzo.style.height = `${alto}px`;
@@ -562,15 +529,18 @@
       });
     }
 
-    function celdaDe(indice) {
-      return $('rejilla-mosaico').children[mosaico.orden[indice]];
+    function hueco(pieza) {
+      return mosaico.orden[pieza.n % mosaico.orden.length];
+    }
+
+    function celdaDe(pieza) {
+      return $('rejilla-mosaico').children[hueco(pieza)];
     }
 
     // Pone cada pieza en su celda (solo cambia lo que hace falta)
     function asignar() {
       const celdas = $('rejilla-mosaico').children;
-      const deCelda = new Map();
-      mosaico.piezas.forEach((pieza, i) => { if (i < mosaico.orden.length) deCelda.set(mosaico.orden[i], pieza); });
+      const deCelda = new Map(mosaico.piezas.map((pieza) => [hueco(pieza), pieza]));
       for (let c = 0; c < celdas.length; c++) {
         const celda = celdas[c];
         const pieza = deCelda.get(c);
@@ -604,64 +574,39 @@
       try { m = await api('/api/mosaico'); } catch { return; }
       if (modo !== 'mosaico') return;
       const primeraVez = mosaico.conocidas === null;
-      const nuevas = primeraVez ? [] : m.piezas.filter((p) => !mosaico.conocidas.has(p.id));
-      mosaico.conocidas = new Set(m.piezas.map((p) => p.id));
-      mosaico.piezas = m.piezas;
+      if (primeraVez || m.maximo !== mosaico.maximo) {
+        mosaico.maximo = m.maximo;
+        construir(true);
+      }
+      const huecos = mosaico.columnas * mosaico.filas;
+      // Solo las últimas que caben; cada una con su número de orden, que decide su hueco
+      const piezas = m.piezas.slice(-huecos);
+      const desde = m.primera + m.piezas.length - piezas.length;
+      piezas.forEach((p, i) => { p.n = desde + i; });
+      const nuevas = primeraVez ? [] : piezas.filter((p) => !mosaico.conocidas.has(p.id));
+      const seLlena = !primeraVez && mosaico.total < huecos && m.total >= huecos;
+      mosaico.conocidas = new Set(piezas.map((p) => p.id));
+      mosaico.piezas = piezas;
+      mosaico.total = m.total;
       mosaico.podio = (g.ranking || []).map((t) => t.id);
 
-      const crece = construir(primeraVez);
-      if (crece) anunciarNivel();
+      if (seLlena) anunciarCompleto();
       const conFoco = nuevas.slice(-MAX_FOCOS);
       conFoco.forEach((p) => mosaico.porAterrizar.add(p.id));
       mosaico.colaFoco.push(...conFoco);
       asignar();
       nuevas.filter((p) => !conFoco.includes(p)).forEach((p) => destellar(p.id));
-      pintarLado(m, g.ranking || []);
+      $('rotulo-vacio').classList.toggle('visible', m.total === 0);
       siguienteFoco();
     }
 
-    function anunciarNivel() {
+    function anunciarCompleto() {
       const rotulo = $('rotulo-nivel');
-      rotulo.textContent = `🎉 ¡Mosaico completo! Ahora, a por ${mosaico.columnas * mosaico.filas} piezas`;
+      rotulo.textContent = '🎉 ¡Mosaico completo! Ahora cada imagen nueva sustituye a la más antigua';
       rotulo.classList.add('visible');
       confeti(160);
       mosaico.pausaHasta = Date.now() + 6000;
       programar(() => rotulo.classList.remove('visible'), 6000);
-    }
-
-    function pintarLado(m, ranking) {
-      const huecos = mosaico.columnas * mosaico.filas;
-      const n = m.piezas.length;
-      $('m-piezas').textContent = n;
-      $('m-huecos').textContent = huecos;
-      $('m-barra').style.width = `${Math.min(100, (100 * n) / huecos)}%`;
-      $('m-revision').textContent = n === huecos
-        ? '🎉 ¡Mosaico completo! La próxima pieza lo hará más grande.'
-        : m.en_revision ? `⏳ ${m.en_revision} ${m.en_revision === 1 ? 'imagen espera' : 'imágenes esperan'} el visto bueno del jurado` : '';
-      $('rotulo-vacio').classList.toggle('visible', n === 0);
-
-      const firma = JSON.stringify(ranking.map((t) => [t.id, t.votos]));
-      if ($('m-top').dataset.firma !== firma) {
-        const antes = JSON.parse($('m-top').dataset.firma || '[]');
-        $('m-top').dataset.firma = firma;
-        $('m-top').replaceChildren(...(ranking.length
-          ? ranking.map((t, i) => el('li', { class: antes[i] && antes[i][0] === t.id && antes[i][1] === t.votos ? '' : 'cambia' },
-              el('span', { class: 'medalla' }, ['🥇', '🥈', '🥉'][i]),
-              el('img', { src: t.mini, alt: '' }),
-              el('span', { class: 'quien' }, t.alias),
-              el('span', { class: 'votos-chip' }, `❤️ ${t.votos}`)))
-          : [el('li', { class: 'sin-votos' }, 'Aún no hay votos. ¡Dale ❤️ a tus favoritas!')]));
-      }
-      pintarUltimas();
-    }
-
-    function pintarUltimas() {
-      const ultimas = mosaico.piezas.filter((p) => !mosaico.porAterrizar.has(p.id)).slice(-4).reverse();
-      const firma = ultimas.map((p) => p.id).join('|');
-      if ($('m-ultimas').dataset.firma === firma) return;
-      $('m-ultimas').dataset.firma = firma;
-      $('m-ultimas').closest('.tarjeta').hidden = !ultimas.length;
-      $('m-ultimas').replaceChildren(...ultimas.map((p) => el('img', { src: p.mini, alt: p.prompt })));
     }
 
     function programar(funcion, ms) {
@@ -669,8 +614,8 @@
     }
 
     function destellar(id) {
-      const i = mosaico.piezas.findIndex((p) => p.id === id);
-      const celda = i >= 0 && celdaDe(i);
+      const pieza = mosaico.piezas.find((p) => p.id === id);
+      const celda = pieza && celdaDe(pieza);
       if (!celda) return;
       celda.classList.remove('llega');
       void celda.offsetWidth;
@@ -682,7 +627,6 @@
       mosaico.porAterrizar.delete(id);
       asignar();
       destellar(id);
-      pintarUltimas();
     }
 
     // La pieza nueva sale en grande con su autor y luego vuela a su hueco
@@ -728,8 +672,8 @@
     }
 
     function volar(pieza, foco, marco) {
-      const i = mosaico.piezas.findIndex((p) => p.id === pieza.id);
-      const celda = i >= 0 && celdaDe(i);
+      const actual = mosaico.piezas.find((p) => p.id === pieza.id);  // con su número de orden al día
+      const celda = actual && celdaDe(actual);
       $('lienzo').classList.remove('con-foco');
       const terminar = () => {
         foco.remove();

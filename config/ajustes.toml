@@ -50,6 +50,11 @@ clave_profesor = "cambia-esta-clave"
 # con 2-INICIAR-ESTUDIO-POR-INTERNET.bat, que además descarga cloudflared la primera vez.
 activado = false
 
+[proyector]
+# Máximo de piezas del mosaico. Se usa la rejilla con forma de cartel más grande que quepa
+# (con 150 salen 11 × 13 = 143 piezas). Cuando se llena, cada imagen nueva sustituye a la más antigua.
+piezas_mosaico = 150
+
 [comfyui]
 # "auto" busca ComfyUI en el puerto 8188 (portable o manual) y en el 8000 (ComfyUI Desktop).
 # Si lo tienes en otro sitio, escribe la dirección, p. ej. "http://127.0.0.1:8188".
