@@ -154,4 +154,11 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
    - **Seguridad**: una petición solo cuenta como "este PC" si llega de 127.0.0.1 **y no trae cabeceras
      de intermediario** (`Cf-Connecting-Ip`, `X-Forwarded-For`…). Así el panel no queda abierto a internet.
    - Por https, los móviles preguntan por su imagen cada 2 s en vez de cada 1 s.
-7. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+7. **Séptima versión** ✅ (sencillez para el día del congreso):
+   - Logo original con sus colores oficiales, siempre sobre placa blanca (nunca recoloreado).
+   - Proyector: solo el QR (sin enlace ni código); con el mosaico, el lateral y el cartel van juntos y
+     centrados, sin chips de estado.
+   - Entrada sin código de aula por defecto y nombre opcional (si se deja vacío, uno de carnaval).
+   - Móvil en modo sencillo: pestañas grandes ✨ Crear / ❤️ Votar; Crear es solo la idea, Inspírame y el
+     botón; técnica y formato fijos (`[alumnado]`); votar es una pestaña, no una ventana encima.
+8. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

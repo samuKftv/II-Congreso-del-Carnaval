@@ -81,6 +81,10 @@ class Ajustes:
     ligero: bool = True  # modelo de difusión en fp8 (cabe entero en 12 GB de VRAM)
     internet: bool = False  # modo internet: túnel de Cloudflare con dirección pública https
     piezas_mosaico: int = 150  # máximo de piezas del mosaico del proyector
+    sencillo: bool = True  # móvil sencillo: solo la idea (técnica y formato fijos)
+    estilo_sencillo: str = "libre"
+    formato_sencillo: str = "cuadrado"
+    fotos: bool = True  # crear a partir de una foto propia
     interprete_activado: bool = False  # IA de texto (Ollama) que convierte la idea en una descripción en inglés
     interprete_url: str = "http://127.0.0.1:11434"
     interprete_modelo: str = "qwen2.5:3b"
@@ -112,7 +116,7 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
 
     evento, servidor, acceso = t.get("evento", {}), t.get("servidor", {}), t.get("acceso", {})
     comfy, limites, moderacion = t.get("comfyui", {}), t.get("limites", {}), t.get("moderacion", {})
-    interprete = t.get("interprete", {})
+    interprete, alumnado = t.get("interprete", {}), t.get("alumnado", {})
 
     with open(_ruta(comfy.get("workflow", "config/workflow_api.json")), encoding="utf-8") as f:
         workflow = json.load(f)
@@ -179,6 +183,10 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         revisar_antes=bool(moderacion.get("revisar_antes", True)),
         ligero=bool(comfy.get("ligero", True)),
         piezas_mosaico=min(max(int(t.get("proyector", {}).get("piezas_mosaico", 150)), 20), 3000),
+        sencillo=bool(alumnado.get("sencillo", False)),
+        estilo_sencillo=alumnado.get("estilo") if alumnado.get("estilo") in estilos else next(iter(estilos)),
+        formato_sencillo=alumnado.get("formato") if alumnado.get("formato") in formatos else next(iter(formatos)),
+        fotos=bool(alumnado.get("fotos", True)),
         internet=bool(t.get("internet", {}).get("activado", False)) or os.environ.get("ESTUDIO_INTERNET") == "1",
         interprete_activado=bool(interprete.get("activado", False)),
         interprete_url=str(interprete.get("url", "http://127.0.0.1:11434")).rstrip("/"),

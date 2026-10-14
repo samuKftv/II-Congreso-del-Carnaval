@@ -34,6 +34,7 @@ def test_flujo_completo(ajustes, comfy_falso):
     with TestClient(crear_app(ajustes)) as c:
         info = c.get("/api/info").json()
         assert info["requiere_codigo"] and len(info["estilos"]) > 5
+        assert info["sencillo"] and info["estilo_sencillo"] == "libre" and info["formato_sencillo"] == "cuadrado"
 
         h = entrar(c)
         r = c.post("/api/crear", json={"prompt": "Un gato con antifaz", "estilo": "cartel", "formato": "vertical"}, headers=h)
@@ -73,7 +74,10 @@ def test_flujo_completo(ajustes, comfy_falso):
 def test_validaciones_y_moderacion(ajustes):
     with TestClient(crear_app(ajustes)) as c:
         assert c.post("/api/entrar", json={"alias": "Ana", "codigo": "otro"}).status_code == 403
-        assert c.post("/api/entrar", json={"alias": "   ", "codigo": "carnaval"}).status_code == 422
+        sin_nombre = c.post("/api/entrar", json={"alias": "   ", "codigo": "carnaval"}).json()  # nombre de carnaval
+        assert sin_nombre["alias"].split()[0] in ("Arlequín", "Antifaz", "Confeti", "Serpentina", "Purpurina", "Lentejuela",
+                                                  "Pluma", "Tambor", "Murguera", "Comparsa", "Farolillo", "Maraca",
+                                                  "Pierrot", "Colombina")
         h = entrar(c)
         pedido = {"estilo": "foto", "formato": "cuadrado"}
         r = c.post("/api/crear", json={"prompt": "Una persona desnuda", **pedido}, headers=h)

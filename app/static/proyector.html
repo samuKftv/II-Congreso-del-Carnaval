@@ -14,7 +14,8 @@
       display: grid; grid-template-columns: minmax(280px, 26vw) 1fr; gap: 2.2vw; padding: 1.4vw 2.2vw;
     }
     .lateral { display: flex; flex-direction: column; gap: 1.6vh; min-height: 0; }
-    .logo-proyector { max-height: 8vh; max-width: 100%; object-fit: contain; align-self: flex-start; }
+    /* El logo, con sus colores oficiales, sobre una placa blanca */
+    .logo-proyector { max-height: 9vh; max-width: 100%; object-fit: contain; align-self: flex-start; background: #fff; padding: 0.9vh 1.1vw; border-radius: 14px; box-shadow: var(--sombra); }
     .lateral .titulo-evento { font-size: clamp(1.8rem, 2.8vw, 3.2rem); }
     .lateral .subtitulo { font-size: clamp(0.8rem, 1vw, 1.1rem); }
     .lateral .congreso { margin: 0.6vh 0 0; font-weight: 800; font-size: clamp(0.85rem, 1.1vw, 1.3rem); line-height: 1.25; }
@@ -23,9 +24,8 @@
     @keyframes balanceo { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
     .acceso { text-align: center; padding: 1.6vh 1.2vw; }
     .acceso h2 { margin: 0 0 1.2vh; font-size: clamp(1.2rem, 1.8vw, 2rem); font-weight: 900; }
-    .acceso img { width: 100%; max-width: 20vw; max-height: 27vh; object-fit: contain; margin: 0 auto; border-radius: 16px; background: #fff; }
-    .acceso .url { margin: 1vh 0 0; font-weight: 800; font-size: clamp(0.9rem, 1.15vw, 1.3rem); word-break: break-all; color: var(--amarillo); }
-    .acceso .codigo { margin: 0.4vw 0 0; color: var(--suave); font-weight: 700; font-size: clamp(0.85rem, 1vw, 1.15rem); }
+    .acceso img { width: 100%; max-width: 21vw; max-height: 34vh; object-fit: contain; margin: 0 auto; border-radius: 16px; background: #fff; }
+    .acceso .pista { margin: 1.2vh 0 0; color: var(--suave); font-weight: 800; font-size: clamp(0.9rem, 1.1vw, 1.3rem); }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .chip { padding: 8px 14px; border-radius: 999px; background: var(--capa-2); border: 1px solid var(--borde); font-weight: 800; font-size: clamp(0.85rem, 1vw, 1.15rem); }
     .chip.cerrado { background: rgba(255, 84, 112, 0.2); border-color: rgba(255, 84, 112, 0.5); }
@@ -97,6 +97,10 @@
     /* Mosaico gigante con forma de cartel */
     .vista-mosaico { grid-row: 2 / 4; position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; min-width: 0; }
     .banda-reto[hidden] ~ .vista-mosaico { grid-row: 1 / 4; }  /* sin reto, el cartel usa todo el alto */
+    /* Con el mosaico, el lateral y el cartel van juntos y centrados en la pantalla */
+    body.modo-mosaico .escena { grid-template-columns: minmax(260px, 24vw) auto; justify-content: center; column-gap: 4vw; }
+    body.modo-mosaico .lateral { justify-content: center; }
+    body.modo-mosaico .chip:not(.cerrado) { display: none; }
     .lienzo { position: relative; flex: none; border-radius: 18px; overflow: hidden; background: #050b18; box-shadow: var(--sombra); }
     .rejilla-mosaico { position: absolute; inset: 0; z-index: 0; transition: filter 0.6s; }
     .lienzo.con-foco .rejilla-mosaico { filter: brightness(0.35) blur(2px); }
@@ -160,8 +164,7 @@
       <div class="tarjeta acceso">
         <h2>📱 ¡Crea y vota!</h2>
         <img id="qr" src="/qr.svg" alt="Código QR para entrar al estudio">
-        <p class="url" id="url"></p>
-        <p class="codigo" id="codigo"></p>
+        <p class="pista">Escanéalo con la cámara del móvil</p>
       </div>
       <div class="chips">
         <span class="chip" id="chip-estado">🟢 Abierto</span>
@@ -252,12 +255,7 @@
     function pintarAcceso(direccion) {
       if (direccion === urlQr) return;
       urlQr = direccion;
-      const url = new URL(direccion);
-      const codigo = url.searchParams.get('c');
-      url.search = '';
-      $('qr').src = `/qr.svg?v=${encodeURIComponent(direccion)}`;
-      $('url').textContent = url.href.replace(/^https?:\/\//, '').replace(/\/$/, '');
-      $('codigo').textContent = codigo ? `Código del aula: ${codigo}` : '';
+      $('qr').src = `/qr.svg?v=${encodeURIComponent(direccion)}`;  // solo el QR: sin enlaces ni códigos
     }
 
     async function refrescar() {
@@ -346,6 +344,8 @@
 
     // Enseña una sola de las zonas: 'normal' (destacada y tira), 'especial' (votación y podios) o 'mosaico'
     function pantalla(nombre) {
+      document.body.classList.toggle('modo-mosaico', nombre === 'mosaico');
+      if (nombre !== 'mosaico') document.querySelector('.principal').style.width = '';
       $('destacada').hidden = $('tira').hidden = nombre !== 'normal';
       $('especial').hidden = nombre !== 'especial';
       $('vista-mosaico').hidden = nombre !== 'mosaico';
@@ -455,8 +455,7 @@
 
     function proporcion() {
       if (mosaico.proporcion) return mosaico.proporcion;
-      const caja = $('vista-mosaico').getBoundingClientRect();
-      return caja.width ? caja.height / caja.width : 1;
+      return 4 / 3;  // sin cartel: rejilla vertical
     }
 
     // La rejilla con más piezas que quepa en el máximo, con piezas casi cuadradas (con 150: 10 × 15)
@@ -505,11 +504,18 @@
       const zona = $('vista-mosaico');
       if (zona.hidden || !mosaico.columnas) return;
       const caja = zona.getBoundingClientRect();
-      if (!caja.width || !caja.height) return;
+      // Ancho libre junto al lateral (la columna del cartel se ajusta a su tamaño)
+      const escena = document.querySelector('.escena');
+      const e = getComputedStyle(escena);
+      const unaColumna = e.gridTemplateColumns.trim().split(/\s+/).length === 1;
+      const libre = escena.clientWidth - parseFloat(e.paddingLeft) - parseFloat(e.paddingRight)
+        - (unaColumna ? 0 : document.querySelector('.lateral').getBoundingClientRect().width + parseFloat(e.columnGap));
+      if (!caja.height || libre <= 0) return;
       const p = proporcion();
       let alto = caja.height;  // todo el alto disponible
       let ancho = alto / p;
-      if (ancho > caja.width) { ancho = caja.width; alto = ancho * p; }
+      if (ancho > libre) { ancho = libre; alto = ancho * p; }
+      document.querySelector('.principal').style.width = unaColumna ? '' : `${Math.floor(ancho)}px`;
       const lienzo = $('lienzo');
       lienzo.style.width = `${ancho}px`;
       lienzo.style.height = `${alto}px`;

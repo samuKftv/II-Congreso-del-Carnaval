@@ -49,6 +49,8 @@ def preparar_ajustes(tmp_path, monkeypatch, url_comfy: str, revisar_antes: bool 
         .replace('workflow = "config/workflow_api.json"',
                  f'workflow = "{(RAIZ / "config" / "workflow_api.json").as_posix()}"')
         .replace("revisar_antes = true", f"revisar_antes = {str(revisar_antes).lower()}")
+        .replace('codigo = ""', 'codigo = "carnaval"')
+        .replace("fotos = false", "fotos = true")
         .replace('activado = true\nurl = "http://127.0.0.1:11434"', 'activado = false\nurl = "http://127.0.0.1:11434"')
     )
     (carpeta / "ajustes.toml").write_text(toml, encoding="utf-8")

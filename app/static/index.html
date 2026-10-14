@@ -15,20 +15,29 @@
     .cabecera .titulo-evento { font-size: clamp(1.3rem, 5.2vw, 1.75rem); }
     .chip-galeria { min-height: 44px; padding: 8px 14px; font-size: 0.95rem; white-space: nowrap; }
     .marca { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .logo-cabecera { height: 52px; width: auto; max-width: 96px; object-fit: contain; flex: none; }
+    /* El logo, con sus colores oficiales, sobre una placa blanca */
+    .logo-cabecera { height: 52px; width: auto; max-width: 140px; object-fit: contain; flex: none; background: #fff; padding: 6px 9px; border-radius: 12px; }
     .cartel-entrada { width: min(58vw, 240px); margin: 0 auto 6px; border-radius: 16px; box-shadow: 0 28px 60px -22px rgba(0, 0, 0, 0.8); animation: balanceo 7s ease-in-out infinite; }
     @keyframes balanceo { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(2deg) translateY(-6px); } }
     .congreso { margin: 8px auto 0; max-width: 34ch; font-weight: 700; font-size: 0.95rem; color: var(--texto); opacity: 0.9; }
     .pie-centro { margin-top: 28px; display: grid; justify-items: center; gap: 8px; color: var(--suave); font-size: 0.82rem; font-weight: 700; }
-    .pie-centro img { height: 52px; width: auto; }
-    /* Saludo con ❤️ Votar y Mías: se queda arriba al bajar, siempre a mano */
-    .fila-saludo { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 -16px 14px;
-      position: sticky; top: 0; z-index: 6; padding: calc(8px + env(safe-area-inset-top)) 16px 8px;
-      background: color-mix(in srgb, var(--noche) 94%, transparent); border-bottom: 1px solid transparent; }
-    .fila-saludo .saludo { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .accesos { display: flex; gap: 8px; flex: none; }
-    .accesos .boton { min-height: 44px; padding: 8px 12px; font-size: 0.88rem; }
-    .fila-saludo .saludo { font-size: 1rem; }
+    .pie-centro img { height: 60px; width: auto; background: #fff; padding: 8px 12px; border-radius: 14px; }
+    /* Pestañas grandes Crear / Votar: se quedan arriba al bajar, siempre a mano */
+    .pestanas-app { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin: 0 -16px 16px;
+      position: sticky; top: 0; z-index: 6; padding: calc(8px + env(safe-area-inset-top)) 16px 10px;
+      background: color-mix(in srgb, var(--noche) 94%, transparent); }
+    .pestana-app { min-height: 58px; border-radius: 18px; border: 2px solid var(--borde); background: var(--capa-2); color: var(--texto);
+      font: inherit; font-weight: 900; font-size: 1.2rem; cursor: pointer; }
+    .pestana-app[aria-selected="true"] { background: linear-gradient(100deg, var(--magenta), var(--naranja)); border-color: transparent; color: var(--tinta);
+      box-shadow: 0 10px 24px -12px var(--magenta); }
+    .pestanas-app .mias { min-height: 58px; min-width: 58px; padding: 0; font-size: 1.5rem; border-radius: 18px; }
+    #panel-crear > .saludo { margin: 0 0 12px; }
+    .ayuda-votar { margin: 0 0 4px; text-align: center; }
+    .opcional { color: var(--suave); font-weight: 700; }
+    .linea-concurso { margin: 0 0 12px; color: var(--suave); font-weight: 800; font-size: 0.95rem; }
+    /* Modo sencillo: sin pasos numerados ni elección de técnica */
+    body.sencillo .paso { display: none; }
+    body.sencillo #prompt { min-height: 140px; font-size: 1.15rem; }
 
     /* Entrada */
     #entrada { text-align: center; padding-top: 3vh; }
@@ -237,14 +246,14 @@
       <p class="congreso" data-congreso></p>
       <form class="tarjeta" id="form-entrada">
         <div>
-          <label class="etiqueta" for="alias">¿Cómo te llamamos?</label>
-          <input class="campo" id="alias" maxlength="24" autocomplete="nickname" autocapitalize="words" enterkeyhint="go" placeholder="Tu alias" required>
+          <label class="etiqueta" for="alias">¿Cómo te llamamos? <small class="opcional">(opcional)</small></label>
+          <input class="campo" id="alias" maxlength="24" autocomplete="nickname" autocapitalize="words" enterkeyhint="go" placeholder="Tu nombre">
         </div>
         <div id="bloque-codigo" hidden>
           <label class="etiqueta" for="codigo">Código del aula</label>
           <input class="campo" id="codigo" autocomplete="off" autocapitalize="off" placeholder="Lo verás en la pantalla">
         </div>
-        <button class="boton boton-principal boton-grande" type="submit">¡Entrar al estudio! 🎉</button>
+        <button class="boton boton-principal boton-grande" type="submit">¡Entrar! 🎉</button>
       </form>
       <footer class="pie-centro" id="pie-centro" hidden>
         <span>Un estudio del</span>
@@ -263,14 +272,20 @@
           </div>
         </div>
       </header>
-      <div class="fila-saludo">
-        <p class="saludo">¡Hola, <span id="saludo-alias"></span>! 👋</p>
-        <div class="accesos">
-          <button class="boton boton-principal boton-votar" id="abrir-votar" type="button">❤️ Votar</button>
-          <button class="boton boton-secundario" id="abrir-galeria" type="button">🖼️ Mías</button>
-        </div>
+      <nav class="pestanas-app" role="tablist" aria-label="Crear o votar">
+        <button class="pestana-app" id="tab-crear" role="tab" type="button" aria-selected="true" aria-controls="panel-crear">✨ Crear</button>
+        <button class="pestana-app" id="tab-votar" role="tab" type="button" aria-selected="false" aria-controls="panel-votar">❤️ Votar</button>
+        <button class="boton boton-secundario mias" id="abrir-galeria" type="button" aria-label="Mis imágenes" title="Mis imágenes">🖼️</button>
+      </nav>
+
+      <div id="panel-votar" role="tabpanel" aria-labelledby="tab-votar" hidden>
+        <p class="texto-suave ayuda-votar">Desliza a la derecha si te gusta ❤️, a la izquierda para ver otra. O toca dos veces la imagen.</p>
+        <div class="votador" id="votador-pestana"></div>
+        <div class="mas-clase"><button class="boton boton-secundario" id="ver-galeria" type="button">🌟 Ver todas</button></div>
       </div>
 
+      <div id="panel-crear" role="tabpanel" aria-labelledby="tab-crear">
+      <p class="saludo">¡Hola, <span id="saludo-alias"></span>! 👋</p>
       <div id="reto"></div>
       <div id="estado-estudio"></div>
 
@@ -296,7 +311,7 @@
         </details>
       </div>
 
-      <div class="bloque">
+      <div class="bloque" id="bloque-estilo">
         <span class="etiqueta"><span class="paso">2</span>Elige el estilo</span>
         <div id="bloque-temas" hidden>
           <span class="subetiqueta">🌍 Carnaval del mundo <small>(opcional)</small></span>
@@ -322,6 +337,7 @@
 
       <div class="accion">
         <button class="boton boton-principal boton-grande" id="boton-crear" type="button">✨ ¡Crear imagen!</button>
+      </div>
       </div>
     </section>
 
@@ -385,21 +401,6 @@
         <button class="boton boton-secundario chip-galeria" id="cerrar-galeria" type="button">✕ Cerrar</button>
       </header>
       <div class="rejilla" id="rejilla"></div>
-    </div>
-  </div>
-
-  <!-- Votar de una en una -->
-  <div class="velo" id="votar" hidden>
-    <div class="app">
-      <header class="cabecera">
-        <h2 class="titulo-con-icono" style="font-size:1.6rem"><span class="icono" aria-hidden="true">❤️</span><span class="titulo-evento">Vota</span></h2>
-        <div class="accesos">
-          <button class="boton boton-secundario chip-galeria" id="votar-galeria" type="button">🌟 Galería</button>
-          <button class="boton boton-secundario chip-galeria" id="cerrar-votar" type="button" aria-label="Cerrar">✕</button>
-        </div>
-      </header>
-      <p class="texto-suave" id="votar-ayuda" style="margin-top:0">Desliza a la derecha si te gusta, a la izquierda para ver otra. O toca dos veces la imagen.</p>
-      <div class="votador" id="votador-grande"></div>
     </div>
   </div>
 

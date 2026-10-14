@@ -37,9 +37,9 @@ direccion = ""
 abrir_navegador = true
 
 [acceso]
-# Código que se pide al entrar. El QR ya lo lleva dentro, así que quien escanee no lo teclea.
-# Déjalo vacío ("") para no pedir código.
-codigo = "carnaval"
+# Código que se pide al entrar. Vacío ("") = se entra solo con escanear el QR (recomendado).
+# Si pones uno, el QR ya lo lleva dentro y quien escanee no lo teclea.
+codigo = ""
 # Clave del panel cuando lo abres desde OTRO dispositivo. Desde este PC no se pide.
 clave_profesor = "cambia-esta-clave"
 
@@ -49,6 +49,16 @@ clave_profesor = "cambia-esta-clave"
 # dispositivos. Solo hace falta que este PC tenga internet. Lo más fácil es no tocar esto y arrancar
 # con 2-INICIAR-ESTUDIO-POR-INTERNET.bat, que además descarga cloudflared la primera vez.
 activado = false
+
+[alumnado]
+# true = pantalla del móvil sencilla: escribir la idea, "Inspírame" y Crear, con dos pestañas grandes
+# (Crear y Votar). No se elige técnica, carnaval ni formato: se usan los de aquí abajo.
+sencillo = true
+# Técnica y formato de todas las imágenes en modo sencillo (ids de estilos.json y de [formatos]).
+estilo = "libre"
+formato = "cuadrado"
+# true = se puede crear a partir de una foto propia ("conviérteme en…").
+fotos = false
 
 [proyector]
 # Máximo de piezas del mosaico. Se usa la rejilla con forma de cartel más grande que quepa

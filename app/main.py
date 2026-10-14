@@ -72,8 +72,13 @@ def reducida(ruta: Path, ancho: int | None = None, alto: int | None = None) -> b
 
 
 class Entrada(BaseModel):
-    alias: str
+    alias: str = ""
     codigo: str = ""
+
+
+# Si alguien entra sin escribir su nombre, recibe uno de carnaval
+ALIAS_DE_CARNAVAL = ("Arlequín", "Antifaz", "Confeti", "Serpentina", "Purpurina", "Lentejuela", "Pluma",
+                     "Tambor", "Murguera", "Comparsa", "Farolillo", "Maraca", "Pierrot", "Colombina")
 
 
 class Pedido(BaseModel):
@@ -441,7 +446,10 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "estilos": tarjetas(aj.estilos),
             "temas": tarjetas(aj.temas, "tema-"),
             "formatos": [{"id": f.id, "ancho": f.ancho, "alto": f.alto} for f in aj.formatos.values()],
-            "fotos": estudio.nodos.admite_fotos,
+            "fotos": estudio.nodos.admite_fotos and aj.fotos,
+            "sencillo": aj.sencillo,
+            "estilo_sencillo": aj.estilo_sencillo,
+            "formato_sencillo": aj.formato_sencillo,
             "fuerzas": list(aj.fuerzas),
             "ideas": aj.ideas,
             "detalles": aj.detalles,
@@ -451,9 +459,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
 
     @app.post("/api/entrar")
     def entrar(e: Entrada):
-        alias = " ".join(e.alias.split())[:24]
-        if not alias:
-            raise HTTPException(422, "Escribe un alias para entrar.")
+        alias = " ".join(e.alias.split())[:24] or f"{secrets.choice(ALIAS_DE_CARNAVAL)} {secrets.randbelow(90) + 10}"
         if aj.codigo and normalizar(e.codigo.strip()) != normalizar(aj.codigo):
             raise HTTPException(403, "El código del aula no es correcto.")
         if filtro.bloqueada(alias):
@@ -515,7 +521,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             raise HTTPException(403, "Tu acceso al estudio está en pausa. Habla con el profesor.")
         if not estudio.abierto:
             raise HTTPException(423, "El estudio está cerrado ahora mismo.")
-        if not estudio.nodos.admite_fotos:
+        if not estudio.nodos.admite_fotos or not aj.fotos:
             raise HTTPException(422, "Este estudio no admite fotos.")
         try:
             id_, ancho, alto = fotos.guardar(f.datos, aj.datos / "fotos")

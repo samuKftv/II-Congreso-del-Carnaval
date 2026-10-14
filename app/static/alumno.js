@@ -73,6 +73,7 @@ async function iniciar() {
   pintarDetalles();
   pintarEstadoEstudio();
   pintarReto();
+  aplicarSencillo();
   $('usar-foto').hidden = !estado.info.fotos;
 
   if (estado.token) {
@@ -311,7 +312,7 @@ function pintarFoto() {
   $('usar-foto').textContent = hay ? '📷 Cambiar foto' : '📷 Usar una foto';
   $('etiqueta-idea').textContent = hay ? '¿En qué convertimos tu foto?' : '¿Qué quieres crear?';
   $('prompt').placeholder = hay ? 'Ej.: conviérteme en un arlequín veneciano con máscara dorada' : 'Describe tu imagen…';
-  $('bloque-formato').hidden = hay;
+  $('bloque-formato').hidden = hay || estado.info.sencillo;
   $('bloque-fuerza').hidden = !hay;
 }
 
@@ -331,7 +332,7 @@ function pintarEstadoEstudio() {
       el('span', {}, `Hay ${en_cola} ${en_cola === 1 ? 'imagen' : 'imágenes'} en cola · cada una tarda unos ${tiempoLegible(media)}.`));
   } else {
     caja = el('div', { class: 'aviso aviso-info' }, el('span', { class: 'icono' }, '🟢'),
-      el('span', {}, '¡Estudio abierto y sin cola! Tu imagen saldrá enseguida.'));
+      el('span', {}, '¡Sin cola! Tu imagen saldrá enseguida.'));
   }
   $('estado-estudio').replaceChildren(caja);
   $('boton-crear').disabled = !abierto;
@@ -378,6 +379,11 @@ function bandaConcurso() {
     return [el('div', { class: 'reto' }, el('span', { class: 'icono' }, '🏆'),
       el('div', {}, '¡Ya tenemos ganadoras!', el('small', {}, 'Mira la pantalla del aula')),
       el('button', { class: 'boton boton-secundario', type: 'button', onclick: () => abrirClase('votos') }, 'Ver'))];
+  }
+  if (estado.info.sencillo) {  // una sola línea: votar ya tiene su pestaña
+    return [el('p', { class: 'linea-concurso' }, c.revisar_antes
+      ? '🧩 Si el jurado la aprueba, tu imagen saldrá en la pantalla grande.'
+      : '🧩 Tu imagen saldrá en la pantalla grande.')];
   }
   return [el('div', { class: 'reto' }, el('span', { class: 'icono' }, '🧩'),
     el('div', {}, 'Concurso CarnaLab',
@@ -442,8 +448,22 @@ $('inspirame').addEventListener('click', () => {
 
 $('boton-crear').addEventListener('click', () => crear());
 
+// Modo sencillo: solo la idea. Técnica y formato los pone el estudio (ajustes.toml, [alumnado])
+function aplicarSencillo() {
+  const sencillo = !!estado.info.sencillo;
+  document.body.classList.toggle('sencillo', sencillo);
+  $('bloque-estilo').hidden = sencillo;
+  if (sencillo) {
+    $('bloque-formato').hidden = true;
+    $('detalles').hidden = true;
+  }
+}
+
 function pedidoActual() {
   const pedido = { prompt: $('prompt').value.trim(), estilo: estado.estilo, tema: estado.tema || '', formato: estado.formato };
+  if (estado.info.sencillo) {
+    Object.assign(pedido, { estilo: estado.info.estilo_sencillo, tema: '', formato: estado.info.formato_sencillo });
+  }
   if (estado.foto) {
     Object.assign(pedido, { foto: estado.foto.id, fuerza: estado.fuerza, publico: $('compartir').checked, vista: estado.foto.vista });
   }
@@ -728,7 +748,20 @@ $('cerrar-galeria').addEventListener('click', () => ($('galeria').hidden = true)
 // Galería de la clase
 let sondeoClase = null;
 
-$('abrir-votar').addEventListener('click', () => abrirVotar());
+// --- Pestañas grandes: Crear / Votar ---
+
+function pestana(nombre) {
+  const votar = nombre === 'votar';
+  $('tab-crear').setAttribute('aria-selected', String(!votar));
+  $('tab-votar').setAttribute('aria-selected', String(votar));
+  $('panel-crear').hidden = votar;
+  $('panel-votar').hidden = !votar;
+  window.scrollTo({ top: 0 });
+  if (votar) votadorPestana.activar();
+}
+
+$('tab-crear').addEventListener('click', () => pestana('crear'));
+$('tab-votar').addEventListener('click', () => pestana('votar'));
 $('cerrar-clase').addEventListener('click', () => {
   $('clase').hidden = true;
   clearInterval(sondeoClase);
@@ -964,21 +997,17 @@ class Votador {
   }
 }
 
-const votadorGrande = new Votador($('votador-grande'));
+const votadorPestana = new Votador($('votador-pestana'));
 const votadorEspera = new Votador($('votador-espera'));
 
 function abrirVotar() {
   cerrarVelos();
-  $('votar').hidden = false;
-  votadorGrande.actual = null;
-  votadorGrande.activar();
+  if (!$('espera').hidden) return;  // esperando turno ya se vota en la propia pantalla
+  mostrar('crear');
+  pestana('votar');
 }
 
-$('cerrar-votar').addEventListener('click', () => ($('votar').hidden = true));
-$('votar-galeria').addEventListener('click', () => {
-  $('votar').hidden = true;
-  abrirClase('recientes');
-});
+$('ver-galeria').addEventListener('click', () => abrirClase('recientes'));
 $('resultado-votar').addEventListener('click', () => abrirVotar());
 
 // Visor
@@ -1009,13 +1038,13 @@ function abrirVisor(t) {
 $('cerrar-visor').addEventListener('click', () => ($('visor').hidden = true));
 
 function cerrarVelos() {
-  for (const id of ['visor', 'galeria', 'clase', 'votar']) $(id).hidden = true;
+  for (const id of ['visor', 'galeria', 'clase']) $(id).hidden = true;
   clearInterval(sondeoClase);
 }
 
 document.addEventListener('keydown', (ev) => {
   if (ev.key !== 'Escape') return;
-  const abierto = ['visor', 'galeria', 'clase', 'votar'].find((id) => !$(id).hidden);
+  const abierto = ['visor', 'galeria', 'clase'].find((id) => !$(id).hidden);
   if (abierto) $(abierto).hidden = true;
   if (abierto === 'clase') clearInterval(sondeoClase);
 });

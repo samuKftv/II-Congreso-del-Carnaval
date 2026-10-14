@@ -6,10 +6,11 @@ Un estudio del **CIFP Las Indias**.
 El alumnado escribe una idea en el móvil y recibe una imagen generada por **ComfyUI**
 en el PC del profesor. Todo funciona dentro de la WiFi del aula.
 
-- 📱 **Alumnado**: escanea el QR, pone su alias y crea. Sin instalar nada.
-  - **Carnavales del mundo × técnicas**: combina Venecia, Río, Cádiz, Oruro… con acuarela, cómic, 3D…
-  - **Botones de detalles** (lugar, luz, plano, ambiente) que enriquecen la idea.
-  - **Foto como base**: transforma una foto propia. Es **privada** salvo que la persona marque compartirla.
+- 📱 **Público**: escanea el QR y entra, sin código y sin instalar nada (el nombre es opcional).
+  Dos pestañas grandes: **✨ Crear** (escribir la idea, 🎲 Inspírame y Crear) y **❤️ Votar**.
+  - Modo **sencillo** por defecto (`[alumnado]` en `ajustes.toml`): sin elegir técnica, carnaval ni formato.
+    Con `sencillo = false` vuelven los carnavales del mundo, las técnicas, los formatos y los detalles; con
+    `fotos = true`, crear a partir de una foto propia (privada salvo que se marque compartirla).
   - **❤️ Votar** de una en una, deslizando como en una app de citas, también mientras esperan su turno.
     Nadie puede votarse a sí mismo.
   - **Intérprete de ideas** (opcional): una IA de texto en tu PC entiende ideas cortas, raras o en español
@@ -198,11 +199,14 @@ recinto con 3 o 4 móviles y comprueba que abren el QR.
 
 ## Identidad del congreso
 
+- **Logo del CIFP Las Indias con sus colores oficiales** (añil `#383089`, magenta `#c80e81` y turquesa
+  `#59bdb3`). Siempre va sobre una placa blanca, sin alterarlo, en el móvil y en el proyector.
+
 Ya viene configurada con el cartel de CarnaLab 2026 (en `[evento]` y `[colores]` de `ajustes.toml`):
 
 - **Cartel** (`config/cartel.jpg`): en la pantalla de entrada y en el proyector mientras no hay imágenes.
-- **Logo del CIFP Las Indias** (`config/logo-las-indias.png`): versión clara del logo para que se lea
-  sobre el azul del cartel. Sale en la entrada, en la cabecera y en el proyector.
+- **Logo del CIFP Las Indias** (`config/logo-las-indias.png`): el original, sobre una placa blanca. Sale en
+  la entrada, en la cabecera y en el proyector.
 - **Colores** sacados del cartel: azul marino, coral, crema y aguamarina.
 - **Tipografía de los títulos**: Righteous (licencia libre SIL OFL, en `app/static/fuentes/`).
 - **Técnica "Cartel CarnaLab"**: imita el estilo del cartel (cubista, colores planos, máscaras y trompetas).
@@ -225,7 +229,7 @@ antes de llevarlos a la app:
 
 | Archivo | Para qué |
 |---|---|
-| `ajustes.toml` | Nombre del evento, puerto, código del aula, clave del profesor, dirección de ComfyUI, modelo en fp8 (`ligero`), intérprete de ideas, formatos, revisión antes de publicar, palabras bloqueadas |
+| `ajustes.toml` | Nombre del evento, puerto, código de acceso (vacío por defecto), clave del profesor, modo sencillo del móvil, dirección de ComfyUI, modelo en fp8 (`ligero`), intérprete de ideas, formatos, revisión antes de publicar, palabras bloqueadas |
 | `estilos.json` | Técnicas (`estilos`), carnavales del mundo (`temas`), ideas de *Inspírame* y botones de detalles. Cada uno con nombre, emoji, colores y la "receta" que se añade al prompt |
 | `workflow_api.json` | El workflow de ComfyUI en formato API |
 
