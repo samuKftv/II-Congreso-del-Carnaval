@@ -227,6 +227,14 @@ class BaseDatos:
             "WHERE estado = 'hecho' AND miniatura_estilo IS NULL"
         ) or {"hechas": 0, "personas": 0}
 
+    def ideas_mejoradas(self) -> dict:
+        """Cuántas ideas ha reescrito el intérprete de las que ya se han pintado (prompt_ia "" = no llegó)."""
+        fila = self._una(
+            "SELECT COUNT(*) AS ideas, COALESCE(SUM(prompt_ia != ''), 0) AS mejoradas FROM trabajos "
+            "WHERE miniatura_estilo IS NULL AND prompt_ia IS NOT NULL"
+        )
+        return {"ideas": fila["ideas"], "mejoradas": fila["mejoradas"]} if fila else {"ideas": 0, "mejoradas": 0}
+
     def duraciones_recientes(self, n: int = 10) -> list[float]:
         filas = self._todas(
             "SELECT fin - inicio AS d FROM trabajos WHERE estado = 'hecho' AND inicio IS NOT NULL "

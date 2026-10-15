@@ -99,7 +99,10 @@ async function refrescarEstado() {
   $('interprete').hidden = !ia.activado;
   if (ia.activado) {
     $('interprete').replaceChildren(el('span', { class: `punto ${ia.ok ? 'ok' : 'mal'}` }),
-      el('b', {}, '🧠 Intérprete de ideas: '), ia.ok ? `listo (${ia.modelo})` : `${ia.detalle}. Las ideas se pintan tal cual.`);
+      el('b', {}, '🧠 Intérprete de ideas: '), ia.ok ? `listo (${ia.modelo})` : `${ia.detalle}. Las ideas se pintan tal cual.`,
+      ia.ideas ? ` · ha mejorado ${ia.mejoradas} de ${ia.ideas} ideas` : '',
+      ia.ideas >= 10 && ia.mejoradas < ia.ideas * 0.7
+        ? ' (la gráfica va más rápida que él: el resto llevan solo la ambientación de carnaval)' : '');
   }
 
   $('n-cola').textContent = e.cola.length;

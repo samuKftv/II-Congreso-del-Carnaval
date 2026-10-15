@@ -187,4 +187,13 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
      encaja con el workflow; el error "mat1 and mat2" se traduce con la familia que espera esa dimensión.
    - `5-PROBAR-MI-MODELO.bat` avisa antes de pintar si no encajan, para cada columna en su primer error y
      avisa si una imagen sale negra.
-10. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+10. **Décima versión** ✅ (prompts de carnaval):
+    - Estilo `carnaval` ("Carnaval de Tenerife"), el de modo sencillo por defecto: añade la ambientación del
+      Carnaval de Santa Cruz de Tenerife a cada idea, también cuando el intérprete no llega.
+      `Estilo.aplicar` quita el punto final de la idea para no dejar "..".
+    - Intérprete: lleva toda idea al carnaval (disfraz, carroza, murga, comparsa, gala), glosario del
+      carnaval canario y cinco ejemplos (animal, persona, murga, oficio); 35-60 palabras.
+    - `[interprete] esperar` (true): la gráfica espera hasta 25 s y el intérprete coge las ideas por orden
+      de llegada, así que mientras se pinta una se interpreta la siguiente. `grafica` (false) deja a Ollama
+      usar la GPU. El panel muestra cuántas ideas ha mejorado (`prompt_ia` no vacío).
+11. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

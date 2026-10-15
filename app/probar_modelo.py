@@ -125,7 +125,8 @@ class Prueba:
         estilo = self.aj.estilos.get(self.aj.estilo_sencillo) if self.aj.sencillo else self.aj.estilos.get("libre")
         textos = list(self.ideas)
         if self.usar_interprete:
-            ia = Interprete(self.aj.interprete_url, self.aj.interprete_modelo, Filtro(self.aj.palabras_prohibidas))
+            ia = Interprete(self.aj.interprete_url, self.aj.interprete_modelo, Filtro(self.aj.palabras_prohibidas),
+                            self.aj.interprete_grafica)
             try:
                 if await ia.comprobar():
                     self.salida("  El intérprete convierte las ideas (como en el evento):")

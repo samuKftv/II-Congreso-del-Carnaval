@@ -5,15 +5,32 @@
       "id": "libre",
       "nombre": "Tal cual",
       "emoji": "✨",
-      "colores": ["#6d28d9", "#db2777"],
+      "colores": [
+        "#6d28d9",
+        "#db2777"
+      ],
       "receta": "{prompt}",
       "ejemplo": "Una máscara de carnaval dorada con plumas de colores sobre una mesa de madera"
+    },
+    {
+      "id": "carnaval",
+      "nombre": "Carnaval de Tenerife",
+      "emoji": "🎭",
+      "colores": [
+        "#e33943",
+        "#f6c445"
+      ],
+      "receta": "{prompt}. Set in the Carnival of Santa Cruz de Tenerife: spectacular carnival costumes with sequins, feathers and rhinestones, masks and glitter makeup, confetti and colorful streamers in the air, festive lights, joyful atmosphere, vibrant colors.",
+      "ejemplo": "Una murga de pulpos cantando en el escenario del carnaval"
     },
     {
       "id": "foto",
       "nombre": "Fotografía",
       "emoji": "📷",
-      "colores": ["#0f766e", "#0ea5e9"],
+      "colores": [
+        "#0f766e",
+        "#0ea5e9"
+      ],
       "receta": "{prompt}. Professional photograph, natural light, sharp focus, rich detail, shot on a 35mm lens.",
       "ejemplo": "Una comparsa con trajes brillantes desfilando de noche por una calle estrecha"
     },
@@ -21,7 +38,10 @@
       "id": "cartel",
       "nombre": "Cartel CarnaLab",
       "emoji": "🎺",
-      "colores": ["#003060", "#e33943"],
+      "colores": [
+        "#003060",
+        "#e33943"
+      ],
       "receta": "Flat vector poster illustration in a playful cubist style inspired by Picasso and mid-century modern design: {prompt}. Bold geometric shapes and overlapping faces, flat colors limited to a deep navy blue background, coral red, pale aqua, steel blue and cream, thin black line details, carnival elements such as masks, trumpets and musical notes, clean minimal composition.",
       "ejemplo": "Dos caras de carnaval tocando la trompeta"
     },
@@ -29,7 +49,10 @@
       "id": "ilustracion",
       "nombre": "Ilustración",
       "emoji": "✏️",
-      "colores": ["#2563eb", "#22c55e"],
+      "colores": [
+        "#2563eb",
+        "#22c55e"
+      ],
       "receta": "Colorful digital illustration of {prompt}. Clean lines, vibrant palette, storybook style.",
       "ejemplo": "Una carroza con forma de dragón recorriendo la ciudad"
     },
@@ -37,7 +60,10 @@
       "id": "anime",
       "nombre": "Anime",
       "emoji": "🌸",
-      "colores": ["#ec4899", "#8b5cf6"],
+      "colores": [
+        "#ec4899",
+        "#8b5cf6"
+      ],
       "receta": "Anime style illustration of {prompt}. Cel shading, expressive characters, vivid colors, detailed background.",
       "ejemplo": "Una chica con antifaz bailando entre serpentinas"
     },
@@ -45,7 +71,10 @@
       "id": "acuarela",
       "nombre": "Acuarela",
       "emoji": "🖌️",
-      "colores": ["#0891b2", "#a3e635"],
+      "colores": [
+        "#0891b2",
+        "#a3e635"
+      ],
       "receta": "Watercolor painting of {prompt}. Soft washes, visible paper texture, delicate color bleeding.",
       "ejemplo": "Farolillos de colores sobre una plaza al atardecer"
     },
@@ -53,7 +82,10 @@
       "id": "oleo",
       "nombre": "Óleo",
       "emoji": "🖼️",
-      "colores": ["#92400e", "#b45309"],
+      "colores": [
+        "#92400e",
+        "#b45309"
+      ],
       "receta": "Oil painting of {prompt}. Visible brushstrokes, rich deep colors, classical composition, museum quality.",
       "ejemplo": "Retrato de una dama con máscara y abanico"
     },
@@ -61,7 +93,10 @@
       "id": "3d",
       "nombre": "3D juguete",
       "emoji": "🧸",
-      "colores": ["#f59e0b", "#ec4899"],
+      "colores": [
+        "#f59e0b",
+        "#ec4899"
+      ],
       "receta": "Cute 3D render of {prompt}. Soft studio lighting, glossy toy-like materials, pastel background, high detail.",
       "ejemplo": "Un pulpo con disfraz de pirata"
     },
@@ -69,7 +104,10 @@
       "id": "comic",
       "nombre": "Cómic",
       "emoji": "💥",
-      "colores": ["#facc15", "#ef4444"],
+      "colores": [
+        "#facc15",
+        "#ef4444"
+      ],
       "receta": "Comic book panel of {prompt}. Bold ink outlines, halftone dots, dynamic composition, saturated colors.",
       "ejemplo": "Un superhéroe con capa hecha de confeti"
     },
@@ -77,7 +115,10 @@
       "id": "pixel",
       "nombre": "Pixel art",
       "emoji": "👾",
-      "colores": ["#4f46e5", "#10b981"],
+      "colores": [
+        "#4f46e5",
+        "#10b981"
+      ],
       "receta": "Pixel art of {prompt}. 16-bit retro video game style, limited palette, crisp pixels.",
       "ejemplo": "Un desfile de carnaval visto de lado como en un videojuego"
     }
@@ -87,7 +128,10 @@
       "id": "canarias",
       "nombre": "Canarias",
       "emoji": "👑",
-      "colores": ["#0ea5e9", "#f472b6"],
+      "colores": [
+        "#0ea5e9",
+        "#f472b6"
+      ],
       "receta": "{prompt}, at the Carnival of Santa Cruz de Tenerife, Canary Islands: a carnival queen wearing a monumental 'fantasia' costume, a huge rigid backpiece several meters wide and much taller than her, built on a hidden metal frame with sculpted shapes and completely covered in sequins, rhinestones, mirrors and cascades of feathers, with a matching jeweled headdress, under stage spotlights; murgas in colorful costumes, festive night",
       "ejemplo": "La reina del carnaval sobre el escenario"
     },
@@ -95,7 +139,10 @@
       "id": "cadiz",
       "nombre": "Cádiz",
       "emoji": "🎸",
-      "colores": ["#0369a1", "#facc15"],
+      "colores": [
+        "#0369a1",
+        "#facc15"
+      ],
       "receta": "{prompt}, at the Carnival of Cádiz, Spain: chirigota singers in matching humorous costumes with guitars, bass drum and kazoos, painted faces, narrow white streets of the old town by the sea, festive crowd",
       "ejemplo": "Un grupo de amigos cantando disfrazados en la calle"
     },
@@ -103,7 +150,10 @@
       "id": "venecia",
       "nombre": "Venecia",
       "emoji": "🎭",
-      "colores": ["#7c2d12", "#d4a017"],
+      "colores": [
+        "#7c2d12",
+        "#d4a017"
+      ],
       "receta": "{prompt}, at the Carnival of Venice: ornate porcelain masks, baroque costumes with gold embroidery, tricorn hats and velvet capes, misty canals with gondolas, elegant and mysterious atmosphere",
       "ejemplo": "Una pareja con máscaras posando en un puente"
     },
@@ -111,7 +161,10 @@
       "id": "rio",
       "nombre": "Río de Janeiro",
       "emoji": "💃",
-      "colores": ["#16a34a", "#facc15"],
+      "colores": [
+        "#16a34a",
+        "#facc15"
+      ],
       "receta": "{prompt}, at the Rio de Janeiro Carnival: samba dancers with huge feathered headdresses, sequins and rhinestones, giant allegorical floats in the Sambadrome at night, explosive colors",
       "ejemplo": "Una bailarina de samba en pleno desfile"
     },
@@ -119,7 +172,10 @@
       "id": "oruro",
       "nombre": "Oruro",
       "emoji": "👹",
-      "colores": ["#b91c1c", "#ca8a04"],
+      "colores": [
+        "#b91c1c",
+        "#ca8a04"
+      ],
       "receta": "{prompt}, at the Carnival of Oruro, Bolivia: Diablada dancers with spectacular devil masks with horns and bulging eyes, embroidered capes with mirrors, Andean mountains in the background",
       "ejemplo": "Un bailarín de la diablada saltando"
     },
@@ -127,7 +183,10 @@
       "id": "viareggio",
       "nombre": "Viareggio",
       "emoji": "🎡",
-      "colores": ["#7c3aed", "#f97316"],
+      "colores": [
+        "#7c3aed",
+        "#f97316"
+      ],
       "receta": "{prompt}, at the Carnival of Viareggio, Italy: giant satirical papier-mâché floats with enormous caricature figures, seaside promenade, confetti in the air",
       "ejemplo": "Una carroza gigante de papel maché"
     },
@@ -135,7 +194,10 @@
       "id": "binche",
       "nombre": "Binche",
       "emoji": "🍊",
-      "colores": ["#ea580c", "#facc15"],
+      "colores": [
+        "#ea580c",
+        "#facc15"
+      ],
       "receta": "{prompt}, at the Carnival of Binche, Belgium: Gilles in wax masks with green glasses and huge ostrich-feather hats, throwing oranges, wooden clogs, medieval square",
       "ejemplo": "Un Gille con su sombrero de plumas"
     },
@@ -143,7 +205,10 @@
       "id": "mardigras",
       "nombre": "Nueva Orleans",
       "emoji": "⚜️",
-      "colores": ["#6b21a8", "#16a34a"],
+      "colores": [
+        "#6b21a8",
+        "#16a34a"
+      ],
       "receta": "{prompt}, at Mardi Gras in New Orleans: purple, green and gold decorations, bead necklaces, brass band, French Quarter balconies with wrought iron, parade floats",
       "ejemplo": "Una banda de música desfilando por el barrio francés"
     },
@@ -151,7 +216,10 @@
       "id": "barranquilla",
       "nombre": "Barranquilla",
       "emoji": "🌺",
-      "colores": ["#dc2626", "#2563eb"],
+      "colores": [
+        "#dc2626",
+        "#2563eb"
+      ],
       "receta": "{prompt}, at the Carnival of Barranquilla, Colombia: marimonda and torito masks, colorful polleras with ruffles, cumbia dancers, tropical Caribbean colors",
       "ejemplo": "Una pareja bailando cumbia con trajes de colores"
     }

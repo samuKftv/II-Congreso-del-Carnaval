@@ -198,24 +198,35 @@ pasos, cada imagen tarda más y la gente espera más. Con FLUX.2 Klein no está 
 
 ## Intérprete de ideas (recomendado)
 
-La gente escribe ideas cortas, raras o en español ("un pulpo pirata", "conviérteme en reina"). El modelo
-de imágenes entiende mucho mejor una descripción detallada en inglés. El intérprete hace esa traducción:
+La gente escribe ideas cortas, raras o en español ("un gato", "conviérteme en reina"). El modelo de imágenes
+entiende mucho mejor una descripción detallada en inglés. El intérprete la escribe y, además, **lleva cada
+idea al Carnaval de Santa Cruz de Tenerife**: si la idea no es de carnaval, la convierte en un disfraz, una
+carroza, una murga, una comparsa o la gala de la Reina.
 
-> *un pulpo pirata* → *A cheerful giant purple octopus dressed as a pirate captain, with a tricorn hat
-> trimmed in gold, an eye patch and a tiny wooden sword…*
+> *un gato* → *A fluffy orange cat wearing a tiny carnival costume with a golden sequined cape and a
+> headdress of pink and turquoise feathers, sitting proudly on a decorated parade float…*
+
+Conoce las palabras del carnaval canario (murga, comparsa, rondalla, Reina, Coso, Entierro de la Sardina,
+mascarita, guagua) para que no las traduzca mal.
 
 1. Una sola vez, con internet: doble clic en **`4-INSTALAR-INTERPRETE.bat`** (o `instalar_interprete.bat`).
    Instala [Ollama](https://ollama.com) y el modelo **qwen2.5:3b** (unos 2 GB).
-2. Abre el estudio. En el panel, junto a ComfyUI, verás **🧠 Intérprete de ideas: listo**.
+2. Abre el estudio. En el panel, junto a ComfyUI, verás **🧠 Intérprete de ideas: listo · ha mejorado N
+   de M ideas**.
 
 - Funciona **sin internet** y en el **procesador**, así que no le quita memoria a la gráfica.
-- Trabaja **por adelantado** mientras la gente espera en la cola. Si no le da tiempo o Ollama está
-  cerrado, la idea se pinta tal cual: nunca frena la cola.
+- **`esperar = true`** (lo normal): la gráfica espera a que el intérprete mejore cada idea, hasta 25 s.
+  Mientras pinta una, él prepara la siguiente, así que la cola va a su ritmo (unos 6 s por imagen).
+  Con `esperar = false` la gráfica no le espera: va más rápido, pero con FLUX.2 Klein (4 pasos) pinta
+  antes de que él acabe y muchas ideas se quedan sin mejorar.
+- **`grafica = true`**: Ollama usa también la gráfica y tarda menos de un segundo por idea, pero le quita
+  unos 2,5 GB a ComfyUI. Pruébalo con el simulacro antes de usarlo en el evento.
+- Si Ollama está cerrado, la idea se pinta tal cual, con la **ambientación de carnaval** del estilo
+  `carnaval` (`[alumnado] estilo`), que va siempre detrás: trajes con lentejuelas y plumas, máscaras,
+  confeti, serpentinas y luces de fiesta. Si tu LoRA ya pone el carnaval, usa `estilo = "libre"`.
 - El alumnado sigue viendo su idea original. En el panel, debajo de cada imagen, ves en azul
   **🧠 lo que entendió**.
-- El simulacro te dice en cuántas imágenes llegó a tiempo. Si llega a pocas, tu procesador va justo:
-  puedes probar otro modelo más pequeño en `[interprete]` de `ajustes.toml` (por ejemplo `qwen2.5:1.5b`,
-  después de `ollama pull qwen2.5:1.5b`) o desactivarlo con `activado = false`.
+- Para retocar cómo escribe, edita `SISTEMA` y `EJEMPLOS` en `app/interprete.py`.
 
 ## Probar con 100 personas (simulacro)
 

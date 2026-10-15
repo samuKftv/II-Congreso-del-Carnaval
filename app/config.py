@@ -52,7 +52,9 @@ class Estilo:
     ejemplo: str
 
     def aplicar(self, prompt: str) -> str:
-        return self.receta.replace("{prompt}", prompt)
+        if self.receta == "{prompt}":
+            return prompt
+        return self.receta.replace("{prompt}", prompt.strip().rstrip("."))
 
 
 @dataclass
@@ -96,6 +98,8 @@ class Ajustes:
     interprete_activado: bool = False  # IA de texto (Ollama) que convierte la idea en una descripción en inglés
     interprete_url: str = "http://127.0.0.1:11434"
     interprete_modelo: str = "qwen2.5:3b"
+    interprete_grafica: bool = False  # true = Ollama usa la gráfica (más rápido, pero le quita memoria a ComfyUI)
+    interprete_esperar: bool = True  # la gráfica espera a que el intérprete mejore cada idea (máx. 25 s)
     base: str = ""  # familia elegida en [mi_modelo] (vacío = el workflow de [comfyui])
     pasos: int = 0  # 0 = los del workflow
     cfg: float = 0.0  # 0 = la del workflow
@@ -250,6 +254,8 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         interprete_activado=bool(interprete.get("activado", False)),
         interprete_url=str(interprete.get("url", "http://127.0.0.1:11434")).rstrip("/"),
         interprete_modelo=str(interprete.get("modelo", "qwen2.5:3b")).strip(),
+        interprete_grafica=bool(interprete.get("grafica", False)),
+        interprete_esperar=bool(interprete.get("esperar", True)),
         base=base if BASES.get(base) else "",
         pasos=min(max(int(mio.get("pasos", 0)), 0), 200),
         cfg=min(max(float(mio.get("cfg", 0)), 0.0), 30.0),

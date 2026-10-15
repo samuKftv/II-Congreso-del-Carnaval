@@ -55,7 +55,10 @@ activado = false
 # (Crear y Votar). No se elige técnica, carnaval ni formato: se usan los de aquí abajo.
 sencillo = true
 # Técnica y formato de todas las imágenes en modo sencillo (ids de estilos.json y de [formatos]).
-estilo = "libre"
+# "carnaval" añade a cada idea la ambientación del Carnaval de Santa Cruz de Tenerife (trajes con
+# lentejuelas y plumas, confeti, serpentinas, luces de fiesta), también cuando el intérprete no llega
+# a tiempo. "libre" = la idea tal cual, sin añadir nada (por ejemplo, si tu LoRA ya pone el carnaval).
+estilo = "carnaval"
 formato = "cuadrado"
 # true = se puede crear a partir de una foto propia ("conviérteme en…").
 fotos = false
@@ -114,6 +117,14 @@ cfg = 0
 activado = true
 url = "http://127.0.0.1:11434"
 modelo = "qwen2.5:3b"
+# true = la gráfica espera (hasta 25 s) a que el intérprete mejore cada idea: todas salen con un buen
+# prompt de carnaval y la cola va al ritmo del intérprete (unos 6 s por imagen en el procesador).
+# false = la gráfica no espera: más rápido, pero las ideas a las que no llega llevan solo la ambientación.
+# El panel dice cuántas ideas ha mejorado.
+esperar = true
+# false = el intérprete va en el procesador. true = Ollama usa también la gráfica: mucho más rápido,
+# pero le quita unos 2,5 GB a ComfyUI. Pruébalo con el simulacro antes de usarlo en el evento.
+grafica = false
 
 [limites]
 # Imágenes en cola a la vez por persona (1 = turnos justos para todos).

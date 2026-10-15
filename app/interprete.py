@@ -1,8 +1,9 @@
 """Intérprete de ideas: una IA de texto local (Ollama) convierte la idea del alumnado en una descripción
 detallada en inglés, que es como mejor entiende Z-Image.
 
-Va en el procesador (num_gpu = 0) para no quitarle memoria a la gráfica, y trabaja por adelantado
-mientras las imágenes esperan en la cola. Si no está disponible o tarda, la idea se pinta tal cual.
+Va en el procesador (num_gpu = 0) para no quitarle memoria a la gráfica, salvo con [interprete] grafica = true,
+y trabaja por adelantado mientras las imágenes esperan en la cola. Si no está disponible o tarda, la idea se pinta
+tal cual (con la ambientación de carnaval del estilo).
 """
 
 from __future__ import annotations
@@ -16,25 +17,39 @@ from .moderacion import Filtro
 
 log = logging.getLogger("estudio")
 
-SISTEMA = """You write prompts for an image generator at CarnaLab, a carnival event in Tenerife.
-The user sends a short idea, usually in Spanish. Rewrite it as ONE vivid description in English.
-- Keep exactly what the person asked for: the same subject, characters, actions, number of things and any text they want written. Never change or replace the idea.
-- If it is short or vague, add concrete visual details: appearance, costume, colors, materials, place, lighting.
+SISTEMA = """You write prompts for an image generator at CarnaLab, a congress about the Carnival of Santa Cruz de Tenerife.
+The user sends a short idea, usually in Spanish. Rewrite it as ONE vivid description in English of a carnival scene.
+- Keep exactly what the person asked for: the same subject, characters, actions, number of things and any text they want written. Never replace the idea.
+- Always bring it into the Carnival of Santa Cruz de Tenerife. If the idea is not about carnival, show it in carnival form: in a carnival costume, as a parade float, in a murga or a comparsa, at the night street party, on the big stage of the queen gala.
+- Add concrete carnival details: costumes with sequins, feathers, rhinestones, satin and glitter, masks and face paint, bright colors, confetti and streamers, music, the place and the lighting.
+- Canarian carnival words: murga = group of singers in identical colorful costumes and painted faces, singing funny songs with kazoos; comparsa = troupe of dancers in feathered costumes dancing to Latin drums; rondalla = choir with guitars and lutes in elegant costumes; Reina del Carnaval = queen wearing a monumental costume with a giant backpiece of feathers and sequins on wheels; Coso = big daytime parade with floats; Entierro de la Sardina = funny funeral parade with a giant papier-mache sardine and people dressed as mourning widows in black; mascarita = person in costume and mask; guagua = bus.
 - If the person talks about themselves ("me", "conviérteme"), describe "a person".
 - Do not mention art styles, painting techniques, cameras or image quality: that is added later.
 - Keep it suitable for a public event for all ages.
-- Answer only with the description: one paragraph, 40 to 70 words, no quotes, no lists."""
+- Answer only with the description: one paragraph, 35 to 60 words, no quotes, no lists."""
 
 EJEMPLOS = [
     ("un pulpo pirata",
-     "A cheerful giant purple octopus dressed as a pirate captain, with a tricorn hat trimmed in gold, an eye "
-     "patch and a tiny wooden sword in one tentacle, standing proudly on the deck of a ship decorated with "
-     "colorful streamers and confetti, festive lights glowing in the night sky."),
+     "A cheerful giant purple octopus dressed as a carnival pirate captain, with a tricorn hat covered in gold "
+     "sequins, a glittering eye patch and a feathered cape, waving from the top of a ship-shaped parade float "
+     "in the streets of Santa Cruz de Tenerife at night, confetti and streamers flying, colorful lights."),
     ("conviérteme en reina del carnaval con un traje del Teide",
-     "A person dressed as a carnival queen in a monumental costume inspired by the Teide volcano: a huge "
+     "A person crowned as carnival queen in a monumental costume inspired by the Teide volcano: a huge "
      "backpiece shaped like the mountain, covered in red and orange sequins like flowing lava, black "
-     "rhinestones like volcanic rock and white feathers like snow on the summit, with a matching jeweled "
-     "headdress, standing on a big stage under bright spotlights."),
+     "rhinestones like volcanic rock and white feathers like snow on the summit, on the big gala stage "
+     "under bright spotlights."),
+    ("un gato",
+     "A fluffy orange cat wearing a tiny carnival costume with a golden sequined cape and a headdress of pink "
+     "and turquoise feathers, sitting proudly on a decorated parade float, surrounded by dancers in bright "
+     "costumes, falling confetti and serpentine streamers, warm festive lights at night."),
+    ("una murga de abuelas",
+     "A murga of smiling grandmothers in identical red and yellow satin costumes with ruffled collars, painted "
+     "clown faces and glittering hats, singing funny songs and blowing kazoos together on an open-air carnival "
+     "stage, the audience in costumes cheering, spotlights and confetti."),
+    ("una costurera",
+     "A seamstress in her workshop sewing a giant carnival queen costume, surrounded by mannequins, rolls of "
+     "shiny fabric, boxes of sequins and rhinestones and huge bundles of colorful feathers, her hands guiding "
+     "the sewing machine, warm light and sparkling details everywhere."),
 ]
 
 PENSAMIENTO = re.compile(r"<think>.*?</think>", re.S | re.I)
@@ -42,8 +57,8 @@ ETIQUETA = re.compile(r"^(description|prompt|descripci[oó]n)\s*:\s*", re.I)
 
 
 class Interprete:
-    def __init__(self, url: str, modelo: str, filtro: Filtro):
-        self.url, self.modelo, self.filtro = url.rstrip("/"), modelo, filtro
+    def __init__(self, url: str, modelo: str, filtro: Filtro, grafica: bool = False):
+        self.url, self.modelo, self.filtro, self.grafica = url.rstrip("/"), modelo, filtro, grafica
         self.http = httpx.AsyncClient(timeout=90, trust_env=False)
         self.ok = False
         self.detalle = "comprobando…"
@@ -72,7 +87,8 @@ class Interprete:
         try:
             r = await self.http.post(f"{self.url}/api/chat", json={
                 "model": self.modelo, "messages": self.mensajes(idea), "stream": False, "keep_alive": "8h",
-                "options": {"num_gpu": 0, "temperature": 0.5, "num_predict": 180, "num_ctx": 2048},
+                "options": {**({} if self.grafica else {"num_gpu": 0}),  # 0 = en el procesador
+                            "temperature": 0.6, "num_predict": 150, "num_ctx": 4096},
             })
             r.raise_for_status()
             texto = r.json()["message"]["content"]

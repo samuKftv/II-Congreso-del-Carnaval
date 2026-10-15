@@ -34,7 +34,7 @@ def test_flujo_completo(ajustes, comfy_falso):
     with TestClient(crear_app(ajustes)) as c:
         info = c.get("/api/info").json()
         assert info["requiere_codigo"] and len(info["estilos"]) > 5
-        assert info["sencillo"] and info["estilo_sencillo"] == "libre" and info["formato_sencillo"] == "cuadrado"
+        assert info["sencillo"] and info["estilo_sencillo"] == "carnaval" and info["formato_sencillo"] == "cuadrado"
 
         h = entrar(c)
         r = c.post("/api/crear", json={"prompt": "Un gato con antifaz", "estilo": "cartel", "formato": "vertical"}, headers=h)

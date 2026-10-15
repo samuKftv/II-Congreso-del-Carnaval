@@ -113,9 +113,11 @@ CADA VEZ
 INTERPRETE DE IDEAS (recomendado)
  Doble clic en "4-INSTALAR-INTERPRETE.bat" (una sola vez, con internet).
  Instala Ollama y una IA de texto pequeña que convierte cada idea, aunque sea
- corta o rara, en una descripción detallada antes de pintarla. Va en el
- procesador y no le quita memoria a la gráfica. En el panel, junto a ComfyUI,
- verás "Intérprete de ideas: listo". Si no está, las ideas se pintan tal cual.
+ corta o rara, en una descripción detallada de una escena del Carnaval de
+ Santa Cruz de Tenerife antes de pintarla. Va en el procesador y no le quita
+ memoria a la gráfica. En el panel, junto a ComfyUI, verás "Intérprete de
+ ideas: listo · ha mejorado N de M ideas". Si no está, las ideas se pintan
+ tal cual, con la ambientación de carnaval (trajes, plumas, confeti, luces).
 
 SI LA WIFI DEL RECINTO NO DEJA (modo internet)
  Muchas WiFi abiertas aíslan los móviles y no pueden llegar a este PC.

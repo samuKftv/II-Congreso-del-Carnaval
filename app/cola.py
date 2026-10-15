@@ -192,8 +192,8 @@ class Estudio:
             if not t or t["miniatura_estilo"] or t["prompt_ia"] is not None:
                 self._ia_decidida.add(id_)
                 continue
-            if posicion * self.media() >= self._ia_media * 0.8:
-                return id_
+            if self.aj.interprete_esperar or posicion * self.media() >= self._ia_media * 0.8:
+                return id_  # esperando, por orden de llegada: la gráfica pinta una mientras él prepara la siguiente
             pendientes.append(id_)
         return pendientes[0] if pendientes else None
 
@@ -224,14 +224,15 @@ class Estudio:
                     log.info("Intérprete: «%s» → %s", t["prompt"], texto)
 
     async def _idea_interpretada(self, id_: str) -> str | None:
-        """Lo que entendió el intérprete. Lo espera si está con esta idea o libre para empezarla;
-        si está ocupado con otra o no funciona, se pinta la idea tal cual."""
-        limite = time.time() + 15
+        """Lo que entendió el intérprete. Con [interprete] esperar, lo espera hasta 25 s; si no, solo si está
+        con esta idea o libre para empezarla. Si no funciona, se pinta la idea tal cual."""
+        esperar = self.aj.interprete_esperar
+        limite = time.time() + (25 if esperar else 15)
         while time.time() < limite:
             t = self.db.trabajo(id_)
             if t["prompt_ia"] is not None:
                 return t["prompt_ia"] or None
-            if not self.interprete.ok or self._ia_en_curso not in (None, id_):
+            if not self.interprete.ok or (not esperar and self._ia_en_curso not in (None, id_)):
                 break
             self._hay_ideas.set()
             await asyncio.sleep(0.2)

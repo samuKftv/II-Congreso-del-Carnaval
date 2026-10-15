@@ -158,7 +158,8 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
     db = BaseDatos(aj.datos / "estudio.db")
     comfy = ComfyUI(aj.comfy_url)
     filtro = Filtro(aj.palabras_prohibidas)
-    interprete = Interprete(aj.interprete_url, aj.interprete_modelo, filtro) if aj.interprete_activado else None
+    interprete = (Interprete(aj.interprete_url, aj.interprete_modelo, filtro, aj.interprete_grafica)
+                  if aj.interprete_activado else None)
     estudio = Estudio(aj, db, comfy, interprete)
     cache_red = {"hasta": 0.0, "direcciones": []}
 
@@ -659,7 +660,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "por_revisar": db.cuantas_por_revisar(),
             "simulacro": aj.datos.name == config.CARPETA_SIMULACRO,
             "interprete": {"activado": True, "ok": interprete.ok, "modelo": interprete.modelo,
-                           "detalle": interprete.detalle} if interprete else {"activado": False},
+                           "detalle": interprete.detalle, **db.ideas_mejoradas()} if interprete else {"activado": False},
         }
 
     @app.post("/api/panel/reto", dependencies=[Depends(profesor)])

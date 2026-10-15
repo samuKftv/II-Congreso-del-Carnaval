@@ -48,7 +48,8 @@ def test_la_idea_se_interpreta_antes_de_pintarla(ajustes, comfy_falso, ollama):
     with TestClient(crear_app(ajustes)) as c:
         esperar_interprete(c)
         estado = c.get("/api/panel/estado", headers=PROFE).json()["interprete"]
-        assert estado == {"activado": True, "ok": True, "modelo": "qwen2.5:3b", "detalle": "listo"}
+        assert estado == {"activado": True, "ok": True, "modelo": "qwen2.5:3b", "detalle": "listo",
+                          "ideas": 0, "mejoradas": 0}
         h = entrar(c)
         t = crear(c, h, "Un gato con antifaz")
 
@@ -85,3 +86,62 @@ def test_sin_ollama_se_pinta_la_idea_tal_cual(ajustes, comfy_falso):
         assert "Un perro con sombrero" in comfy_falso[1].state.recibidos[-1]["6"]["inputs"]["text"]
         estado = c.get("/api/panel/estado", headers=PROFE).json()["interprete"]
         assert estado["ok"] is False and "Ollama" in estado["detalle"]
+
+
+def test_esperando_al_interprete_todas_las_ideas_salen_mejoradas(ajustes, comfy_falso, tmp_path):
+    """Con FLUX.2 Klein la gráfica va más rápida que el intérprete: con esperar = true, ninguna idea se lo salta."""
+    puerto = puerto_libre()
+    lento = crear_ollama_falso(retardo=0.4)  # el intérprete tarda más que el ComfyUI simulado
+    servidor = Servidor(uvicorn.Config(lento, host="127.0.0.1", port=puerto, log_level="warning"))
+    hilo = threading.Thread(target=servidor.run, daemon=True)
+    hilo.start()
+    while not servidor.started:
+        time.sleep(0.02)
+    try:
+        ajustes.interprete_activado, ajustes.interprete_url = True, f"http://127.0.0.1:{puerto}"
+        assert ajustes.interprete_esperar  # lo normal
+        with TestClient(crear_app(ajustes)) as c:
+            esperar_interprete(c)
+            ids = []
+            for n in range(4):  # cuatro personas a la vez
+                h = entrar(c, f"Persona {n}")
+                r = c.post("/api/crear", json={"prompt": f"Idea {n}", "estilo": "carnaval", "formato": "cuadrado"},
+                           headers=h)
+                ids.append((r.json()["id"], h))
+            for id_, h in ids:
+                assert esperar_fin(c, id_, h, limite=20)["estado"] == "hecho"
+            estado = c.get("/api/panel/estado", headers=PROFE).json()["interprete"]
+            assert estado["ideas"] == estado["mejoradas"] == 4
+            textos = [wf["6"]["inputs"]["text"] for wf in comfy_falso[1].state.recibidos[-4:]]
+            assert all(x.startswith("A vivid carnival scene of Idea") and "Santa Cruz de Tenerife" in x for x in textos)
+            assert "num_gpu" in lento.state.recibidos[-1]["options"]  # en el procesador
+    finally:
+        servidor.should_exit = True
+        hilo.join(5)
+
+
+def test_interprete_en_la_grafica_y_ambientacion_de_carnaval(ajustes, ollama):
+    import asyncio
+
+    from app.interprete import Interprete
+    from app.moderacion import Filtro
+
+    url, ollama_app = ollama
+
+    async def pedir():
+        ia = Interprete(url, "qwen2.5:3b", Filtro([]), grafica=True)
+        try:
+            return await ia.interpretar("un gato")
+        finally:
+            await ia.cerrar()
+
+    assert asyncio.run(pedir()) == "A vivid carnival scene of un gato."
+    pedido = ollama_app.state.recibidos[-1]
+    assert "num_gpu" not in pedido["options"]  # en la gráfica: Ollama decide
+    ejemplos = [m["content"] for m in pedido["messages"] if m["role"] == "user"]
+    assert len(ejemplos) == 6 and "murga" in pedido["messages"][0]["content"]
+    carnaval = ajustes.estilos["carnaval"]
+    texto = carnaval.aplicar("A purple octopus murga singing on stage.")
+    assert texto.startswith("A purple octopus murga singing on stage. Set in the Carnival of Santa Cruz de Tenerife")
+    assert ".." not in texto
+    assert ajustes.estilos["libre"].aplicar("Una idea.") == "Una idea."
