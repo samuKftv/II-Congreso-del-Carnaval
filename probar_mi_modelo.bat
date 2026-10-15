@@ -11,6 +11,7 @@ echo  semilla, y lo junta todo en una hoja para comparar. Tarda unos minutos.
 echo.
 echo  Antes de seguir:
 echo   - Escribe tu modelo y tu LoRA en config\ajustes.toml, apartado [mi_modelo].
+echo     Sin modelo ni LoRA, prueba el modelo normal: sirve para comparar Z-Image y Klein.
 echo   - Arranca ComfyUI.
 echo  Si quieres probar tus propias ideas, escribelas despues del nombre de este
 echo  archivo en una ventana de comandos, entre comillas.

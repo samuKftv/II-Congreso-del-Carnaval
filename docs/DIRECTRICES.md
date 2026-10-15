@@ -203,4 +203,16 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
       `fuerzas: []`) y con "Using the reference photo, keep the same people, faces and pose." delante.
       Z-Image Turbo sigue con img2img (KSampler con denoise).
     - Proyector: el nombre del congreso y la línea de fecha y hashtag en negro, sin franja debajo.
-12. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+12. **Duodécima versión** ✅ (prompts para FLUX.2):
+    - `"ideas"` de `estilos.json` pasa a ser `{"idea", "prompt"}`: 32 ideas en español con su prompt en inglés
+      (sujeto + acción + estilo + contexto, lo importante primero, sin negativos; `docs/PROMPTS.md`). Si la
+      idea llega sin tocar (normalizada: mayúsculas, espacios, punto final) y sin foto, `prompt_final` y
+      `prompt_ia` son ese prompt: no pasa por el intérprete ni por la receta. Siguen valiendo ideas en texto.
+    - La receta `carnaval` añade el estilo ("Vibrant editorial photography…"); el intérprete pone lo
+      importante primero y escribe frases, sin negativos.
+    - Proyector: el nombre del congreso y la línea de fecha y hashtag vuelven a su estilo original.
+    - Inspírame: si se pulsa Crear (o se toca el texto) mientras la idea se escribe letra a letra, se completa
+      antes de enviarla, para que llegue entera y se reconozca.
+    - `5-PROBAR-MI-MODELO.bat` sin modelo ni LoRA pinta con el modelo del workflow (una columna): sirve para
+      comparar Z-Image Turbo con FLUX.2 Klein con las mismas ideas.
+13. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

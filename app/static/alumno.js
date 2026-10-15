@@ -441,16 +441,32 @@ $('inspirame').addEventListener('click', () => {
   }
   let i = 0;
   clearInterval(caja._escribiendo);
+  caja._idea = idea;
   caja._escribiendo = setInterval(() => {
     caja.value = idea.slice(0, ++i);
     actualizarContador();
-    if (i >= idea.length) clearInterval(caja._escribiendo);
+    if (i >= idea.length) terminarDeEscribir();
   }, 18);
 });
 
+// Si se pulsa Crear (o se toca el texto) mientras Inspírame escribe, la idea se completa de golpe:
+// así llega entera y lleva su prompt optimizado
+function terminarDeEscribir() {
+  const caja = $('prompt');
+  if (!caja._idea) return;
+  clearInterval(caja._escribiendo);
+  caja.value = caja._idea;
+  caja._idea = null;
+  actualizarContador();
+}
+$('prompt').addEventListener('focus', terminarDeEscribir);
+
 // --- Enviar ---
 
-$('boton-crear').addEventListener('click', () => crear());
+$('boton-crear').addEventListener('click', () => {
+  terminarDeEscribir();
+  crear();
+});
 
 // Modo sencillo: solo la idea. Técnica y formato los pone el estudio (ajustes.toml, [alumnado])
 function aplicarSencillo() {

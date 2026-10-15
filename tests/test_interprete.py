@@ -1,5 +1,6 @@
 """Intérprete de ideas (Ollama simulado) delante del ComfyUI simulado."""
 
+import re
 import threading
 import time
 
@@ -142,6 +143,45 @@ def test_interprete_en_la_grafica_y_ambientacion_de_carnaval(ajustes, ollama):
     assert len(ejemplos) == 6 and "murga" in pedido["messages"][0]["content"]
     carnaval = ajustes.estilos["carnaval"]
     texto = carnaval.aplicar("A purple octopus murga singing on stage.")
-    assert texto.startswith("A purple octopus murga singing on stage. Set in the Carnival of Santa Cruz de Tenerife")
+    assert texto.startswith("A purple octopus murga singing on stage. Vibrant editorial photography at the Carnival "
+                            "of Santa Cruz de Tenerife")
     assert ".." not in texto
     assert ajustes.estilos["libre"].aplicar("Una idea.") == "Una idea."
+
+
+def test_ideas_de_inspirame_con_prompt_optimizado(ajustes, comfy_falso, ollama):
+    """Una idea de Inspírame sin tocar va con su prompt para FLUX.2; si la persona la cambia, pasa por el intérprete."""
+    url, ollama_app = ollama
+    ajustes.interprete_activado, ajustes.interprete_url = True, url
+    idea = ajustes.ideas[0]
+    optimizado = ajustes.prompts_ideas[idea.lower()]
+    with TestClient(crear_app(ajustes)) as c:
+        esperar_interprete(c)
+        assert c.get("/api/info").json()["ideas"][0] == idea  # el móvil ve la idea en español
+        h = entrar(c)
+        antes = len(ollama_app.state.recibidos)
+        r = c.post("/api/crear", json={"prompt": f"  {idea.upper()}. ", "estilo": "carnaval", "formato": "cuadrado"},
+                   headers=h)
+        t = esperar_fin(c, r.json()["id"], h)
+        assert t["estado"] == "hecho" and t["prompt"] == f"{idea.upper()}."
+        assert comfy_falso[1].state.recibidos[-1]["6"]["inputs"]["text"] == optimizado  # sin receta encima
+        assert len(ollama_app.state.recibidos) == antes  # sin intérprete
+        img = c.get("/api/panel/imagenes", headers=PROFE).json()[0]
+        assert img["prompt_ia"] == optimizado
+
+        # Cambiada: pasa por el intérprete y lleva la ambientación de carnaval
+        h2 = entrar(c, "Otra")
+        r = c.post("/api/crear", json={"prompt": idea + " con sombrero", "estilo": "carnaval", "formato": "cuadrado"},
+                   headers=h2)
+        esperar_fin(c, r.json()["id"], h2)
+        enviado = comfy_falso[1].state.recibidos[-1]["6"]["inputs"]["text"]
+        assert enviado.startswith("A vivid carnival scene of") and "Vibrant editorial photography" in enviado
+
+
+def test_lista_de_prompts_optimizados(ajustes):
+    assert len(ajustes.ideas) >= 30 and len(ajustes.prompts_ideas) == len(ajustes.ideas)
+    for prompt in ajustes.prompts_ideas.values():
+        palabras = len(prompt.split())
+        assert 30 <= palabras <= 80, prompt  # FLUX.2: frases completas, ni muy cortas ni kilométricas
+        assert not re.search(r"\b(no|not|without|avoid|never)\b", prompt, re.I), prompt  # sin negativos
+        assert "photography" in prompt  # todas dicen su estilo

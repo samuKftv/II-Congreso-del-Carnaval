@@ -174,8 +174,8 @@ def test_hoja_sin_lora_compara_con_el_modelo_original(ajustes, comfy_falso, tmp_
 
 
 def test_hoja_avisa_de_lo_que_falta(ajustes, tmp_path):
-    with pytest.raises(NoSePuede, match="mi_modelo"):
-        Prueba(ajustes, ["x"], [1.0], interprete=False)
+    sola = Prueba(ajustes, ["x"], [1.0], interprete=False)  # sin modelo ni LoRA: el del workflow, para comparar
+    assert [c.titulo for c in sola.cols] == ["Z-Image Turbo"]
     ajustes.lora = "no_existe.safetensors"
     lineas = []
     prueba = Prueba(ajustes, ["x"], [1.0], interprete=False, salida=lineas.append, carpeta=tmp_path / "p")

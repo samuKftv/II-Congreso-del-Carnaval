@@ -199,6 +199,14 @@ la palabra clave se siguen poniendo en `[mi_modelo]`. Luego mide la velocidad co
 pasos, cada imagen tarda más y la gente espera más. Con FLUX.2 Klein la foto propia se edita: la
 foto va de referencia (como en su plantilla oficial de edición) y conserva caras y postura.
 
+## Prompts optimizados para FLUX.2
+
+**🎲 Inspírame** propone 32 ideas de carnaval en español. Cada una lleva detrás un prompt en inglés escrito
+para FLUX.2 Klein siguiendo la guía de Black Forest Labs (sujeto + acción + estilo + contexto, lo importante
+primero, frases completas y sin negativos). Si la persona usa la idea tal cual, se pinta con ese prompt; si la
+cambia, pasa por el intérprete. La lista completa, con los consejos, está en **[`docs/PROMPTS.md`](docs/PROMPTS.md)**
+y se edita en `config/estilos.json` (`"ideas"`).
+
 ## Intérprete de ideas (recomendado)
 
 La gente escribe ideas cortas, raras o en español ("un gato", "conviérteme en reina"). El modelo de imágenes

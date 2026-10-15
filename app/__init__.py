@@ -1,3 +1,3 @@
 """Estudio de imágenes con ComfyUI para CarnaLab 2026."""
 
-VERSION = "3.11"
+VERSION = "3.12"

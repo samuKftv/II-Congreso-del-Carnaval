@@ -54,8 +54,8 @@ def columnas(aj: config.Ajustes, fuerzas: list[float]) -> list[Columna]:
                   for f in sorted(set(fuerzas) | {aj.fuerza_lora})]
     elif aj.modelo:
         lista = [Columna("Modelo original", base), Columna("Tu modelo", workflow.con_mi_modelo(base, aj.modelo))]
-    else:
-        raise NoSePuede("Escribe tu modelo y/o tu LoRA en config/ajustes.toml, en el apartado [mi_modelo].")
+    else:  # sin modelo ni LoRA propios: una columna con el modelo del workflow (para comparar familias)
+        lista = [Columna(arquitectura.nombre(arquitectura.familia_workflow(base)), base)]
     for c in lista:
         c.wf = workflow.ajustar(c.wf, aj.pasos, aj.cfg)
         if aj.ligero:
@@ -93,7 +93,7 @@ def hoja(ideas: list[str], cols: list[Columna], aj: config.Ajustes) -> Image.Ima
     d = ImageDraw.Draw(im)
     titulos, texto = _fuente(30, titulo=True), _fuente(20)
     crema = aj.colores.get("secundario", "#f6e7c8")
-    nombre = (aj.lora or aj.modelo).replace("\\", "/").rsplit("/", 1)[-1]
+    nombre = (aj.lora or aj.modelo or "").replace("\\", "/").rsplit("/", 1)[-1]
     d.text((16, CABECERA // 2), nombre[:28], font=texto, fill=crema, anchor="lm")
     for j, c in enumerate(cols):
         d.text((MARGEN + j * CELDA + CELDA // 2, CABECERA // 2), c.titulo, font=titulos, fill=crema, anchor="mm")
@@ -123,14 +123,18 @@ class Prueba:
 
     async def _prompts(self) -> list[str]:
         estilo = self.aj.estilos.get(self.aj.estilo_sencillo) if self.aj.sencillo else self.aj.estilos.get("libre")
+        # Las ideas de Inspírame llevan su prompt optimizado: van tal cual, como en el estudio
+        listos = [self.aj.prompts_ideas.get(config.normalizar(i)) for i in self.ideas]
         textos = list(self.ideas)
-        if self.usar_interprete:
+        if self.usar_interprete and not all(listos):
             ia = Interprete(self.aj.interprete_url, self.aj.interprete_modelo, Filtro(self.aj.palabras_prohibidas),
                             self.aj.interprete_grafica)
             try:
                 if await ia.comprobar():
                     self.salida("  El intérprete convierte las ideas (como en el evento):")
                     for i, idea in enumerate(self.ideas):
+                        if listos[i]:
+                            continue
                         if descripcion := await ia.interpretar(idea):
                             textos[i] = descripcion
                             self.salida(f"   · {idea}\n     → {descripcion}")
@@ -138,7 +142,9 @@ class Prueba:
                     self.salida(f"  Intérprete: {ia.detalle}. Se pintan las ideas tal cual.")
             finally:
                 await ia.cerrar()
-        textos = [estilo.aplicar(t) if estilo else t for t in textos]
+        textos = [listo or (estilo.aplicar(t) if estilo else t) for t, listo in zip(textos, listos)]
+        if any(listos):
+            self.salida(f"  {sum(map(bool, listos))} de {len(listos)} ideas son de Inspírame: van con su prompt optimizado.")
         return [workflow.con_palabra_clave(t, self.aj.palabra_clave) for t in textos]
 
     async def ejecutar(self) -> Path:
@@ -159,7 +165,7 @@ class Prueba:
                     self.salida(f"      {f}")
             else:
                 validas.append(c)
-        if not any(c is not self.cols[0] for c in validas):  # sin nada que comparar con la primera columna
+        if not validas or (len(self.cols) > 1 and not any(c is not self.cols[0] for c in validas)):
             raise NoSePuede("Copia los archivos que faltan en ComfyUI, vuelve a abrirlo y repite la prueba.")
         self.cols = validas
         # ¿Tu modelo y tu LoRA son de la familia del workflow? Si no, todas saldrían con error

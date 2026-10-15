@@ -119,8 +119,10 @@ class Estudio:
     def encolar(self, token: str, alias: str, prompt: str, estilo: Estilo, formato: Formato | None, *,
                 tema: Estilo | None = None, foto: tuple[str, int, int] | None = None, fuerza: float | None = None,
                 publico: bool = True, reto: int | None = None, miniatura_estilo: str | None = None,
-                revision: str = "aprobada") -> str:
+                revision: str = "aprobada", prompt_listo: str | None = None) -> str:
         """Añade un trabajo a la cola. Con `foto` (id, ancho, alto) se usa la foto como base.
+
+        `prompt_listo` = el prompt optimizado de una idea de Inspírame: se pinta tal cual, sin intérprete ni receta.
 
         `revision` = "pendiente" si el profesor tiene que aprobar la imagen antes de que sea pública."""
         id_ = uuid.uuid4().hex
@@ -130,7 +132,8 @@ class Estudio:
             "id": id_, "token": token, "alias": alias, "prompt": prompt,
             "estilo": estilo.id, "tema": tema.id if tema else None,
             "formato": "foto" if foto else formato.id,
-            "prompt_final": estilo.aplicar(tema.aplicar(prompt) if tema else prompt),
+            "prompt_final": prompt_listo or estilo.aplicar(tema.aplicar(prompt) if tema else prompt),
+            "prompt_ia": prompt_listo,
             "semilla": random.randint(1, 2**50), "estado": "cola", "creado": time.time(),
             "foto": foto[0] if foto else None, "fuerza": fuerza, "publico": int(publico),
             "ancho": ancho, "alto": alto, "reto": reto, "miniatura_estilo": miniatura_estilo,
@@ -139,7 +142,7 @@ class Estudio:
         self.cola.append(id_)
         self.duenos[id_] = token
         self._despertar.set()
-        if self.interprete and not miniatura_estilo:
+        if self.interprete and not miniatura_estilo and not prompt_listo:
             self._hay_ideas.set()
         return id_
 
@@ -272,7 +275,8 @@ class Estudio:
                 formato = self.aj.formatos.get(t["formato"]) or next(iter(self.aj.formatos.values()))
                 ancho, alto = formato.ancho, formato.alto
             prompt_final = t["prompt_final"]
-            if self.interprete and not t["miniatura_estilo"]:
+            optimizado = bool(t["prompt_ia"]) and t["prompt_ia"] == t["prompt_final"]  # idea de Inspírame
+            if self.interprete and not t["miniatura_estilo"] and not optimizado:
                 if idea := await self._idea_interpretada(id_):
                     prompt_final = self._receta(t, idea)
                     self.db.actualizar(id_, prompt_final=prompt_final)

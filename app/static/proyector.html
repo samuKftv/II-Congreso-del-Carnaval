@@ -16,9 +16,8 @@
     .lateral { display: flex; flex-direction: column; gap: 1.6vh; min-height: 0; }
     .logo-proyector { max-height: 9vh; max-width: 100%; object-fit: contain; align-self: flex-start; }
     .lateral .titulo-evento { font-size: clamp(1.8rem, 2.8vw, 3.2rem); }
-    /* El nombre del congreso y la fecha, grandes y en negro, sin nada debajo */
-    .lateral .congreso { margin: 1.2vh 0 0; color: #000; font-weight: 900; font-size: clamp(1.1rem, 1.6vw, 1.9rem); line-height: 1.2; }
-    .lateral .lema { margin: 0.6vh 0 0; color: #000; font-weight: 900; font-size: clamp(0.9rem, 1.15vw, 1.35rem); line-height: 1.3; }
+    .lateral .congreso { margin: 0.6vh 0 0; font-weight: 800; font-size: clamp(0.85rem, 1.1vw, 1.3rem); line-height: 1.25; }
+    .lateral .lema { margin: 0.4vh 0 0; color: var(--magenta); font-weight: 900; font-size: clamp(0.8rem, 1vw, 1.15rem); }
     .vacia .cartel-vacio { max-height: 64vh; max-width: 90%; margin: 0 auto; border-radius: 18px; box-shadow: var(--sombra); animation: balanceo 7s ease-in-out infinite; }
     @keyframes balanceo { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
     .acceso { text-align: center; padding: 1.6vh 1.2vw; }

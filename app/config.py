@@ -84,7 +84,7 @@ class Ajustes:
     palabras_prohibidas: list[str]
     estilos: dict[str, Estilo]
     temas: dict[str, Estilo]
-    ideas: list[str]
+    ideas: list[str]  # las de Inspírame, en español
     detalles: list[dict]
     datos: Path = field(default_factory=lambda: RAIZ / "datos")
     revisar_antes: bool = True  # el profesor aprueba cada imagen antes de que sea pública
@@ -99,6 +99,7 @@ class Ajustes:
     interprete_url: str = "http://127.0.0.1:11434"
     interprete_modelo: str = "qwen2.5:3b"
     interprete_grafica: bool = False  # true = Ollama usa la gráfica (más rápido, pero le quita memoria a ComfyUI)
+    prompts_ideas: dict[str, str] = field(default_factory=dict)  # idea normalizada -> prompt optimizado
     interprete_esperar: bool = True  # la gráfica espera a que el intérprete mejore cada idea (máx. 25 s)
     base: str = ""  # familia elegida en [mi_modelo] (vacío = el workflow de [comfyui])
     pasos: int = 0  # 0 = los del workflow
@@ -107,6 +108,11 @@ class Ajustes:
     lora: str = ""  # tu LoRA (la app lo mete en el workflow)
     fuerza_lora: float = 1.0
     palabra_clave: str = ""  # palabra de activación del LoRA, delante de cada prompt
+
+
+def normalizar(texto: str) -> str:
+    """Para reconocer una idea de Inspírame aunque cambien mayúsculas, espacios o el punto final."""
+    return " ".join(texto.lower().split()).rstrip(" .!¡")
 
 
 def _ruta(valor: str) -> Path:
@@ -240,7 +246,9 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         palabras_prohibidas=list(moderacion.get("palabras_prohibidas", [])),
         estilos=estilos,
         temas=_estilos(e.get("temas", [])),
-        ideas=list(e.get("ideas", [])),
+        ideas=[i["idea"] if isinstance(i, dict) else str(i) for i in e.get("ideas", [])],
+        prompts_ideas={normalizar(i["idea"]): i["prompt"].strip() for i in e.get("ideas", [])
+                       if isinstance(i, dict) and i.get("prompt", "").strip()},
         detalles=list(e.get("detalles", [])),
         datos=datos,
         revisar_antes=bool(moderacion.get("revisar_antes", True)),
