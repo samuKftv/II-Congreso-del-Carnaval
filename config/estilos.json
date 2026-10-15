@@ -24,6 +24,17 @@
       "ejemplo": "Una murga de pulpos cantando en el escenario del carnaval"
     },
     {
+      "id": "carnaval-dibujo",
+      "nombre": "Carnaval de Tenerife (dibujo)",
+      "emoji": "🖌️",
+      "colores": [
+        "#003060",
+        "#f6c445"
+      ],
+      "receta": "{prompt}. Illustration of the Carnival of Santa Cruz de Tenerife: costumes with sequins, feathers and rhinestones, confetti and streamers in the air, festive lights.",
+      "ejemplo": "Una murga de pulpos cantando en el escenario del carnaval"
+    },
+    {
       "id": "foto",
       "nombre": "Fotografía",
       "emoji": "📷",
@@ -227,131 +238,131 @@
   "ideas": [
     {
       "idea": "La Reina del Carnaval con un traje gigante inspirado en el Teide",
-      "prompt": "The Carnival Queen of Santa Cruz de Tenerife posing proudly in a monumental costume inspired by the Teide volcano: a gigantic backpiece shaped like the mountain, red and orange sequins flowing like lava, black rhinestones like volcanic rock and white feathers like snow on the summit. Spectacular gala photography on a huge stage, dramatic spotlights, sparkling reflections, wide shot, rich saturated colors."
+      "prompt": "The Carnival Queen of Santa Cruz de Tenerife posing proudly in a monumental costume inspired by the Teide volcano: a gigantic backpiece shaped like the mountain, red and orange sequins flowing like lava, black rhinestones like volcanic rock and white feathers like snow on the summit. On a huge gala stage with dramatic spotlights and sparkling reflections, wide view, spectacular and majestic mood."
     },
     {
       "idea": "Una murga de pulpos cantando en el escenario del carnaval",
-      "prompt": "A murga of six cheerful purple octopuses in identical red and yellow satin costumes with ruffled collars and painted clown faces, singing and blowing kazoos with their tentacles on the open-air carnival stage of Santa Cruz de Tenerife. Vibrant event photography, colorful spotlights, confetti falling, a crowd in costumes cheering in the background, sharp detail."
+      "prompt": "A murga of six cheerful purple octopuses in identical red and yellow satin costumes with ruffled collars and painted clown faces, singing and blowing kazoos with their tentacles on the open-air carnival stage of Santa Cruz de Tenerife. Colorful spotlights, confetti falling, a crowd in costumes cheering in the background, joyful mood."
     },
     {
       "idea": "Una murga de Santa Cruz cantando en la calle con trajes de colores",
-      "prompt": "A murga of twenty singers in identical patchwork costumes of yellow, green and red satin with huge ruffled collars and painted faces, singing funny songs with kazoos and drums in a crowded street of Santa Cruz de Tenerife. Lively street photography, warm evening light, confetti and serpentine streamers in the air, joyful faces, vivid colors."
+      "prompt": "A murga of twenty singers in identical patchwork costumes of yellow, green and red satin with huge ruffled collars and painted faces, singing funny songs with kazoos and drums in a crowded street of Santa Cruz de Tenerife. Warm evening light, confetti and serpentine streamers in the air, joyful faces, lively mood."
     },
     {
       "idea": "Una comparsa bailando samba en el Coso con plumas de colores",
-      "prompt": "A comparsa of smiling dancers in sequined costumes and enormous headdresses of turquoise, gold and fuchsia feathers dancing samba down the main avenue during the Coso parade of Santa Cruz de Tenerife, drummers behind them. Sunny daytime street photography, motion and energy, confetti in the air, cheering crowd on both sides, vivid colors."
+      "prompt": "A comparsa of smiling dancers in sequined costumes and enormous headdresses of turquoise, gold and fuchsia feathers dancing samba down the main avenue during the Coso parade of Santa Cruz de Tenerife, drummers behind them. Bright sunny day, motion and energy, confetti in the air, cheering crowd on both sides."
     },
     {
       "idea": "Una diseñadora cosiendo un traje de plumas enorme en su taller",
-      "prompt": "A carnival costume designer stitching rhinestones onto an enormous costume of white and golden feathers on a mannequin in her workshop, surrounded by rolls of shiny fabric, sketches pinned to the wall and boxes of sequins. Warm documentary photography, soft window light, sparkles catching the light, shallow depth of field."
+      "prompt": "A carnival costume designer stitching rhinestones onto an enormous costume of white and golden feathers on a mannequin in her workshop, surrounded by rolls of shiny fabric, sketches pinned to the wall and boxes of sequins. Soft warm window light, sparkles catching the light, calm and focused mood."
     },
     {
       "idea": "Un maquillador transformando a una murguera en un pavo real",
-      "prompt": "A makeup artist painting the face of a smiling murga singer, turning her into a peacock with blue, green and gold face paint, glitter and tiny rhinestones around her eyes, backstage at the carnival of Santa Cruz de Tenerife. Close-up beauty photography, bright mirror lights, vivid colors, fine detail on the brushes and sparkles."
+      "prompt": "A makeup artist painting the face of a smiling murga singer, turning her into a peacock with blue, green and gold face paint, glitter and tiny rhinestones around her eyes, backstage at the carnival of Santa Cruz de Tenerife. Close-up view, bright mirror lights, fine detail on the brushes and sparkles."
     },
     {
       "idea": "Unos artesanos construyendo una carroza gigante con forma de pez",
-      "prompt": "Artisans building a gigantic parade float shaped like a smiling tropical fish, painting its scales in turquoise and coral and gluing hundreds of small mirrors onto it inside a huge warehouse, scaffolding and paint buckets around them. Wide documentary photography, warm work lights, dust in the air, strong sense of scale."
+      "prompt": "Artisans building a gigantic parade float shaped like a smiling tropical fish, painting its scales in turquoise and coral and gluing hundreds of small mirrors onto it inside a huge warehouse, scaffolding and paint buckets around them. Wide view, warm work lights, dust in the air, strong sense of scale."
     },
     {
       "idea": "El Entierro de la Sardina con viudas llorando muy exageradas",
-      "prompt": "The Burial of the Sardine at the Carnival of Santa Cruz de Tenerife: a giant papier-mache sardine carried through the street at night, followed by a crowd of men dressed as mourning widows in black lace veils, crying dramatically and laughing at the same time. Night street photography, torches and warm streetlights, humorous festive mood."
+      "prompt": "The Burial of the Sardine at the Carnival of Santa Cruz de Tenerife: a giant papier-mache sardine carried through the street at night, followed by a crowd of men dressed as mourning widows in black lace veils, crying dramatically and laughing at the same time. Torches and warm streetlights, humorous festive mood."
     },
     {
       "idea": "Un perro disfrazado de mascarita en el carnaval de día",
-      "prompt": "A happy golden retriever wearing a carnival costume with a sequined cape, a tiny top hat and a feathered mask, trotting among people in costumes at the daytime street carnival of Santa Cruz de Tenerife. Bright sunny street photography, confetti on the ground, streamers hanging between the buildings, cheerful mood, sharp focus on the dog."
+      "prompt": "A happy golden retriever wearing a carnival costume with a sequined cape, a tiny top hat and a feathered mask, trotting among people in costumes at the daytime street carnival of Santa Cruz de Tenerife. Bright sunny day, confetti on the ground, streamers hanging between the buildings, cheerful mood, the dog in the center."
     },
     {
       "idea": "Una rondalla tocando timples y guitarras bajo la luna",
-      "prompt": "A rondalla of singers in elegant matching costumes of black velvet with silver embroidery playing timples, guitars and lutes under a full moon on a plaza of Santa Cruz de Tenerife decorated with paper lanterns. Atmospheric night photography, warm lantern light against a deep blue sky, romantic and festive mood."
+      "prompt": "A rondalla of singers in elegant matching costumes of black velvet with silver embroidery playing timples, guitars and lutes under a full moon on a plaza of Santa Cruz de Tenerife decorated with paper lanterns. Warm lantern light against a deep blue night sky, romantic and festive mood."
     },
     {
       "idea": "Una guagua convertida en carroza de carnaval",
-      "prompt": "A classic yellow and blue Canarian bus transformed into a carnival float, covered in giant paper flowers, mirrors and feathers, with a salsa band playing on its roof and dancers in sequined costumes waving from the windows as it drives through Santa Cruz de Tenerife. Sunny street photography, cheering crowds, vivid colors."
+      "prompt": "A classic yellow and blue Canarian bus transformed into a carnival float, covered in giant paper flowers, mirrors and feathers, with a salsa band playing on its roof and dancers in sequined costumes waving from the windows as it drives through Santa Cruz de Tenerife. Sunny day, cheering crowds, joyful mood."
     },
     {
       "idea": "El drago milenario disfrazado para el carnaval",
-      "prompt": "The ancient dragon tree of Icod de los Vinos dressed up for carnival, its branches decorated with colorful streamers, giant paper flowers and lanterns and a huge sequined mask on its trunk, people in costumes dancing around it. Magical evening photography, warm string lights, sunset sky, festive and whimsical mood."
+      "prompt": "The ancient dragon tree of Icod de los Vinos dressed up for carnival, its branches decorated with colorful streamers, giant paper flowers and lanterns and a huge sequined mask on its trunk, people in costumes dancing around it. Warm string lights, sunset sky, festive and whimsical mood."
     },
     {
       "idea": "Una niña disfrazada de plátano canario bailando en el coso infantil",
-      "prompt": "A smiling little girl in a funny Canarian banana costume with a bright yellow peel and tiny green leaves on her head, dancing with joy in the children's carnival parade of Santa Cruz de Tenerife, confetti in the air. Bright daytime photography, other children in colorful costumes around her, happy and playful mood."
+      "prompt": "A smiling little girl in a funny Canarian banana costume with a bright yellow peel and tiny green leaves on her head, dancing with joy in the children's carnival parade of Santa Cruz de Tenerife, confetti in the air. Bright daylight, other children in colorful costumes around her, happy and playful mood."
     },
     {
       "idea": "Un traje de fantasía hecho de espejos y luces de neón",
-      "prompt": "A performer wearing a breathtaking fantasy costume made of thousands of tiny mirrors and glowing neon tubes in pink and electric blue, with a towering headdress, posing on a dark carnival stage. Dramatic stage photography, beams of light reflecting in every direction, haze, high contrast, mesmerizing atmosphere."
+      "prompt": "A performer wearing a breathtaking fantasy costume made of thousands of tiny mirrors and glowing neon tubes in pink and electric blue, with a towering headdress, posing on a dark carnival stage. Beams of light reflecting in every direction, haze, high contrast, mesmerizing atmosphere."
     },
     {
       "idea": "Un murguero tocando el bombo con la cara pintada",
-      "prompt": "Close-up portrait of a murga drummer with his face painted half yellow and half red, glitter on his cheeks and a tall hat with ribbons, playing a big bass drum with passion on the carnival stage of Santa Cruz de Tenerife. Dramatic portrait photography, colored spotlight from the side, sparkles, shallow depth of field."
+      "prompt": "Close-up portrait of a murga drummer with his face painted half yellow and half red, glitter on his cheeks and a tall hat with ribbons, playing a big bass drum with passion on the carnival stage of Santa Cruz de Tenerife. Colored spotlight from the side, sparkles flying, intense and passionate mood."
     },
     {
       "idea": "Una costurera bordando lentejuelas a mano",
-      "prompt": "Close-up of a seamstress's hands embroidering tiny sequins one by one onto a shimmering turquoise carnival costume, the needle and thread catching the light, spools of colored thread and boxes of beads around her. Macro photography, warm lamp light, glittering bokeh, extremely fine detail."
+      "prompt": "Close-up of a seamstress's hands embroidering tiny sequins one by one onto a shimmering turquoise carnival costume, the needle and thread catching the light, spools of colored thread and boxes of beads around her. Warm lamp light, glittering sparkles, extremely fine detail."
     },
     {
       "idea": "Un iluminador preparando las luces del escenario de la gala de la Reina",
-      "prompt": "A lighting technician on a tall rig adjusting colorful spotlights above the huge stage of the Carnival Queen gala in Santa Cruz de Tenerife, beams of magenta and cyan light cutting through the haze, the glittering empty stage below. Cinematic backstage photography, dramatic atmosphere, strong sense of scale."
+      "prompt": "A lighting technician on a tall rig adjusting colorful spotlights above the huge stage of the Carnival Queen gala in Santa Cruz de Tenerife, beams of magenta and cyan light cutting through the haze, the glittering empty stage below. Dramatic atmosphere, strong sense of scale."
     },
     {
       "idea": "Una abuela y su nieta con el mismo disfraz",
-      "prompt": "A grandmother and her granddaughter wearing identical carnival costumes of pink feathers and golden sequins, laughing and dancing together in the street during the daytime carnival of Santa Cruz de Tenerife. Warm candid photography, sunny light, confetti and streamers around them, joyful and tender mood."
+      "prompt": "A grandmother and her granddaughter wearing identical carnival costumes of pink feathers and golden sequins, laughing and dancing together in the street during the daytime carnival of Santa Cruz de Tenerife. Sunny light, confetti and streamers around them, joyful and tender mood."
     },
     {
       "idea": "Un gato con antifaz y capa de lentejuelas mirando los fuegos artificiales",
-      "prompt": "A fluffy black cat wearing a tiny golden eye mask and a sequined purple cape, sitting on a rooftop above the carnival of Santa Cruz de Tenerife at night, fireworks bursting in the sky and the colorful lit streets below. Cinematic night photography, glowing fireworks, magical mood, sharp detail on the cat."
+      "prompt": "A fluffy black cat wearing a tiny golden eye mask and a sequined purple cape, sitting on a rooftop above the carnival of Santa Cruz de Tenerife at night, fireworks bursting in the sky and the colorful lit streets below. Glowing fireworks, magical night mood, the cat in the foreground."
     },
     {
       "idea": "Fuegos artificiales sobre el carnaval de Santa Cruz",
-      "prompt": "Spectacular fireworks exploding in gold, red and turquoise over the port of Santa Cruz de Tenerife during carnival, thousands of people in costumes dancing on the avenue below, the illuminated city along the sea. Wide night photography, long exposure light trails, reflections on the water, festive atmosphere."
+      "prompt": "Spectacular fireworks exploding in gold, red and turquoise over the port of Santa Cruz de Tenerife during carnival, thousands of people in costumes dancing on the avenue below, the illuminated city along the sea. Wide night view, glowing light trails, reflections on the water, festive atmosphere."
     },
     {
       "idea": "Un pulpo gigante disfrazado de pirata en la cabalgata",
-      "prompt": "A giant cheerful octopus dressed as a pirate captain with a tricorn hat covered in gold sequins and a feathered cape, waving its tentacles from a ship-shaped float in the carnival parade of Santa Cruz de Tenerife, confetti and streamers flying. Playful vibrant photography, sunny day, cheering crowd, saturated colors."
+      "prompt": "A giant cheerful octopus dressed as a pirate captain with a tricorn hat covered in gold sequins and a feathered cape, waving its tentacles from a ship-shaped float in the carnival parade of Santa Cruz de Tenerife, confetti and streamers flying. Sunny day, cheering crowd, playful mood."
     },
     {
       "idea": "Un zapatero haciendo unas plataformas gigantes con purpurina",
-      "prompt": "A shoemaker in his workshop crafting enormous glittering platform boots for a carnival costume, covered in red rhinestones and silver glitter, tools and pieces of leather on the wooden workbench. Warm documentary photography, golden lamp light, sparkling highlights, detailed textures."
+      "prompt": "A shoemaker in his workshop crafting enormous glittering platform boots for a carnival costume, covered in red rhinestones and silver glitter, tools and pieces of leather on the wooden workbench. Golden lamp light, sparkling highlights, detailed textures."
     },
     {
       "idea": "Una peluquera creando un peinado imposible para el carnaval",
-      "prompt": "A hairdresser backstage at the carnival of Santa Cruz de Tenerife creating an impossible sculptural hairstyle in electric pink and turquoise, decorated with feathers, pearls and tiny mirrors, for a smiling woman in a sequined costume. Beauty photography, bright vanity mirror lights, vivid colors, fine detail."
+      "prompt": "A hairdresser backstage at the carnival of Santa Cruz de Tenerife creating an impossible sculptural hairstyle in electric pink and turquoise, decorated with feathers, pearls and tiny mirrors, for a smiling woman in a sequined costume. Bright vanity mirror lights, fine detail, glamorous mood."
     },
     {
       "idea": "El carnaval de Santa Cruz visto desde el cielo",
-      "prompt": "Aerial view of the Carnival of Santa Cruz de Tenerife at night: a river of people in colorful costumes filling the avenues, illuminated floats and stages, clouds of confetti, the port and the dark ocean beside the city. Drone photography, glowing city lights, vibrant festive colors, strong sense of scale."
+      "prompt": "Aerial view of the Carnival of Santa Cruz de Tenerife at night: a river of people in colorful costumes filling the avenues, illuminated floats and stages, clouds of confetti, the port and the dark ocean beside the city. Seen from high above, glowing city lights, festive colors, strong sense of scale."
     },
     {
       "idea": "Un robot disfrazado de mascarita bailando salsa",
-      "prompt": "A friendly retro robot wearing a carnival costume with a feathered headdress, a sequined bow tie and a colorful mask, dancing salsa with people in costumes in a street of Santa Cruz de Tenerife at night. Playful vibrant photography, neon signs and string lights, confetti, joyful mood."
+      "prompt": "A friendly retro robot wearing a carnival costume with a feathered headdress, a sequined bow tie and a colorful mask, dancing salsa with people in costumes in a street of Santa Cruz de Tenerife at night. Neon signs and string lights, confetti, joyful mood."
     },
     {
       "idea": "Una pareja de mayores ganando el concurso de disfraces",
-      "prompt": "An elderly couple in matching handmade costumes of the sun and the moon, covered in golden and silver sequins, holding a trophy and laughing on the stage of a carnival costume contest in Santa Cruz de Tenerife. Warm event photography, spotlights, confetti falling, emotional and festive mood."
+      "prompt": "An elderly couple in matching handmade costumes of the sun and the moon, covered in golden and silver sequins, holding a trophy and laughing on the stage of a carnival costume contest in Santa Cruz de Tenerife. Spotlights, confetti falling, emotional and festive mood."
     },
     {
       "idea": "Una banda tocando trompetas entre una lluvia de confeti",
-      "prompt": "A carnival brass band in shiny turquoise uniforms with golden epaulettes playing trumpets and trombones in a street of Santa Cruz de Tenerife, a storm of colorful confetti falling around them. Energetic street photography, bright sunlight, gleaming brass, vivid colors."
+      "prompt": "A carnival brass band in shiny turquoise uniforms with golden epaulettes playing trumpets and trombones in a street of Santa Cruz de Tenerife, a storm of colorful confetti falling around them. Bright sunlight, gleaming brass, energetic mood."
     },
     {
       "idea": "Un traje de carnaval hecho con materiales reciclados",
-      "prompt": "A proud designer presenting a spectacular carnival costume made entirely of recycled materials: a giant backpiece of colorful plastic bottle caps, old CDs that shine like mirrors and feathers cut from plastic bags, on a carnival stage. Editorial photography, bright spotlights, sparkling reflections, inspiring mood."
+      "prompt": "A proud designer presenting a spectacular carnival costume made entirely of recycled materials: a giant backpiece of colorful plastic bottle caps, old CDs that shine like mirrors and feathers cut from plastic bags, on a carnival stage. Bright spotlights, sparkling reflections, inspiring mood."
     },
     {
       "idea": "Una máscara de carnaval dorada con plumas de colores",
-      "prompt": "A golden carnival mask decorated with filigree, rhinestones and colorful peacock feathers resting on a red velvet cushion, confetti scattered around it. Luxury still life photography, dark background, soft spotlight, sparkling highlights, sharp detail."
+      "prompt": "A golden carnival mask decorated with filigree, rhinestones and colorful peacock feathers resting on a red velvet cushion, confetti scattered around it. Still life on a dark background, soft spotlight, sparkling highlights, fine detail."
     },
     {
       "idea": "Un arlequín veneciano en una góndola llena de confeti",
-      "prompt": "A Venetian harlequin in a diamond-patterned costume of red, gold and black and a white porcelain mask, standing in a gondola full of confetti as it glides along a canal in Venice during carnival. Elegant photography at golden hour, soft mist over the water, ornate palaces in the background, warm rich colors."
+      "prompt": "A Venetian harlequin in a diamond-patterned costume of red, gold and black and a white porcelain mask, standing in a gondola full of confetti as it glides along a canal in Venice during carnival. Golden hour, soft mist over the water, ornate palaces in the background, elegant mood."
     },
     {
       "idea": "Una bailarina de Río con un tocado de plumas del tamaño de un árbol",
-      "prompt": "A Rio de Janeiro samba dancer wearing a golden feather headdress as big as a tree and a costume covered in crystals, dancing on top of a colossal float in the Sambadrome at night, thousands of spectators behind her. Spectacular event photography, blazing stage lights, motion and glitter, intense colors."
+      "prompt": "A Rio de Janeiro samba dancer wearing a golden feather headdress as big as a tree and a costume covered in crystals, dancing on top of a colossal float in the Sambadrome at night, thousands of spectators behind her. Blazing stage lights, motion and glitter, spectacular mood."
     },
     {
       "idea": "Un astronauta celebrando el carnaval en la Luna",
-      "prompt": "An astronaut in a white spacesuit decorated with sequins, feathers and colorful streamers dancing on the surface of the Moon, a small carnival float and confetti floating in low gravity, the Earth shining in the black sky. Cinematic science fiction photography, sharp sunlight, glittering details, playful mood."
+      "prompt": "An astronaut in a white spacesuit decorated with sequins, feathers and colorful streamers dancing on the surface of the Moon, a small carnival float and confetti floating in low gravity, the Earth shining in the black sky. Sharp sunlight, glittering details, playful mood."
     }
   ],
   "detalles": [

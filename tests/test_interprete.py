@@ -164,7 +164,8 @@ def test_ideas_de_inspirame_con_prompt_optimizado(ajustes, comfy_falso, ollama):
                    headers=h)
         t = esperar_fin(c, r.json()["id"], h)
         assert t["estado"] == "hecho" and t["prompt"] == f"{idea.upper()}."
-        assert comfy_falso[1].state.recibidos[-1]["6"]["inputs"]["text"] == optimizado  # sin receta encima
+        enviado = comfy_falso[1].state.recibidos[-1]["6"]["inputs"]["text"]
+        assert enviado == ajustes.estilos["carnaval"].aplicar(optimizado)  # el estilo (foto) lo pone la receta
         assert len(ollama_app.state.recibidos) == antes  # sin intérprete
         img = c.get("/api/panel/imagenes", headers=PROFE).json()[0]
         assert img["prompt_ia"] == optimizado
@@ -184,4 +185,8 @@ def test_lista_de_prompts_optimizados(ajustes):
         palabras = len(prompt.split())
         assert 30 <= palabras <= 80, prompt  # FLUX.2: frases completas, ni muy cortas ni kilométricas
         assert not re.search(r"\b(no|not|without|avoid|never)\b", prompt, re.I), prompt  # sin negativos
-        assert "photography" in prompt  # todas dicen su estilo
+        assert not re.search(r"photo|cinematic|bokeh|depth of field|macro|drone", prompt, re.I), prompt  # sin estilo
+    # El estilo lo pone la receta: foto sin modelo propio, dibujo con tu modelo o tu LoRA
+    assert "photography" in ajustes.estilos["carnaval"].receta
+    dibujo = ajustes.estilos["carnaval-dibujo"].receta
+    assert "Illustration" in dibujo and "photo" not in dibujo.lower()

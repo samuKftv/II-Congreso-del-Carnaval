@@ -202,10 +202,14 @@ foto va de referencia (como en su plantilla oficial de edición) y conserva cara
 ## Prompts optimizados para FLUX.2
 
 **🎲 Inspírame** propone 32 ideas de carnaval en español. Cada una lleva detrás un prompt en inglés escrito
-para FLUX.2 Klein siguiendo la guía de Black Forest Labs (sujeto + acción + estilo + contexto, lo importante
-primero, frases completas y sin negativos). Si la persona usa la idea tal cual, se pinta con ese prompt; si la
-cambia, pasa por el intérprete. La lista completa, con los consejos, está en **[`docs/PROMPTS.md`](docs/PROMPTS.md)**
-y se edita en `config/estilos.json` (`"ideas"`).
+para FLUX.2 Klein siguiendo la guía de Black Forest Labs (lo importante primero, frases completas y sin
+negativos). Si la persona usa la idea tal cual, se pinta con ese prompt; si la cambia, pasa por el intérprete.
+
+Los prompts no dicen el estilo: lo pone la ambientación de `[alumnado] estilo`. Con `estilo = "auto"`, si hay
+modelo o LoRA propios en `[mi_modelo]` (de estilo de dibujo) se usa `carnaval-dibujo` ("Illustration…"); si no,
+`carnaval` ("Vibrant editorial photography…"). Así nunca se le piden fotos a un LoRA de dibujo.
+La lista completa, con los consejos, está en **[`docs/PROMPTS.md`](docs/PROMPTS.md)** y se edita en
+`config/estilos.json` (`"ideas"`).
 
 ## Intérprete de ideas (recomendado)
 
@@ -232,9 +236,9 @@ mascarita, guagua) para que no las traduzca mal.
   antes de que él acabe y muchas ideas se quedan sin mejorar.
 - **`grafica = true`**: Ollama usa también la gráfica y tarda menos de un segundo por idea, pero le quita
   unos 2,5 GB a ComfyUI. Pruébalo con el simulacro antes de usarlo en el evento.
-- Si Ollama está cerrado, la idea se pinta tal cual, con la **ambientación de carnaval** del estilo
-  `carnaval` (`[alumnado] estilo`), que va siempre detrás: trajes con lentejuelas y plumas, máscaras,
-  confeti, serpentinas y luces de fiesta. Si tu LoRA ya pone el carnaval, usa `estilo = "libre"`.
+- Si Ollama está cerrado, la idea se pinta tal cual, con la **ambientación de carnaval** de
+  `[alumnado] estilo`, que va siempre detrás: trajes con lentejuelas y plumas, confeti, serpentinas y luces
+  de fiesta, en foto (`carnaval`) o en dibujo (`carnaval-dibujo`, el que se usa con tu modelo o tu LoRA).
 - El alumnado sigue viendo su idea original. En el panel, debajo de cada imagen, ves en azul
   **🧠 lo que entendió**.
 - Para retocar cómo escribe, edita `SISTEMA` y `EJEMPLOS` en `app/interprete.py`.

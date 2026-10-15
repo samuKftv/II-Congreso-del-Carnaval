@@ -101,6 +101,7 @@ def test_workflow_de_klein(tmp_path, monkeypatch, comfy_falso):
 def test_base_auto_por_el_nombre_y_klein_base(tmp_path, monkeypatch, comfy_falso):
     aj = con_mi_modelo(tmp_path, monkeypatch, comfy_falso[0], modelo="mi_klein_carnaval.safetensors")
     assert aj.base == "flux2-klein-4b"
+    assert aj.estilo_sencillo == "carnaval-dibujo"  # tu modelo es de dibujo: nada de pedirle fotos
     (tmp_path / "b").mkdir()
     (tmp_path / "c").mkdir()
     aj = con_mi_modelo(tmp_path / "b", monkeypatch, comfy_falso[0], base="flux2-klein-4b-base")
@@ -219,3 +220,17 @@ def test_klein_edita_tu_foto(tmp_path, monkeypatch, comfy_falso):
     assert enviado["62"]["inputs"]["width"] == f["ancho"]
     texto = enviado["74"]["inputs"]["text"]
     assert texto.startswith(workflow.FOTO_DE_REFERENCIA) and "Conviérteme en reina del carnaval" in texto
+
+
+def test_la_primera_imagen_espera_a_que_se_corrijan_los_nombres(tmp_path, monkeypatch, comfy_falso):
+    """Una imagen pedida nada más abrir el estudio no sale con el nombre del modelo sin corregir."""
+    url, comfy_app = comfy_falso
+    aj = con_mi_modelo(tmp_path, monkeypatch, url, base="flux2-klein-4b", modelo="mi_klein_carnaval",
+                       lora="lora_carnaval")  # sin extensión y el LoRA en una subcarpeta
+    assert aj.modelo == "mi_klein_carnaval.safetensors"
+    with TestClient(crear_app(aj)) as c:
+        h = entrar(c)
+        r = c.post("/api/crear", json={"prompt": "Una murga", "estilo": "carnaval-dibujo", "formato": "cuadrado"},
+                   headers=h)
+        assert esperar_fin(c, r.json()["id"], h, limite=20)["estado"] == "hecho"
+    assert comfy_app.state.recibidos[-1][workflow.LORA]["inputs"]["lora_name"] == "carnaval\\lora_carnaval.safetensors"

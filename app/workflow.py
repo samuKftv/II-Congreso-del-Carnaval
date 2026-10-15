@@ -279,9 +279,10 @@ def parecido(nombre: str, opciones: list[str]) -> str | None:
         if _normal(o) == buscado:
             return o
     base = buscado.rsplit("/", 1)[-1]
+    raiz = base.rsplit(".", 1)[0] if "." in base else base  # sin extensión: «mi_lora.safetensors» ~ «mi_lora.ckpt»
     candidatos = [o for o in opciones
                   if _normal(o).rsplit("/", 1)[-1] in (base, f"{base}.safetensors")
-                  or _normal(o).rsplit("/", 1)[-1].rsplit(".", 1)[0] == base]
+                  or _normal(o).rsplit("/", 1)[-1].rsplit(".", 1)[0] in (base, raiz)]
     return candidatos[0] if len(candidatos) == 1 else None
 
 

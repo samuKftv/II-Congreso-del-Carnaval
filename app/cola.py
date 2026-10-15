@@ -60,6 +60,7 @@ class Estudio:
         self.faltan: list[str] = []  # nodos o archivos del workflow que ComfyUI no tiene, o familias que no encajan
         self.familias: dict = {"workflow": arquitectura.familia_workflow(wf)}
         self._comprobado = 0.0
+        self._revisado = asyncio.Event()  # la primera comprobación de archivos ya está hecha (nombres corregidos)
         for carpeta in ("imagenes", "vistas", "miniaturas", "teselas", "estilos", "fotos"):
             (aj.datos / carpeta).mkdir(parents=True, exist_ok=True)
 
@@ -122,7 +123,7 @@ class Estudio:
                 revision: str = "aprobada", prompt_listo: str | None = None) -> str:
         """Añade un trabajo a la cola. Con `foto` (id, ancho, alto) se usa la foto como base.
 
-        `prompt_listo` = el prompt optimizado de una idea de Inspírame: se pinta tal cual, sin intérprete ni receta.
+        `prompt_listo` = el prompt optimizado de una idea de Inspírame: no pasa por el intérprete.
 
         `revision` = "pendiente" si el profesor tiene que aprobar la imagen antes de que sea pública."""
         id_ = uuid.uuid4().hex
@@ -132,7 +133,8 @@ class Estudio:
             "id": id_, "token": token, "alias": alias, "prompt": prompt,
             "estilo": estilo.id, "tema": tema.id if tema else None,
             "formato": "foto" if foto else formato.id,
-            "prompt_final": prompt_listo or estilo.aplicar(tema.aplicar(prompt) if tema else prompt),
+            # Un prompt optimizado cuenta como una idea ya interpretada: lleva la receta del estilo (foto o dibujo)
+            "prompt_final": estilo.aplicar(tema.aplicar(prompt_listo or prompt) if tema else prompt_listo or prompt),
             "prompt_ia": prompt_listo,
             "semilla": random.randint(1, 2**50), "estado": "cola", "creado": time.time(),
             "foto": foto[0] if foto else None, "fuerza": fuerza, "publico": int(publico),
@@ -176,6 +178,7 @@ class Estudio:
                     familia, self.familias = await arquitectura.revisar(
                         self.comfy, self.workflow, bool(self.aj.modelo), bool(self.aj.lora))
                     self.faltan, self._comprobado = faltan + familia, time.time()
+                    self._revisado.set()
                     for f in faltan:
                         log.warning("%s", f)
             if self.interprete:
@@ -263,6 +266,11 @@ class Estudio:
                 self.comfy_info = None
                 await asyncio.sleep(3)
                 continue
+            if not self._revisado.is_set():  # antes de la primera imagen, los nombres de archivo ya corregidos
+                try:
+                    await asyncio.wait_for(self._revisado.wait(), 20)
+                except TimeoutError:
+                    self._revisado.set()  # no se ha podido comprobar: se intenta igual
             await self._generar(t)
 
     async def _generar(self, t: dict):
@@ -275,8 +283,7 @@ class Estudio:
                 formato = self.aj.formatos.get(t["formato"]) or next(iter(self.aj.formatos.values()))
                 ancho, alto = formato.ancho, formato.alto
             prompt_final = t["prompt_final"]
-            optimizado = bool(t["prompt_ia"]) and t["prompt_ia"] == t["prompt_final"]  # idea de Inspírame
-            if self.interprete and not t["miniatura_estilo"] and not optimizado:
+            if self.interprete and not t["miniatura_estilo"]:
                 if idea := await self._idea_interpretada(id_):
                     prompt_final = self._receta(t, idea)
                     self.db.actualizar(id_, prompt_final=prompt_final)

@@ -55,10 +55,13 @@ activado = false
 # (Crear y Votar). No se elige técnica, carnaval ni formato: se usan los de aquí abajo.
 sencillo = true
 # Técnica y formato de todas las imágenes en modo sencillo (ids de estilos.json y de [formatos]).
-# "carnaval" añade a cada idea la ambientación del Carnaval de Santa Cruz de Tenerife (trajes con
-# lentejuelas y plumas, confeti, serpentinas, luces de fiesta), también cuando el intérprete no llega
-# a tiempo. "libre" = la idea tal cual, sin añadir nada (por ejemplo, si tu LoRA ya pone el carnaval).
-estilo = "carnaval"
+# Todas las ideas llevan detrás la ambientación del Carnaval de Santa Cruz de Tenerife (trajes con
+# lentejuelas y plumas, confeti, serpentinas, luces de fiesta), también cuando el intérprete no llega:
+#   "carnaval"          en foto ("Vibrant editorial photography…")
+#   "carnaval-dibujo"   en dibujo ("Illustration…"): para tu modelo o tu LoRA de estilo de dibujo
+#   "auto"              "carnaval-dibujo" si hay modelo o LoRA en [mi_modelo]; si no, "carnaval"
+#   "libre"             la idea tal cual, sin añadir nada
+estilo = "auto"
 formato = "cuadrado"
 # true = se puede subir una foto propia y transformarla ("conviérteme en…"). Son públicas como las demás:
 # salen en el proyector y la galería solo cuando las apruebas en el panel. Con FLUX.2 Klein la foto se

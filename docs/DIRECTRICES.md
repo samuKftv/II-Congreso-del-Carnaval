@@ -215,4 +215,13 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
       antes de enviarla, para que llegue entera y se reconozca.
     - `5-PROBAR-MI-MODELO.bat` sin modelo ni LoRA pinta con el modelo del workflow (una columna): sirve para
       comparar Z-Image Turbo con FLUX.2 Klein con las mismas ideas.
-13. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+13. **Decimotercera versión** ✅ (estilo de dibujo):
+    - El modelo y el LoRA propios son de **estilo de dibujo**, no de carnaval: los 32 prompts de Inspírame
+      pasan a ser neutros (sin "photography", "bokeh", "cinematic"…) y el estilo lo pone la receta, igual que
+      con las ideas interpretadas (`prompt_final = receta(prompt optimizado)`).
+    - Estilo `carnaval-dibujo` ("Illustration of the Carnival of Santa Cruz de Tenerife…") y
+      `[alumnado] estilo = "auto"`: `carnaval-dibujo` si hay `modelo` o `lora` en `[mi_modelo]`; si no, `carnaval`.
+    - La cola espera (máx. 20 s) a la primera comprobación de archivos antes de pintar: si no, una imagen pedida
+      nada más abrir el estudio salía con el nombre del modelo sin corregir. `modelo` y `lora` sin extensión
+      reciben `.safetensors`.
+14. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

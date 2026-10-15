@@ -151,6 +151,22 @@ def elegir_base(mio: dict, ruta_workflow: str) -> str:
     return "auto"
 
 
+def con_extension(nombre: str) -> str:
+    """«mi_lora» -> «mi_lora.safetensors» (si se escribió sin extensión)."""
+    if nombre and not re.search(r"\.(safetensors|sft|ckpt|pt|pth|bin|gguf)$", nombre, re.I):
+        return f"{nombre}.safetensors"
+    return nombre
+
+
+def elegir_estilo(estilo: str | None, estilos: dict, mio: dict) -> str:
+    """El estilo del modo sencillo. "auto": con tu modelo o tu LoRA (de dibujo), la ambientación en dibujo,
+    para no pedir fotos a un estilo de dibujo; sin ellos, la de foto."""
+    if estilo == "auto":
+        propio = str(mio.get("modelo", "")).strip() or str(mio.get("lora", "")).strip()
+        estilo = "carnaval-dibujo" if propio else "carnaval"
+    return estilo if estilo in estilos else next(iter(estilos))
+
+
 def klein_base(wf: dict) -> dict:
     """FLUX.2 Klein 4B sin destilar: 20 pasos con guía 5 y un negativo de verdad (como su plantilla oficial)."""
     wf = json.loads(json.dumps(wf))
@@ -255,7 +271,7 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         ligero=bool(comfy.get("ligero", True)),
         piezas_mosaico=min(max(int(t.get("proyector", {}).get("piezas_mosaico", 150)), 20), 3000),
         sencillo=bool(alumnado.get("sencillo", False)),
-        estilo_sencillo=alumnado.get("estilo") if alumnado.get("estilo") in estilos else next(iter(estilos)),
+        estilo_sencillo=elegir_estilo(alumnado.get("estilo"), estilos, mio),
         formato_sencillo=alumnado.get("formato") if alumnado.get("formato") in formatos else next(iter(formatos)),
         fotos=bool(alumnado.get("fotos", True)),
         internet=bool(t.get("internet", {}).get("activado", False)) or os.environ.get("ESTUDIO_INTERNET") == "1",
@@ -267,8 +283,8 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         base=base if BASES.get(base) else "",
         pasos=min(max(int(mio.get("pasos", 0)), 0), 200),
         cfg=min(max(float(mio.get("cfg", 0)), 0.0), 30.0),
-        modelo=str(mio.get("modelo", "")).strip(),
-        lora=str(mio.get("lora", "")).strip(),
+        modelo=con_extension(str(mio.get("modelo", "")).strip()),
+        lora=con_extension(str(mio.get("lora", "")).strip()),
         fuerza_lora=min(max(float(mio.get("fuerza_lora", 1.0)), -3.0), 3.0),
         palabra_clave=" ".join(str(mio.get("palabra_clave", "")).split()),
     )

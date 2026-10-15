@@ -142,7 +142,8 @@ class Prueba:
                     self.salida(f"  Intérprete: {ia.detalle}. Se pintan las ideas tal cual.")
             finally:
                 await ia.cerrar()
-        textos = [listo or (estilo.aplicar(t) if estilo else t) for t, listo in zip(textos, listos)]
+        textos = [listo or t for t, listo in zip(textos, listos)]
+        textos = [estilo.aplicar(t) if estilo else t for t in textos]
         if any(listos):
             self.salida(f"  {sum(map(bool, listos))} de {len(listos)} ideas son de Inspírame: van con su prompt optimizado.")
         return [workflow.con_palabra_clave(t, self.aj.palabra_clave) for t in textos]

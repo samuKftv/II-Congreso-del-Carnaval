@@ -509,7 +509,8 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         if len(activos) >= aj.en_cola_por_persona:
             return JSONResponse({"detail": "Ya tienes una imagen en marcha.", "id": activos[0]}, status_code=409)
         r = reto_actual()
-        # Una idea de Inspírame sin tocar lleva su prompt optimizado para FLUX.2 (config/estilos.json)
+        # Una idea de Inspírame sin tocar lleva su prompt optimizado para FLUX.2 (config/estilos.json), sin estilo:
+        # la receta le pone foto o dibujo
         listo = None if foto or tema else aj.prompts_ideas.get(config.normalizar(prompt))
         id_ = estudio.encolar(p["token"], p["alias"], prompt, estilo, formato, tema=tema, foto=foto, fuerza=fuerza,
                               publico=publico, reto=r["id"] if r and r["fase"] == "creando" else None,
