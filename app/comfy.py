@@ -14,6 +14,7 @@ from websockets.asyncio.client import connect
 from websockets.exceptions import WebSocketException
 
 from . import workflow
+from .arquitectura import explicar
 
 log = logging.getLogger("estudio")
 
@@ -111,6 +112,16 @@ class ComfyUI:
                 return datos
         return None
 
+    async def carpetas(self) -> dict[str, list[str]] | None:
+        """Las carpetas de modelos de ComfyUI en este PC: {"loras": ["C:\\...\\models\\loras"], ...}."""
+        try:
+            r = await self.http.get(f"{self.url}/internal/folder_paths", timeout=5)
+            r.raise_for_status()
+            datos = r.json()
+        except (httpx.HTTPError, ValueError):
+            return None
+        return {k: [str(c) for c in v] for k, v in datos.items() if isinstance(v, list)} if isinstance(datos, dict) else None
+
     async def comprobar(self, wf: dict) -> list[str] | None:
         """¿Tiene ComfyUI los nodos y los archivos (modelo, LoRA, VAE…) que usa el workflow?
 
@@ -203,7 +214,7 @@ class ComfyUI:
             if tipo == "progress":
                 al_progresar(int(d.get("value", 0)), int(d.get("max", 1)))
             elif tipo == "execution_error":
-                raise ErrorComfy(d.get("exception_message") or "Error en ComfyUI")
+                raise ErrorComfy(explicar(d.get("exception_message") or "Error en ComfyUI"))
             elif tipo == "execution_interrupted":
                 raise Interrumpido("Generación interrumpida")
             elif tipo == "execution_success":

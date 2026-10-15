@@ -154,11 +154,12 @@ usa sin tocar el workflow:
 
 1. Copia **tu modelo** en `ComfyUI/models/diffusion_models` y **tu LoRA** en `ComfyUI/models/loras`.
    Vuelve a abrir ComfyUI.
-2. En `config/ajustes.toml`, apartado `[mi_modelo]`, escribe sus nombres:
+2. En `config/ajustes.toml`, apartado `[mi_modelo]`, di **de qué modelo sale el tuyo** y escribe sus nombres:
 
    ```toml
    [mi_modelo]
-   modelo = "mi_modelo.safetensors"   # vacío = el del workflow
+   base = "flux2-klein-4b"            # la familia de tu modelo (ver la tabla)
+   modelo = "mi_modelo.safetensors"   # vacío = el oficial de esa familia
    lora = "mi_lora.safetensors"       # vacío = sin LoRA
    fuerza_lora = 0.8                  # 1.0 = tal cual lo entrenaste
    palabra_clave = "crnvl"            # la palabra de activación, si entrenaste con una
@@ -166,6 +167,18 @@ usa sin tocar el workflow:
 
    Basta con el nombre del archivo: si está en una subcarpeta o te falta `.safetensors`, la app lo
    encuentra igual.
+
+   | `base` | Para modelos y LoRA entrenados sobre | Archivos que necesita ComfyUI |
+   |---|---|---|
+   | `"z-image-turbo"` | Z-Image Turbo | `qwen_3_4b.safetensors` (text_encoders), `ae.safetensors` (vae) |
+   | `"flux2-klein-4b"` | FLUX.2 Klein 4B (destilado, 4 pasos) | `qwen_3_4b.safetensors` (text_encoders), [`flux2-vae.safetensors`](https://huggingface.co/Comfy-Org/flux2-dev/resolve/main/split_files/vae/flux2-vae.safetensors) (vae) |
+   | `"flux2-klein-4b-base"` | FLUX.2 Klein 4B base (sin destilar, 20 pasos) | los mismos |
+   | `"auto"` (por defecto) | lo deduce del nombre: si lleva "klein", FLUX.2 Klein 4B; si no, Z-Image Turbo | |
+
+   **Cada familia necesita su propio workflow.** Si pones un modelo FLUX.2 Klein en el workflow de Z-Image
+   (o al revés), ComfyUI falla con `mat1 and mat2 shapes cannot be multiplied`. El estudio mira la cabecera
+   de tu modelo y de tu LoRA al conectar con ComfyUI, y si no encajan te dice en el panel qué `base` poner.
+   `pasos` y `cfg` cambian los pasos y la guía (0 = los de la familia).
 3. Doble clic en **`5-PROBAR-MI-MODELO.bat`** (o `probar_mi_modelo.bat`). Pinta 4 ideas de *Inspírame*
    **sin LoRA y con fuerzas 0.6, 0.8 y 1**, con la misma semilla en cada fila, y abre una hoja para
    comparar. Elige la fuerza que conserve la idea de la gente y tenga tu estilo, y ponla en
@@ -178,10 +191,10 @@ La app conecta tu modelo en el cargador del workflow y pone tu LoRA justo detrá
 codificador de texto (si el LoRA no lo trae, no cambia nada). La palabra clave va delante de cada idea,
 también de las que reescribe el intérprete. Las ideas que ve la gente no la llevan.
 
-Si tu modelo **no sale de Z-Image Turbo** (SDXL, Flux…), monta en ComfyUI un workflow que funcione con él,
-expórtalo con *Exportar (API)* y guárdalo como `config/workflow_api.json`. Deja `modelo` vacío: el LoRA y
+Si tu modelo es de **otra familia** (SDXL, FLUX.1…), monta en ComfyUI un workflow que funcione con él,
+expórtalo con *Exportar (API)*, guárdalo como `config/workflow_api.json` y deja `base = "auto"`. El LoRA y
 la palabra clave se siguen poniendo en `[mi_modelo]`. Luego mide la velocidad con el simulacro: con más
-pasos que Z-Image Turbo, cada imagen tarda más y la gente espera más.
+pasos, cada imagen tarda más y la gente espera más. Con FLUX.2 Klein no está la opción de foto como base.
 
 ## Intérprete de ideas (recomendado)
 
@@ -282,6 +295,7 @@ En ese caso, indica los números de nodo en `nodo_prompt` y `nodo_tamano`.
 | El QR muestra una IP rara | Escribe la IP correcta del PC en `direccion` (`ajustes.toml`). La ves con `ipconfig` en una terminal. |
 | El panel dice "ComfyUI: sin conexión" | Comprueba que ComfyUI está arrancado. La app lo busca sola en los puertos **8188** (portable) y **8000** (Desktop); si lo tienes en otro, escribe su dirección en `url` de `[comfyui]`. |
 | Las imágenes dan error | Mira los avisos del panel: si a ComfyUI le falta un modelo, un LoRA o un nodo, sale ahí con la carpeta donde va. Si no, mira la ventana de ComfyUI. |
+| `mat1 and mat2 shapes cannot be multiplied` | Tu modelo es de otra familia que el workflow (por ejemplo FLUX.2 Klein en el de Z-Image). Pon su `base` en `[mi_modelo]` (el panel te dice cuál) y vuelve a abrir el estudio. |
 | Mi LoRA cambia demasiado las ideas | Baja `fuerza_lora` (0.6-0.8) y repite `5-PROBAR-MI-MODELO.bat` para comparar. |
 | El panel dice "Intérprete: Ollama no está abierto" | Abre Ollama desde el menú Inicio (icono de la llama junto al reloj). Si dice "falta el modelo", ejecuta `4-INSTALAR-INTERPRETE.bat`. Mientras tanto, las ideas se pintan tal cual. |
 | Quiero ver la imagen formándose | Arranca ComfyUI con `--preview-method auto`. Sin esa opción solo se ve la barra de progreso. |

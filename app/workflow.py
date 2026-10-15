@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 SAMPLERS = ("KSampler", "KSamplerAdvanced")
+GUIAS = ("CFGGuider", "BasicGuider", "DualCFGGuider")  # FLUX.2 y otros: SamplerCustomAdvanced + guía
 
 
 class ErrorWorkflow(Exception):
@@ -20,6 +21,7 @@ class Nodos:
     guardar: list[str]
     sampler: str | None = None
     vae: list | None = None  # enlace al VAE que usa el VAEDecode
+    tamanos: list[str] = field(default_factory=list)  # todos los nodos con el tamaño (FLUX.2: lienzo y planificador)
 
     @property
     def admite_fotos(self) -> bool:
@@ -53,14 +55,30 @@ def _tiene_tamano(n: dict) -> bool:
     return isinstance(i.get("width"), int) and isinstance(i.get("height"), int)
 
 
+def _muestreo(wf: dict) -> dict:
+    """Los enlaces model, positive y latent_image del muestreo, venga de un KSampler o de un
+    SamplerCustomAdvanced con su guía (así son los workflows de FLUX.2 Klein)."""
+    for n in wf.values():
+        if n.get("class_type") in SAMPLERS:
+            e = n.get("inputs", {})
+            return {"model": e.get("model"), "positive": e.get("positive"), "latent_image": e.get("latent_image")}
+    for n in wf.values():
+        if n.get("class_type") == "SamplerCustomAdvanced":
+            e = n.get("inputs", {})
+            guia = e.get("guider")
+            g = wf.get(guia[0], {}).get("inputs", {}) if _es_enlace(guia) else {}
+            return {"model": g.get("model"), "positive": g.get("positive", g.get("conditioning", g.get("cond1"))),
+                    "latent_image": e.get("latent_image")}
+    return {}
+
+
 def localizar(wf: dict, nodo_prompt: str = "", nodo_tamano: str = "") -> Nodos:
     samplers = [k for k, n in wf.items() if n.get("class_type") in SAMPLERS]
+    muestreo = _muestreo(wf)
 
     prompt = nodo_prompt or None
-    if prompt is None and samplers:
-        positivo = wf[samplers[0]]["inputs"].get("positive")
-        if _es_enlace(positivo):
-            prompt = _seguir(wf, positivo[0], _tiene_texto)
+    if prompt is None and _es_enlace(muestreo.get("positive")):
+        prompt = _seguir(wf, muestreo["positive"][0], _tiene_texto)
     if prompt is None:
         titulados = [k for k, n in wf.items() if _tiene_texto(n) and "positive" in n.get("_meta", {}).get("title", "").lower()]
         textos = [k for k, n in wf.items() if _tiene_texto(n)]
@@ -72,14 +90,15 @@ def localizar(wf: dict, nodo_prompt: str = "", nodo_tamano: str = "") -> Nodos:
         )
 
     tamano = nodo_tamano or None
-    if tamano is None and samplers:
-        latente = wf[samplers[0]]["inputs"].get("latent_image")
-        if _es_enlace(latente):
-            tamano = _seguir(wf, latente[0], _tiene_tamano)
+    if tamano is None and _es_enlace(muestreo.get("latent_image")):
+        tamano = _seguir(wf, muestreo["latent_image"][0], _tiene_tamano)
     if tamano is None:
         tamano = next((k for k, n in wf.items() if _tiene_tamano(n)), None)
     if tamano is not None and (tamano not in wf or not _tiene_tamano(wf[tamano])):
         raise ErrorWorkflow(f"El nodo {tamano} (nodo_tamano) no tiene ancho y alto.")
+    # Los planificadores que calculan los pasos según el tamaño (Flux2Scheduler) llevan el mismo tamaño
+    tamanos = ([tamano] if tamano else []) + [
+        k for k, n in wf.items() if k != tamano and "Scheduler" in n.get("class_type", "") and _tiene_tamano(n)]
 
     semillas = [
         (k, entrada)
@@ -94,7 +113,8 @@ def localizar(wf: dict, nodo_prompt: str = "", nodo_tamano: str = "") -> Nodos:
     vae = next((n["inputs"]["vae"] for n in wf.values()
                 if n.get("class_type") == "VAEDecode" and _es_enlace(n.get("inputs", {}).get("vae"))), None)
 
-    return Nodos(prompt=prompt, tamano=tamano, semillas=semillas, guardar=guardar, sampler=sampler, vae=vae)
+    return Nodos(prompt=prompt, tamano=tamano, semillas=semillas, guardar=guardar, sampler=sampler, vae=vae,
+                 tamanos=tamanos)
 
 
 def avisos(wf: dict, nodos: Nodos) -> list[str]:
@@ -112,9 +132,9 @@ def avisos(wf: dict, nodos: Nodos) -> list[str]:
 def preparar(wf: dict, nodos: Nodos, prompt: str, ancho: int, alto: int, semilla: int, prefijo: str) -> dict:
     wf = copy.deepcopy(wf)
     wf[nodos.prompt]["inputs"]["text"] = prompt
-    if nodos.tamano is not None:
-        wf[nodos.tamano]["inputs"]["width"] = ancho
-        wf[nodos.tamano]["inputs"]["height"] = alto
+    for nodo in nodos.tamanos or ([nodos.tamano] if nodos.tamano else []):
+        wf[nodo]["inputs"]["width"] = ancho
+        wf[nodo]["inputs"]["height"] = alto
     for nodo, entrada in nodos.semillas:
         wf[nodo]["inputs"][entrada] = semilla
     for nodo in nodos.guardar:
@@ -156,10 +176,9 @@ def con_mi_modelo(wf: dict, modelo: str = "", lora: str = "", fuerza: float = 1.
     if not modelo and not lora:
         return wf
     wf = copy.deepcopy(wf)
-    samplers = [k for k, n in wf.items() if n.get("class_type") in SAMPLERS]
-    if not samplers:
-        raise ErrorWorkflow("El workflow no tiene KSampler: no sé dónde poner tu modelo y tu LoRA.")
-    entradas = wf[samplers[0]]["inputs"]
+    entradas = _muestreo(wf)
+    if not entradas:
+        raise ErrorWorkflow("El workflow no tiene sampler: no sé dónde poner tu modelo y tu LoRA.")
     modelo_de = _origen(wf, entradas.get("model"), "model")
     if modelo_de is None:
         raise ErrorWorkflow("No encuentro el nodo que carga el modelo en el workflow.")
@@ -194,6 +213,20 @@ def con_mi_modelo(wf: dict, modelo: str = "", lora: str = "", fuerza: float = 1.
                     n["inputs"][nombre] = [n_lora, 0]
                 elif clip_de and valor == clip_de:
                     n["inputs"][nombre] = [n_lora, 1]
+    return wf
+
+
+def ajustar(wf: dict, pasos: int = 0, cfg: float = 0) -> dict:
+    """Cambia los pasos y la guía (CFG) del workflow. 0 = los que trae."""
+    if not pasos and not cfg:
+        return wf
+    wf = copy.deepcopy(wf)
+    for n in wf.values():
+        entradas = n.get("inputs", {})
+        if pasos and isinstance(entradas.get("steps"), int):
+            entradas["steps"] = int(pasos)
+        if cfg and isinstance(entradas.get("cfg"), (int, float)):
+            entradas["cfg"] = float(cfg)
     return wf
 
 

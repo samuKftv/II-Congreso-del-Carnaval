@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 from PIL import Image, ImageOps
 
-from . import workflow
+from . import arquitectura, workflow
 from .comfy import ComfyNoDisponible, ComfyUI, Interrumpido
 from .config import Ajustes, Estilo, Formato
 from .db import BaseDatos
@@ -53,11 +53,12 @@ def guardar_tesela(imagen: Image.Image, ruta) -> None:
 class Estudio:
     def __init__(self, aj: Ajustes, db: BaseDatos, comfy: ComfyUI, interprete: Interprete | None = None):
         self.aj, self.db, self.comfy, self.interprete = aj, db, comfy, interprete
-        wf = workflow.con_mi_modelo(aj.workflow, aj.modelo, aj.lora, aj.fuerza_lora)
+        wf = workflow.ajustar(workflow.con_mi_modelo(aj.workflow, aj.modelo, aj.lora, aj.fuerza_lora), aj.pasos, aj.cfg)
         self.workflow = workflow.aligerar(wf) if aj.ligero else wf
         self.nodos = workflow.localizar(wf, aj.nodo_prompt, aj.nodo_tamano)
         self.avisos = workflow.avisos(wf, self.nodos)
-        self.faltan: list[str] = []  # nodos o archivos del workflow que ComfyUI no tiene
+        self.faltan: list[str] = []  # nodos o archivos del workflow que ComfyUI no tiene, o familias que no encajan
+        self.familias: dict = {"workflow": arquitectura.familia_workflow(wf)}
         self._comprobado = 0.0
         for carpeta in ("imagenes", "vistas", "miniaturas", "teselas", "estilos", "fotos"):
             (aj.datos / carpeta).mkdir(parents=True, exist_ok=True)
@@ -94,9 +95,10 @@ class Estudio:
     def modelo(self) -> dict:
         """Qué modelo y qué LoRA se están usando, para el panel."""
         nombres = {entrada: valor for _, entrada, valor in workflow.archivos(self.workflow)}
+        familia = self.familias.get("modelo") or self.familias.get("workflow")
         return {"modelo": nombres.get("unet_name") or nombres.get("ckpt_name") or "", "propio": bool(self.aj.modelo),
                 "lora": nombres.get("lora_name", "") if self.aj.lora else "", "fuerza": self.aj.fuerza_lora,
-                "palabra_clave": self.aj.palabra_clave}
+                "palabra_clave": self.aj.palabra_clave, "familia": arquitectura.nombre(familia) if familia else ""}
 
     def media(self) -> float:
         return sum(self.duraciones) / len(self.duraciones) if self.duraciones else ESPERA_INICIAL
@@ -168,7 +170,9 @@ class Estudio:
             elif info is not None and (not self._comprobado or (self.faltan and time.time() - self._comprobado > 20)):
                 faltan = await self.comfy.comprobar(self.workflow)
                 if faltan is not None:
-                    self.faltan, self._comprobado = faltan, time.time()
+                    familia, self.familias = await arquitectura.revisar(
+                        self.comfy, self.workflow, bool(self.aj.modelo), bool(self.aj.lora))
+                    self.faltan, self._comprobado = faltan + familia, time.time()
                     for f in faltan:
                         log.warning("%s", f)
             if self.interprete:

@@ -121,7 +121,7 @@ def test_estudio_con_tu_modelo_y_tu_lora(ajustes, comfy_falso):
         assert estado["avisos"] == []
         assert estado["modelo"] == {"modelo": "mi_modelo_carnaval.safetensors", "propio": True,
                                     "lora": "carnaval\\lora_carnaval.safetensors", "fuerza": 0.8,
-                                    "palabra_clave": "crnvl style"}
+                                    "palabra_clave": "crnvl style", "familia": "Z-Image Turbo"}
         h = entrar(c)
         id_ = c.post("/api/crear", json={"prompt": "Una murga de pulpos", "estilo": "libre", "formato": "cuadrado"}, headers=h).json()["id"]
         assert esperar_fin(c, id_, h)["estado"] == "hecho"

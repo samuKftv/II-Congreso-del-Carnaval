@@ -174,4 +174,17 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
      subcarpeta, la barra o la extensión se corrigen solos.
    - `5-PROBAR-MI-MODELO.bat` (`python -m app.probar_modelo`): las mismas ideas y semillas sin LoRA y con
      varias fuerzas (o modelo original frente al tuyo), en una hoja JPG, con los segundos por imagen.
-9. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+9. **Novena versión** ✅ (FLUX.2 Klein 4B):
+   - `[mi_modelo] base`: `z-image-turbo` (el workflow de `[comfyui]`), `flux2-klein-4b` (plantilla oficial en
+     `config/plantillas/flux2_klein_4b.json`: SamplerCustomAdvanced + CFGGuider 1 + Flux2Scheduler 4 pasos +
+     EmptyFlux2LatentImage, CLIPLoader `qwen_3_4b` tipo `flux2`, VAE `flux2-vae`), `flux2-klein-4b-base`
+     (20 pasos, guía 5, negativo vacío) y `auto` (por el nombre del archivo, solo con el workflow normal).
+     `pasos` y `cfg` en `[mi_modelo]` los cambian.
+   - El workflow se entiende también con SamplerCustomAdvanced + guía: prompt por `guider.positive`, modelo por
+     `guider.model`, y el tamaño va al lienzo y al planificador (`Nodos.tamanos`).
+   - `app/arquitectura.py`: familia del modelo y del LoRA leyendo solo la cabecera del .safetensors (con las
+     carpetas de `/internal/folder_paths`), como `model_detection.py` de ComfyUI; aviso en el panel si no
+     encaja con el workflow; el error "mat1 and mat2" se traduce con la familia que espera esa dimensión.
+   - `5-PROBAR-MI-MODELO.bat` avisa antes de pintar si no encajan, para cada columna en su primer error y
+     avisa si una imagen sale negra.
+10. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

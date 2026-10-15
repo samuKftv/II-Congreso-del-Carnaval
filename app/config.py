@@ -10,6 +10,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
+WORKFLOW_NORMAL = "config/workflow_api.json"  # Z-Image Turbo
+# Familias de modelos con workflow ya preparado (config/plantillas). "auto" mira el nombre de tu modelo o tu LoRA.
+BASES = {
+    "auto": None,
+    "z-image-turbo": None,  # el workflow de [comfyui]
+    "flux2-klein-4b": "config/plantillas/flux2_klein_4b.json",
+    "flux2-klein-4b-base": "config/plantillas/flux2_klein_4b.json",
+}
 CARPETA_SIMULACRO = "datos-simulacro"  # carpeta de datos del simulacro (3-PROBAR-CON-100-PERSONAS.bat)
 COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 # Nombres de los colores en ajustes.toml -> variables CSS de la app
@@ -88,6 +96,9 @@ class Ajustes:
     interprete_activado: bool = False  # IA de texto (Ollama) que convierte la idea en una descripción en inglés
     interprete_url: str = "http://127.0.0.1:11434"
     interprete_modelo: str = "qwen2.5:3b"
+    base: str = ""  # familia elegida en [mi_modelo] (vacío = el workflow de [comfyui])
+    pasos: int = 0  # 0 = los del workflow
+    cfg: float = 0.0  # 0 = la del workflow
     modelo: str = ""  # tu modelo (sustituye al del workflow)
     lora: str = ""  # tu LoRA (la app lo mete en el workflow)
     fuerza_lora: float = 1.0
@@ -113,6 +124,42 @@ def _estilos(lista: list[dict]) -> dict[str, Estilo]:
     }
 
 
+def elegir_base(mio: dict, ruta_workflow: str) -> str:
+    """La familia del modelo: la que pone [mi_modelo] base o, con "auto", la que delata el nombre del archivo
+    (solo si se usa el workflow normal: un workflow exportado por ti manda)."""
+    base = str(mio.get("base", "auto")).strip().lower()
+    if base not in BASES:
+        raise ValueError(f"En [mi_modelo], base = \"{base}\" no existe. Usa una de estas: "
+                         + ", ".join(f'"{b}"' for b in BASES) + ".")
+    if base != "auto":
+        return base
+    if _ruta(ruta_workflow).resolve() != _ruta(WORKFLOW_NORMAL).resolve():
+        return "auto"
+    nombres = f"{mio.get('modelo', '')} {mio.get('lora', '')}".lower()
+    if "klein" in nombres:
+        return "flux2-klein-4b-base" if "base" in nombres else "flux2-klein-4b"
+    return "auto"
+
+
+def klein_base(wf: dict) -> dict:
+    """FLUX.2 Klein 4B sin destilar: 20 pasos con guía 5 y un negativo de verdad (como su plantilla oficial)."""
+    wf = json.loads(json.dumps(wf))
+    for n in wf.values():
+        e = n.get("inputs", {})
+        if n.get("class_type") == "UNETLoader" and e.get("unet_name") == "flux-2-klein-4b.safetensors":
+            e["unet_name"] = "flux-2-klein-base-4b.safetensors"
+        if n.get("class_type") == "Flux2Scheduler":
+            e["steps"] = 20
+        if n.get("class_type") == "CFGGuider":
+            e["cfg"] = 5.0
+            negativo = e.get("negative")
+            if isinstance(negativo, list) and wf.get(negativo[0], {}).get("class_type") == "ConditioningZeroOut":
+                clip = next((v["inputs"]["clip"] for v in wf.values() if v.get("class_type") == "CLIPTextEncode"), None)
+                wf[negativo[0]] = {"class_type": "CLIPTextEncode", "_meta": {"title": "CLIP Text Encode (Negative Prompt)"},
+                                   "inputs": {"text": "", "clip": clip}}
+    return wf
+
+
 def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
     ruta_ajustes = _ruta(str(ruta_ajustes or os.environ.get("ESTUDIO_AJUSTES", "config/ajustes.toml")))
     with open(ruta_ajustes, "rb") as f:
@@ -122,14 +169,21 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
     comfy, limites, moderacion = t.get("comfyui", {}), t.get("limites", {}), t.get("moderacion", {})
     interprete, alumnado = t.get("interprete", {}), t.get("alumnado", {})
     mio = t.get("mi_modelo", {})
+    for clave in ("pasos", "cfg", "fuerza_lora"):
+        if not isinstance(mio.get(clave, 0), (int, float)):
+            raise ValueError(f"En [mi_modelo], {clave} tiene que ser un número (sin comillas).")
 
-    with open(_ruta(comfy.get("workflow", "config/workflow_api.json")), encoding="utf-8") as f:
+    ruta_workflow = str(comfy.get("workflow", WORKFLOW_NORMAL))
+    base = elegir_base(mio, ruta_workflow)
+    with open(_ruta(BASES.get(base) or ruta_workflow), encoding="utf-8") as f:
         workflow = json.load(f)
     if "nodes" in workflow and "links" in workflow:
         raise ValueError(
             "config/workflow_api.json está en formato normal, no en formato API. "
             "En ComfyUI usa Workflow > Exportar (API)."
         )
+    if base == "flux2-klein-4b-base":
+        workflow = klein_base(workflow)
 
     ruta_estilos = ruta_ajustes.parent / "estilos.json"
     with open(ruta_estilos, encoding="utf-8") as f:
@@ -196,6 +250,9 @@ def cargar(ruta_ajustes: str | Path | None = None) -> Ajustes:
         interprete_activado=bool(interprete.get("activado", False)),
         interprete_url=str(interprete.get("url", "http://127.0.0.1:11434")).rstrip("/"),
         interprete_modelo=str(interprete.get("modelo", "qwen2.5:3b")).strip(),
+        base=base if BASES.get(base) else "",
+        pasos=min(max(int(mio.get("pasos", 0)), 0), 200),
+        cfg=min(max(float(mio.get("cfg", 0)), 0.0), 30.0),
         modelo=str(mio.get("modelo", "")).strip(),
         lora=str(mio.get("lora", "")).strip(),
         fuerza_lora=min(max(float(mio.get("fuerza_lora", 1.0)), -3.0), 3.0),

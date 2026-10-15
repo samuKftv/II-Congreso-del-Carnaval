@@ -23,15 +23,19 @@ PASOS = 9
 
 # Los archivos que "tiene" este ComfyUI, por nodo y entrada (como en sus carpetas models/...)
 ARCHIVOS = {
-    ("UNETLoader", "unet_name"): ["z_image_turbo_bf16.safetensors", "mi_modelo_carnaval.safetensors"],
+    ("UNETLoader", "unet_name"): ["z_image_turbo_bf16.safetensors", "mi_modelo_carnaval.safetensors",
+                                  "flux-2-klein-4b.safetensors", "flux-2-klein-base-4b.safetensors",
+                                  "mi_klein_carnaval.safetensors"],
     ("CheckpointLoaderSimple", "ckpt_name"): ["sdxl_carnaval.safetensors"],
     ("CLIPLoader", "clip_name"): ["qwen_3_4b.safetensors"],
-    ("VAELoader", "vae_name"): ["ae.safetensors"],
+    ("VAELoader", "vae_name"): ["ae.safetensors", "flux2-vae.safetensors"],
     ("LoraLoader", "lora_name"): ["carnaval\\lora_carnaval.safetensors", "otro_lora.safetensors"],
     ("LoraLoaderModelOnly", "lora_name"): ["carnaval\\lora_carnaval.safetensors", "otro_lora.safetensors"],
 }
 NODOS = {"KSampler", "KSamplerAdvanced", "CLIPTextEncode", "VAEDecode", "VAEEncode", "SaveImage", "LoadImage",
          "EmptySD3LatentImage", "EmptyLatentImage", "CLIPSetLastLayer", "ModelSamplingAuraFlow",
+         "SamplerCustomAdvanced", "CFGGuider", "BasicGuider", "KSamplerSelect", "Flux2Scheduler", "RandomNoise",
+         "EmptyFlux2LatentImage", "ConditioningZeroOut",
          *(clase for clase, _ in ARCHIVOS)}
 
 
@@ -42,6 +46,17 @@ def definicion(clase: str) -> dict:
         if c == clase:
             entradas[entrada] = ["COMBO", {"options": opciones}] if clase == "LoraLoader" else [opciones, {}]
     return {"input": {"required": entradas}, "name": clase}
+
+
+def familias_mezcladas(wf: dict) -> str | None:
+    """Como el ComfyUI de verdad: un modelo FLUX.2 Klein con el texto de Z-Image (o al revés) no se puede multiplicar."""
+    modelo = next((n["inputs"]["unet_name"] for n in wf.values() if n["class_type"] == "UNETLoader"), "")
+    tipo = next((n["inputs"]["type"] for n in wf.values() if n["class_type"] == "CLIPLoader"), "")
+    if "klein" in modelo and tipo == "lumina2":
+        return "mat1 and mat2 shapes cannot be multiplied (512x2560 and 7680x3072)"
+    if "z_image" in modelo and tipo == "flux2":
+        return "mat1 and mat2 shapes cannot be multiplied (512x7680 and 2560x3840)"
+    return None
 
 
 def errores_de(wf: dict) -> dict:
@@ -122,12 +137,16 @@ def crear_comfy_falso(retardo_paso: float = 0.15, fallar_con: str | None = None)
         while True:
             pid, wf, cid = await cola.get()
             interrumpir.clear()
-            texto = next(n["inputs"]["text"] for n in wf.values() if n["class_type"] == "CLIPTextEncode")
-            semilla = next(n["inputs"]["seed"] for n in wf.values() if "seed" in n.get("inputs", {}))
+            texto = max((n["inputs"]["text"] for n in wf.values() if n["class_type"] == "CLIPTextEncode"), key=len)
+            semilla = next(n["inputs"].get("seed", n["inputs"].get("noise_seed")) for n in wf.values()
+                           if {"seed", "noise_seed"} & set(n.get("inputs", {})))
             carga = next((n for n in wf.values() if n["class_type"] == "LoadImage"), None)
             base = Image.open(io.BytesIO(entradas[carga["inputs"]["image"]])) if carga else None
             tam = next((n["inputs"] for n in wf.values() if "width" in n.get("inputs", {})), {"width": 0, "height": 0})
             await enviar(cid, {"type": "execution_start", "data": {"prompt_id": pid}})
+            if error := familias_mezcladas(wf):
+                await enviar(cid, {"type": "execution_error", "data": {"prompt_id": pid, "exception_message": error}})
+                continue
             if fallar_con and fallar_con in texto:
                 await enviar(cid, {"type": "execution_error", "data": {"prompt_id": pid, "exception_message": "CUDA out of memory (simulado)"}})
                 continue
@@ -179,6 +198,12 @@ def crear_comfy_falso(retardo_paso: float = 0.15, fallar_con: str | None = None)
         app.state.recibidos.append(wf)
         await cola.put((pid, wf, cuerpo.get("client_id", "")))
         return {"prompt_id": pid, "number": len(app.state.recibidos), "node_errors": {}}
+
+    app.state.carpetas = {}  # /internal/folder_paths: las pruebas ponen aquí carpetas con archivos
+
+    @app.get("/internal/folder_paths")
+    async def folder_paths():
+        return app.state.carpetas
 
     @app.get("/object_info/{clase}")
     async def object_info(clase: str):

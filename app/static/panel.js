@@ -90,6 +90,7 @@ async function refrescarEstado() {
   const m = e.modelo || {};
   const sinRuta = (nombre) => nombre.split(/[\\/]/).pop();
   const linea = [el('b', {}, '🎨 Modelo: '), sinRuta(m.modelo || 'el del workflow')];
+  if (m.familia) linea.push(` (${m.familia})`);
   if (m.lora) linea.push(` + LoRA ${sinRuta(m.lora)} (fuerza ${m.fuerza})`);
   if (m.palabra_clave) linea.push(` · palabra clave «${m.palabra_clave}»`);
   $('modelo').replaceChildren(...linea);

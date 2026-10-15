@@ -134,16 +134,20 @@ TU PROPIO MODELO Y TU LORA
  1. Copia tu modelo en ComfyUI\\models\\diffusion_models y tu LoRA en
     ComfyUI\\models\\loras. Vuelve a abrir ComfyUI.
  2. Abre config\\ajustes.toml con el Bloc de notas y, en el apartado
-    [mi_modelo], escribe sus nombres (modelo = "...", lora = "...") y la
+    [mi_modelo], di de qué modelo sale el tuyo (base = "flux2-klein-4b" o
+    "z-image-turbo"), escribe sus nombres (modelo = "...", lora = "...") y la
     palabra clave del LoRA si entrenaste con una.
+    FLUX.2 Klein 4B necesita además flux2-vae.safetensors en ComfyUI\\models\\vae.
+    Si ComfyUI dice "mat1 and mat2 shapes cannot be multiplied", la base no
+    es la de tu modelo: el panel te dice cuál poner.
  3. Doble clic en "5-PROBAR-MI-MODELO.bat". Pinta 4 ideas sin LoRA y con
     fuerzas 0.6, 0.8 y 1, con la misma semilla, y abre una hoja para
     compararlas. Escribe la fuerza que más te guste en fuerza_lora.
  4. Abre el estudio como siempre. En el panel, junto a ComfyUI, verás
     "Modelo: ... + LoRA ...". Si falta algún archivo, el panel te lo dice.
- Si tu modelo no sale de Z-Image Turbo (por ejemplo, SDXL o Flux), monta en
+ Si tu modelo es de otra familia (por ejemplo, SDXL o FLUX.1), monta en
  ComfyUI un workflow que funcione con él, expórtalo con "Exportar (API)" y
- guárdalo como config\\workflow_api.json. Deja "modelo" vacío: el LoRA y la
+ guárdalo como config\\workflow_api.json, con base = "auto". El LoRA y la
  palabra clave se siguen poniendo en [mi_modelo].
  Después, mide con el simulacro cuánto tarda por imagen.
 

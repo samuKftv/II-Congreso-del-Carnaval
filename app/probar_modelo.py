@@ -22,7 +22,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-from . import config, workflow
+from . import arquitectura, config, workflow
 from .comfy import ComfyUI, ErrorComfy
 from .interprete import Interprete
 from .moderacion import Filtro
@@ -57,6 +57,7 @@ def columnas(aj: config.Ajustes, fuerzas: list[float]) -> list[Columna]:
     else:
         raise NoSePuede("Escribe tu modelo y/o tu LoRA en config/ajustes.toml, en el apartado [mi_modelo].")
     for c in lista:
+        c.wf = workflow.ajustar(c.wf, aj.pasos, aj.cfg)
         if aj.ligero:
             c.wf = workflow.aligerar(c.wf)
     return lista
@@ -160,6 +161,13 @@ class Prueba:
         if not any(c is not self.cols[0] for c in validas):  # sin nada que comparar con la primera columna
             raise NoSePuede("Copia los archivos que faltan en ComfyUI, vuelve a abrirlo y repite la prueba.")
         self.cols = validas
+        # ¿Tu modelo y tu LoRA son de la familia del workflow? Si no, todas saldrían con error
+        avisos, familias = await arquitectura.revisar(self.comfy, self.cols[-1].wf, bool(self.aj.modelo), bool(self.aj.lora))
+        if familias.get("modelo") or familias.get("lora"):
+            partes = [f"{q} {arquitectura.nombre(familias[q])}" for q in ("modelo", "lora") if familias.get(q)]
+            self.salida(f"  Familia: {', '.join(partes)} · workflow {arquitectura.nombre(familias['workflow'])}")
+        if avisos:
+            raise NoSePuede("\n  ".join(avisos))
 
         prompts = await self._prompts()
         formato = self.aj.formatos.get(self.aj.formato_sencillo) or next(iter(self.aj.formatos.values()))
@@ -167,17 +175,22 @@ class Prueba:
         self.carpeta.mkdir(parents=True, exist_ok=True)
         total, hechas = len(self.cols) * len(self.ideas), 0
         self.salida(f"\n  Pintando {total} imágenes de {formato.ancho}×{formato.alto}…")
+        errores = []
         for j, c in enumerate(self.cols):
             nodos = workflow.localizar(c.wf, self.aj.nodo_prompt, self.aj.nodo_tamano)
             for i, prompt in enumerate(prompts):
+                hechas += 1
+                if i and not c.segundos:  # la primera de la columna falló: las demás fallarían igual
+                    c.imagenes.append(None)
+                    continue
                 wf = workflow.preparar(c.wf, nodos, prompt, formato.ancho, formato.alto, semillas[i],
                                        "congreso_carnaval/prueba")
                 inicio = time.monotonic()
-                hechas += 1
                 try:
                     datos = (await self.comfy.generar(wf, lambda *_: None, lambda *_: None, self.aj.tiempo_maximo))[0]
                 except ErrorComfy as e:
                     c.imagenes.append(None)
+                    errores.append(f"{c.titulo}: {e}")
                     self.salida(f"  [{hechas}/{total}] {c.titulo} · ERROR: {e}")
                     continue
                 segundos = time.monotonic() - inicio
@@ -186,8 +199,14 @@ class Prueba:
                 imagen.load()
                 imagen.save(self.carpeta / f"{j + 1}-{c.titulo.replace(' ', '_')}-idea{i + 1}.png")
                 c.imagenes.append(imagen)
-                self.salida(f"  [{hechas}/{total}] {c.titulo} · {self.ideas[i][:50]} · {segundos:.1f} s")
+                negra = max(alto for _, alto in imagen.convert("RGB").getextrema()) < 12
+                self.salida(f"  [{hechas}/{total}] {c.titulo} · {self.ideas[i][:50]} · {segundos:.1f} s"
+                            + ("  ⚠ ¡SALE NEGRA!" if negra else ""))
+                if negra:
+                    errores.append(f"{c.titulo}: la imagen sale negra (suele ser un VAE o un modelo de otra familia)")
 
+        if not any(c.segundos for c in self.cols):
+            raise NoSePuede("No ha salido ninguna imagen:\n  " + "\n  ".join(errores))
         ruta = self.carpeta / "hoja.jpg"
         hoja(self.ideas, self.cols, self.aj).save(ruta, "JPEG", quality=88)
         self.resumen(ruta)
@@ -222,6 +241,7 @@ def main():
         ideas = a.ideas or aj.ideas[:4] or ["La reina del carnaval con un traje gigante inspirado en el Teide"]
         linea = "=" * 64
         print(f"\n{linea}\n  PRUEBA DE TU MODELO\n{linea}")
+        print(f"  Workflow: {arquitectura.nombre(arquitectura.familia_workflow(aj.workflow))}")
         print(f"  Modelo: {aj.modelo or '(el del workflow)'}")
         if aj.lora:
             print(f"  LoRA:   {aj.lora} · fuerzas {', '.join(f'{f:g}' for f in sorted(set(fuerzas) | {aj.fuerza_lora}))}")
