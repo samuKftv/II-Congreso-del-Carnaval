@@ -135,6 +135,8 @@ async function refrescarEstado() {
   pintarConcurso(e.concurso);
   $('simulacro').hidden = !e.simulacro;
   document.title = e.por_revisar ? `(${e.por_revisar}) 🛂 Panel del profesor` : 'Panel del profesor';
+  $('ir-revision').hidden = !e.por_revisar;
+  $('ir-n-revision').textContent = e.por_revisar;
 }
 
 // --- Revisión antes de publicar ---
@@ -184,7 +186,8 @@ async function revisar(ids, decision) {
   pintarImagenes();
   try {
     const r = await apiProfe('/api/panel/revisar', { metodo: 'POST', datos: { ids, decision } });
-    $('n-revision').textContent = r.por_revisar;
+    $('n-revision').textContent = $('ir-n-revision').textContent = r.por_revisar;
+    $('ir-revision').hidden = !r.por_revisar;
     if (ids.length > 1) aviso(`✅ ${r.cambiadas} imágenes publicadas`);
   } catch (e) { aviso(e.message, true); }
   cargarRevision();

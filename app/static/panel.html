@@ -124,6 +124,15 @@
     .visor { position: fixed; inset: 0; z-index: 60; background: rgba(8, 3, 18, 0.92); display: grid; place-items: center; padding: 20px; cursor: zoom-out; }
     .visor img { max-width: 100%; max-height: 80vh; border-radius: 16px; }
     .visor p { max-width: 70ch; text-align: center; color: var(--suave); font-weight: 700; }
+    /* En el móvil, la bandeja queda lejos: un botón fijo lleva a ella */
+    .ir-revision { display: none; }
+    @media (max-width: 760px) {
+      .ir-revision:not([hidden]) { display: inline-flex; position: fixed; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom));
+        z-index: 50; align-items: center; gap: 8px; padding: 14px 20px; border-radius: 999px; border: 0;
+        background: var(--amarillo); color: #000; font: inherit; font-weight: 900; font-size: 1.05rem;
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45); text-decoration: none; }
+      #seccion-revision { scroll-margin-top: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -258,7 +267,7 @@
 
       <section class="tarjeta seccion">
         <h2>Imágenes creadas</h2>
-        <p class="nota" style="margin:-4px 0 14px">❌ Retirar quita una imagen de la pantalla, el mosaico y la galería · ✅ Publicar la devuelve · 🚫 pausa el acceso de esa persona · 🔒 privada: hecha con foto y sin compartir (solo la ven su autor y tú).</p>
+        <p class="nota" style="margin:-4px 0 14px">❌ Retirar quita una imagen de la pantalla, el mosaico y la galería · ✅ Publicar la devuelve · 🚫 pausa el acceso de esa persona.</p>
         <div class="rejilla" id="imagenes"></div>
         <div style="text-align:center;margin-top:14px">
           <button class="boton boton-secundario" id="mas" type="button" hidden>Cargar más</button>
@@ -281,5 +290,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="/static/comun.js"></script>
   <script src="/static/panel.js"></script>
+  <a class="ir-revision" id="ir-revision" href="#seccion-revision" hidden>🛂 Por revisar <span id="ir-n-revision">0</span></a>
 </body>
 </html>

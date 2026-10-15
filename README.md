@@ -108,8 +108,12 @@ El estudio funciona como un concurso durante toda la sesión:
 > `revisar_antes = false` en `[moderacion]` de `ajustes.toml`. Puedes retirar cualquier imagen después,
 > en *Imágenes creadas*.
 >
-> Para moderar desde el móvil mientras das la charla, pon una `clave_profesor` propia en `ajustes.toml`
-> y abre `http://<IP del PC>:8080/panel` en tu teléfono.
+> **Moderar desde tu móvil** (en la misma WiFi que el PC):
+> 1. En `config/ajustes.toml`, apartado `[acceso]`, cambia `clave_profesor = "cambia-esta-clave"` por una tuya
+>    y vuelve a abrir el estudio. Con la clave de ejemplo el panel solo se abre en el PC.
+> 2. En el móvil abre la dirección del QR añadiendo `/panel`, por ejemplo `http://192.168.1.20:8080/panel`,
+>    y escribe la clave (el móvil la recuerda). En modo internet vale la dirección https del túnel + `/panel`.
+> 3. En el móvil, el botón amarillo **🛂 Por revisar N** de abajo lleva directo a la bandeja.
 
 ## Pensada para el móvil
 

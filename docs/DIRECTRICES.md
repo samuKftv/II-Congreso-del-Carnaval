@@ -224,4 +224,7 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
     - La cola espera (máx. 20 s) a la primera comprobación de archivos antes de pintar: si no, una imagen pedida
       nada más abrir el estudio salía con el nombre del modelo sin corregir. `modelo` y `lora` sin extensión
       reciben `.safetensors`.
-14. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+14. **Decimocuarta versión** ✅ (moderar desde el móvil):
+    - En pantallas estrechas, botón fijo "🛂 Por revisar N" que lleva a la bandeja (se oculta sin pendientes y
+      se actualiza al publicar o rechazar). Quitada la nota de imágenes privadas.
+15. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
