@@ -10,7 +10,9 @@ en el PC del profesor. Todo funciona dentro de la WiFi del aula.
   Dos pestañas grandes: **✨ Crear** (escribir la idea, 🎲 Inspírame y Crear) y **❤️ Votar**.
   - Modo **sencillo** por defecto (`[alumnado]` en `ajustes.toml`): sin elegir técnica, carnaval ni formato.
     Con `sencillo = false` vuelven los carnavales del mundo, las técnicas, los formatos y los detalles; con
-    `fotos = true`, crear a partir de una foto propia (privada salvo que se marque compartirla).
+    `fotos = true` (lo normal), subir una foto propia y transformarla: "conviérteme en…". Es pública
+    como las demás y solo sale en el proyector cuando la apruebas. Con FLUX.2 Klein la foto se edita
+    (conserva caras y postura); con Z-Image Turbo se repinta encima con la fuerza que se elija.
   - **❤️ Votar** de una en una, deslizando como en una app de citas, también mientras esperan su turno.
     Nadie puede votarse a sí mismo.
   - **Intérprete de ideas** (opcional): una IA de texto en tu PC entiende ideas cortas, raras o en español
@@ -194,7 +196,8 @@ también de las que reescribe el intérprete. Las ideas que ve la gente no la ll
 Si tu modelo es de **otra familia** (SDXL, FLUX.1…), monta en ComfyUI un workflow que funcione con él,
 expórtalo con *Exportar (API)*, guárdalo como `config/workflow_api.json` y deja `base = "auto"`. El LoRA y
 la palabra clave se siguen poniendo en `[mi_modelo]`. Luego mide la velocidad con el simulacro: con más
-pasos, cada imagen tarda más y la gente espera más. Con FLUX.2 Klein no está la opción de foto como base.
+pasos, cada imagen tarda más y la gente espera más. Con FLUX.2 Klein la foto propia se edita: la
+foto va de referencia (como en su plantilla oficial de edición) y conserva caras y postura.
 
 ## Intérprete de ideas (recomendado)
 

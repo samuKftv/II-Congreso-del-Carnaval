@@ -35,7 +35,7 @@ ARCHIVOS = {
 NODOS = {"KSampler", "KSamplerAdvanced", "CLIPTextEncode", "VAEDecode", "VAEEncode", "SaveImage", "LoadImage",
          "EmptySD3LatentImage", "EmptyLatentImage", "CLIPSetLastLayer", "ModelSamplingAuraFlow",
          "SamplerCustomAdvanced", "CFGGuider", "BasicGuider", "KSamplerSelect", "Flux2Scheduler", "RandomNoise",
-         "EmptyFlux2LatentImage", "ConditioningZeroOut",
+         "EmptyFlux2LatentImage", "ConditioningZeroOut", "ReferenceLatent",
          *(clase for clase, _ in ARCHIVOS)}
 
 

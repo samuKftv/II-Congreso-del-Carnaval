@@ -60,8 +60,10 @@ sencillo = true
 # a tiempo. "libre" = la idea tal cual, sin añadir nada (por ejemplo, si tu LoRA ya pone el carnaval).
 estilo = "carnaval"
 formato = "cuadrado"
-# true = se puede crear a partir de una foto propia ("conviérteme en…").
-fotos = false
+# true = se puede subir una foto propia y transformarla ("conviérteme en…"). Son públicas como las demás:
+# salen en el proyector y la galería solo cuando las apruebas en el panel. Con FLUX.2 Klein la foto se
+# edita (conserva caras y postura); con Z-Image Turbo se repinta encima con la fuerza que elija la persona.
+fotos = true
 
 [proyector]
 # Máximo de piezas del mosaico. Se usa la rejilla con forma de cartel más grande que quepa

@@ -22,10 +22,16 @@ class Nodos:
     sampler: str | None = None
     vae: list | None = None  # enlace al VAE que usa el VAEDecode
     tamanos: list[str] = field(default_factory=list)  # todos los nodos con el tamaño (FLUX.2: lienzo y planificador)
+    guia: str | None = None  # CFGGuider de un SamplerCustomAdvanced (FLUX.2 Klein)
 
     @property
     def admite_fotos(self) -> bool:
-        return self.vae is not None and self.sampler is not None
+        return self.vae is not None and (self.sampler is not None or self.guia is not None)
+
+    @property
+    def edita(self) -> bool:
+        """FLUX.2 Klein edita la foto (la usa de referencia) en vez de repintarla encima: no hay "fuerza"."""
+        return self.sampler is None and self.guia is not None
 
 
 def _es_enlace(valor) -> bool:
@@ -113,8 +119,14 @@ def localizar(wf: dict, nodo_prompt: str = "", nodo_tamano: str = "") -> Nodos:
     vae = next((n["inputs"]["vae"] for n in wf.values()
                 if n.get("class_type") == "VAEDecode" and _es_enlace(n.get("inputs", {}).get("vae"))), None)
 
+    # FLUX.2 Klein: la foto entra como referencia en el positivo y el negativo de la guía
+    guia = next((n["inputs"]["guider"][0] for n in wf.values() if n.get("class_type") == "SamplerCustomAdvanced"
+                 and _es_enlace(n.get("inputs", {}).get("guider"))), None)
+    if guia not in wf or not all(_es_enlace(wf[guia].get("inputs", {}).get(e)) for e in ("positive", "negative")):
+        guia = None
+
     return Nodos(prompt=prompt, tamano=tamano, semillas=semillas, guardar=guardar, sampler=sampler, vae=vae,
-                 tamanos=tamanos)
+                 tamanos=tamanos, guia=guia)
 
 
 def avisos(wf: dict, nodos: Nodos) -> list[str]:
@@ -273,10 +285,27 @@ def parecido(nombre: str, opciones: list[str]) -> str | None:
     return candidatos[0] if len(candidatos) == 1 else None
 
 
-def con_foto(wf: dict, nodos: Nodos, imagen: str, fuerza: float) -> dict:
-    """Cambia el lienzo vacío por la foto subida a ComfyUI (img2img). `wf` ya viene preparado."""
+FOTO_DE_REFERENCIA = "Using the reference photo, keep the same people, faces and pose. "
+
+
+def con_foto(wf: dict, nodos: Nodos, imagen: str, fuerza: float | None) -> dict:
+    """Usa la foto subida a ComfyUI. `wf` ya viene preparado.
+
+    Con KSampler (Z-Image Turbo) se repinta encima de la foto (img2img, con `fuerza` como denoise).
+    Con FLUX.2 Klein la foto va de referencia (ReferenceLatent), como en su plantilla oficial de edición."""
     if not nodos.admite_fotos:
         raise ErrorWorkflow("Este workflow no permite usar fotos como base.")
+    if nodos.edita:
+        wf["9001"] = {"class_type": "LoadImage", "inputs": {"image": imagen}, "_meta": {"title": "Foto del alumno"}}
+        wf["9002"] = {"class_type": "VAEEncode", "inputs": {"pixels": ["9001", 0], "vae": nodos.vae}}
+        guia = wf[nodos.guia]["inputs"]
+        for nodo, entrada in (("9003", "positive"), ("9004", "negative")):
+            wf[nodo] = {"class_type": "ReferenceLatent", "inputs": {"conditioning": guia[entrada], "latent": ["9002", 0]}}
+            guia[entrada] = [nodo, 0]
+        texto = wf[nodos.prompt]["inputs"]["text"]
+        if not texto.startswith(FOTO_DE_REFERENCIA):
+            wf[nodos.prompt]["inputs"]["text"] = FOTO_DE_REFERENCIA + texto
+        return wf
     sampler = wf[nodos.sampler]["inputs"]
     latente = sampler.get("latent_image")
     wf["9001"] = {"class_type": "LoadImage", "inputs": {"image": imagen}, "_meta": {"title": "Foto del alumno"}}

@@ -91,9 +91,6 @@
     .formato[aria-pressed="true"] { border-color: var(--amarillo); color: var(--amarillo); background: color-mix(in srgb, var(--amarillo) 10%, transparent); }
 
     .fuerzas .formato span.cara { font-size: 2rem; line-height: 1; }
-    .compartir { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 14px 16px; border-radius: 16px; background: var(--capa); border: 1px solid var(--borde); font-weight: 700; cursor: pointer; }
-    .compartir input { width: 24px; height: 24px; accent-color: var(--amarillo); flex: none; }
-    .compartir small { display: block; color: var(--suave); font-weight: 600; }
 
     .botones-idea { display: flex; gap: 8px; }
     .foto-base { display: flex; align-items: center; gap: 12px; padding: 10px; margin-bottom: 10px; border-radius: 18px; background: color-mix(in srgb, var(--amarillo) 10%, transparent); border: 1px solid color-mix(in srgb, var(--amarillo) 35%, transparent); }
@@ -328,10 +325,6 @@
       <div class="bloque" id="bloque-fuerza" hidden>
         <span class="etiqueta"><span class="paso">3</span>¿Cuánto transformo tu foto?</span>
         <div class="formatos fuerzas" id="fuerzas" role="group" aria-label="Cuánto transformar la foto"></div>
-        <label class="compartir">
-          <input type="checkbox" id="compartir">
-          <span>📺 Compartir en el proyector y la galería<small>Si no lo marcas, solo la verás tú.</small></span>
-        </label>
       </div>
 
       <div class="accion">

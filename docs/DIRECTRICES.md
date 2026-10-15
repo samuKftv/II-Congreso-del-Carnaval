@@ -108,8 +108,7 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
    - **Botones de detalles** (lugar, luz, plano, ambiente): enseñan a construir un buen prompt.
      (En la cuarta versión se añade un intérprete de ideas que va en el procesador, sin tocar la VRAM.)
    - **Foto como base (img2img)**: la foto se reduce en el móvil, se ajusta a ~1 MP y se usa con
-     `denoise` 0,5 / 0,68 / 0,82. **Privada por defecto**: solo sale en el proyector y la galería si la
-     persona marca compartirla.
+     `denoise` 0,5 / 0,68 / 0,82. (Desde la 11.ª versión es pública y pasa por la revisión del profesor.)
    - **Votos**: uno por persona e imagen, sin votarse a sí mismo; solo imágenes públicas y no ocultas.
    - **Retos**: fases *creando* (cuenta atrás) → *votando* → *podio* → *cerrado*. Participa lo creado
      en la fase *creando*. El paso a votación es automático al acabar el tiempo.
@@ -196,4 +195,12 @@ que sean más fiables. Si en las pruebas el español rinde peor, se añadirá tr
     - `[interprete] esperar` (true): la gráfica espera hasta 25 s y el intérprete coge las ideas por orden
       de llegada, así que mientras se pinta una se interpreta la siguiente. `grafica` (false) deja a Ollama
       usar la GPU. El panel muestra cuántas ideas ha mejorado (`prompt_ia` no vacío).
-11. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.
+11. **Undécima versión** ✅ (foto propia otra vez):
+    - `[alumnado] fotos = true`. Las imágenes con foto son públicas como las demás y pasan por la bandeja
+      "Por revisar"; desaparece la casilla "Compartir" del móvil (el servidor ignora `publico`).
+    - FLUX.2 Klein edita la foto como su plantilla oficial: LoadImage → VAEEncode → ReferenceLatent en el
+      positivo y el negativo de la CFGGuider, al tamaño de la foto; sin "fuerza" (`/api/info` manda
+      `fuerzas: []`) y con "Using the reference photo, keep the same people, faces and pose." delante.
+      Z-Image Turbo sigue con img2img (KSampler con denoise).
+    - Proyector: el nombre del congreso y la línea de fecha y hashtag en negro, sin franja debajo.
+12. **Después**: descarga en ZIP de la galería, exportar el podio como imagen.

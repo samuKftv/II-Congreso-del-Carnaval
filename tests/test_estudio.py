@@ -185,7 +185,7 @@ def foto_base64(ancho=1200, alto=1600) -> str:
     return "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode()
 
 
-def test_foto_como_base_privada_por_defecto(ajustes, comfy_falso):
+def test_foto_como_base_publica_y_revisada(ajustes, comfy_falso):
     _, comfy_app = comfy_falso
     with TestClient(crear_app(ajustes)) as c:
         assert c.get("/api/info").json()["fotos"] is True
@@ -198,7 +198,7 @@ def test_foto_como_base_privada_por_defecto(ajustes, comfy_falso):
         r = c.post("/api/crear", json={**pedido, "fuerza": "mucho"}, headers=h)
         assert r.status_code == 200, r.text
         t = esperar_fin(c, r.json()["id"], h)
-        assert t["estado"] == "hecho" and t["con_foto"] and not t["publico"]
+        assert t["estado"] == "hecho" and t["con_foto"] and t["publico"]
         assert Image.open(io.BytesIO(c.get(t["imagen"]).content)).size == (880, 1184)
 
         enviado = comfy_app.state.recibidos[-1]
@@ -207,14 +207,13 @@ def test_foto_como_base_privada_por_defecto(ajustes, comfy_falso):
         assert "13" not in enviado  # el lienzo vacío sobra
         assert "Carnival of Venice" in enviado["6"]["inputs"]["text"]
 
-        # Privada: ni proyector ni galería; sí en "mis imágenes"
-        assert c.get("/api/galeria").json()["imagenes"] == []
+        # Pública como todas (el profesor las revisa): en la galería y en "mis imágenes"
+        assert [x["id"] for x in c.get("/api/galeria").json()["imagenes"]] == [t["id"]]
         assert c.get("/api/mis-creaciones", headers=h).json()[0]["id"] == t["id"]
 
-        # Compartida si la persona lo marca
-        r = c.post("/api/crear", json={**pedido, "fuerza": "poco", "publico": True}, headers=h)
-        esperar_fin(c, r.json()["id"], h)
-        assert [x["id"] for x in c.get("/api/galeria").json()["imagenes"]] == [r.json()["id"]]
+        # Aunque un móvil antiguo pida que sea privada, sale pública
+        r = c.post("/api/crear", json={**pedido, "fuerza": "poco", "publico": False}, headers=h)
+        assert esperar_fin(c, r.json()["id"], h)["publico"]
 
 
 def test_votos(ajustes):

@@ -202,6 +202,10 @@ function pintarFormatos() {
 
 function pintarFuerzas() {
   const fuerzas = estado.info.fuerzas;
+  if (!fuerzas.length) {
+    $('fuerzas').replaceChildren();
+    return;
+  }
   if (!fuerzas.includes(estado.fuerza)) estado.fuerza = fuerzas[Math.floor(fuerzas.length / 2)];
   $('fuerzas').replaceChildren(...fuerzas.map((id) => {
     const [cara, nombre] = FUERZAS[id] || ['✨', id];
@@ -313,7 +317,7 @@ function pintarFoto() {
   $('etiqueta-idea').textContent = hay ? '¿En qué convertimos tu foto?' : '¿Qué quieres crear?';
   $('prompt').placeholder = hay ? 'Ej.: conviérteme en un arlequín veneciano con máscara dorada' : 'Describe tu imagen…';
   $('bloque-formato').hidden = hay || estado.info.sencillo;
-  $('bloque-fuerza').hidden = !hay;
+  $('bloque-fuerza').hidden = !hay || !estado.info.fuerzas.length;  // FLUX.2 Klein edita la foto: sin fuerza
 }
 
 // --- Estado del estudio y reto ---
@@ -465,7 +469,7 @@ function pedidoActual() {
     Object.assign(pedido, { estilo: estado.info.estilo_sencillo, tema: '', formato: estado.info.formato_sencillo });
   }
   if (estado.foto) {
-    Object.assign(pedido, { foto: estado.foto.id, fuerza: estado.fuerza, publico: $('compartir').checked, vista: estado.foto.vista });
+    Object.assign(pedido, { foto: estado.foto.id, fuerza: estado.fuerza, vista: estado.foto.vista });
   }
   return pedido;
 }

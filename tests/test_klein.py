@@ -12,7 +12,7 @@ from app import arquitectura, config, workflow
 from app.main import crear_app
 from app.probar_modelo import NoSePuede, Prueba
 from tests.conftest import preparar_ajustes
-from tests.test_estudio import PROFE, entrar, esperar_fin
+from tests.test_estudio import PROFE, entrar, esperar_fin, foto_base64
 
 
 def safetensors(ruta, formas: dict):
@@ -88,7 +88,7 @@ def test_workflow_de_klein(tmp_path, monkeypatch, comfy_falso):
     assert aj.base == "flux2-klein-4b" and arquitectura.familia_workflow(aj.workflow) == "flux2-klein-4b"
     nodos = workflow.localizar(aj.workflow)
     assert (nodos.prompt, nodos.tamanos, nodos.semillas) == ("74", ["66", "62"], [("73", "noise_seed")])
-    assert not nodos.admite_fotos  # sin KSampler no hay foto como base
+    assert nodos.admite_fotos and nodos.edita and nodos.guia == "63"  # la foto va de referencia a la guía
     listo = workflow.preparar(aj.workflow, nodos, "una murga", 832, 1216, 99, "x")
     assert listo["66"]["inputs"]["width"] == listo["62"]["inputs"]["width"] == 832
     assert listo["62"]["inputs"]["height"] == 1216 and listo["73"]["inputs"]["noise_seed"] == 99
@@ -191,3 +191,31 @@ def test_la_prueba_con_klein(tmp_path, monkeypatch, comfy_falso):
     ruta = asyncio.run(prueba.ejecutar())
     assert ruta.exists() and [c.titulo for c in prueba.cols] == ["Sin LoRA", "LoRA 0.5", "LoRA 1"]
     assert all(wf["62"]["inputs"]["steps"] == 4 for wf in comfy_app.state.recibidos[-6:])
+
+
+def test_klein_edita_tu_foto(tmp_path, monkeypatch, comfy_falso):
+    """Con FLUX.2 Klein la foto va de referencia (ReferenceLatent), como en su plantilla oficial de edición."""
+    url, comfy_app = comfy_falso
+    aj = con_mi_modelo(tmp_path, monkeypatch, url, base="flux2-klein-4b")
+    aj.revisar_antes = True
+    with TestClient(crear_app(aj)) as c:
+        info = c.get("/api/info").json()
+        assert info["fotos"] is True and info["fuerzas"] == []  # editar no tiene "cuánto transformo"
+        h = entrar(c)
+        f = c.post("/api/fotos", json={"datos": foto_base64()}, headers=h).json()
+        r = c.post("/api/crear", json={"prompt": "Conviérteme en reina del carnaval", "estilo": "carnaval",
+                                       "foto": f["id"]}, headers=h)
+        assert r.status_code == 200, r.text
+        t = esperar_fin(c, r.json()["id"], h)
+        assert t["estado"] == "hecho" and t["publico"]
+        assert c.get("/api/panel/estado", headers=PROFE).json()["por_revisar"] == 1  # pasa por tu revisión
+    enviado = comfy_app.state.recibidos[-1]
+    assert enviado["9001"]["class_type"] == "LoadImage"
+    assert enviado["9002"]["inputs"] == {"pixels": ["9001", 0], "vae": ["72", 0]}
+    assert enviado["9003"] == {"class_type": "ReferenceLatent", "inputs": {"conditioning": ["74", 0], "latent": ["9002", 0]}}
+    assert enviado["9004"]["inputs"] == {"conditioning": ["76", 0], "latent": ["9002", 0]}
+    assert enviado["63"]["inputs"]["positive"] == ["9003", 0] and enviado["63"]["inputs"]["negative"] == ["9004", 0]
+    assert (enviado["66"]["inputs"]["width"], enviado["66"]["inputs"]["height"]) == (f["ancho"], f["alto"])
+    assert enviado["62"]["inputs"]["width"] == f["ancho"]
+    texto = enviado["74"]["inputs"]["text"]
+    assert texto.startswith(workflow.FOTO_DE_REFERENCIA) and "Conviérteme en reina del carnaval" in texto

@@ -88,7 +88,6 @@ class Pedido(BaseModel):
     tema: str = ""
     foto: str = ""
     fuerza: str = ""
-    publico: bool = False  # solo cuenta con foto: por privacidad, no se comparte salvo que se marque
 
 
 class FotoSubida(BaseModel):
@@ -451,7 +450,7 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
             "sencillo": aj.sencillo,
             "estilo_sencillo": aj.estilo_sencillo,
             "formato_sencillo": aj.formato_sencillo,
-            "fuerzas": list(aj.fuerzas),
+            "fuerzas": [] if estudio.nodos.edita else list(aj.fuerzas),  # FLUX.2 Klein edita: no hay fuerza
             "ideas": aj.ideas,
             "detalles": aj.detalles,
             "reto": reto_json(reto_actual()),
@@ -492,16 +491,17 @@ def crear_app(aj: config.Ajustes | None = None) -> FastAPI:
         if filtro.bloqueada(prompt):
             raise HTTPException(422, "Tu idea incluye palabras que no están permitidas en el estudio. Prueba a contarla de otra forma.")
 
+        # Las imágenes con foto también son públicas: como todas, pasan antes por la revisión del profesor
         formato, foto, fuerza, publico = aj.formatos.get(pedido.formato), None, None, True
         if pedido.foto:
             ruta = aj.datos / "fotos" / f"{pedido.foto}.jpg"
             if not ID_VALIDO.match(pedido.foto) or not ruta.exists():
                 raise HTTPException(422, "La foto ya no está. Vuelve a elegirla.")
-            if pedido.fuerza not in aj.fuerzas:
+            if not estudio.nodos.edita and pedido.fuerza not in aj.fuerzas:
                 raise HTTPException(422, "Elige cuánto quieres transformar la foto.")
             with Image.open(ruta) as im:
                 foto = (pedido.foto, *im.size)
-            fuerza, publico = aj.fuerzas[pedido.fuerza], pedido.publico
+            fuerza = None if estudio.nodos.edita else aj.fuerzas[pedido.fuerza]
         elif not formato:
             raise HTTPException(422, "Elige un formato.")
 
